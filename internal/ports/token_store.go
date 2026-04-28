@@ -76,6 +76,12 @@ func (t TokenSet) Clone() TokenSet {
 	return c
 }
 
+// Close zeros sensitive token bytes. It is idempotent.
+func (t *TokenSet) Close() {
+	t.AccessToken.Close()
+	t.RefreshToken.Close()
+}
+
 // TokenStore persists token sets keyed by account.
 type TokenStore interface {
 	LoadTokens(ctx context.Context, accountID string) (TokenSet, error)

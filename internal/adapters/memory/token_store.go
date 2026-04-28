@@ -29,6 +29,9 @@ func (s *TokenStore) LoadTokens(ctx context.Context, accountID string) (ports.To
 
 	s.mu.RLock()
 	ts, ok := s.data[accountID]
+	if ok {
+		ts = ts.Clone()
+	}
 	s.mu.RUnlock()
 
 	if !ok {
@@ -38,7 +41,7 @@ func (s *TokenStore) LoadTokens(ctx context.Context, accountID string) (ports.To
 			Message: "tokens not found for account",
 		}
 	}
-	return ts.Clone(), nil
+	return ts, nil
 }
 
 // SaveTokens stores the given token set, replacing any existing entry for the same account.
@@ -58,6 +61,9 @@ func (s *TokenStore) SaveTokens(ctx context.Context, tokens ports.TokenSet) erro
 	cloned := tokens.Clone()
 
 	s.mu.Lock()
+	if existing, ok := s.data[tokens.AccountID]; ok {
+		existing.Close()
+	}
 	s.data[tokens.AccountID] = cloned
 	s.mu.Unlock()
 
@@ -71,7 +77,10 @@ func (s *TokenStore) DeleteTokens(ctx context.Context, accountID string) error {
 	}
 
 	s.mu.Lock()
-	delete(s.data, accountID)
+	if existing, ok := s.data[accountID]; ok {
+		existing.Close()
+		delete(s.data, accountID)
+	}
 	s.mu.Unlock()
 
 	return nil
