@@ -1,9 +1,12 @@
 package bitwarden
 
+// Region identifies a Bitwarden service region.
 type Region string
 
 const (
+	// RegionUS identifies the US region.
 	RegionUS Region = "us"
+	// RegionEU identifies the EU region.
 	RegionEU Region = "eu"
 )
 
@@ -16,8 +19,10 @@ type LoginOptions struct {
 	Password string
 }
 
+// ItemID identifies a vault item.
 type ItemID string
 
+// Item is the public vault item shape.
 type Item struct {
 	ID       ItemID
 	Name     string
@@ -26,9 +31,12 @@ type Item struct {
 	Type     ItemType
 }
 
+// ItemType identifies the kind of vault item.
 type ItemType string
 
 const (
-	ItemTypeLogin      ItemType = "login"
+	// ItemTypeLogin identifies a login item.
+	ItemTypeLogin ItemType = "login"
+	// ItemTypeSecureNote identifies a secure note item.
 	ItemTypeSecureNote ItemType = "secure_note"
 )

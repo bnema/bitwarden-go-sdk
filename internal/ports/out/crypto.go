@@ -2,6 +2,7 @@ package out
 
 import "context"
 
+// CryptoEngine defines scaffold cryptographic operations.
 type CryptoEngine interface {
 	DeriveMasterKey(ctx context.Context, input MasterKeyInput) (MasterKey, error)
 	MakeAuthHash(ctx context.Context, input AuthHashInput) (AuthHash, error)
@@ -11,6 +12,7 @@ type CryptoEngine interface {
 	DecryptAttachmentKey(ctx context.Context, key UserKey, attachment EncryptedAttachment) (AttachmentKey, error)
 }
 
+// MasterKeyInput contains scaffold master-key derivation inputs.
 type MasterKeyInput struct {
 	Email    string
 	Password string
@@ -24,13 +26,16 @@ type MasterKey struct {
 	Bytes []byte
 }
 
+// AuthHashInput contains scaffold auth-hash inputs.
 type AuthHashInput struct {
 	Password  string
 	MasterKey MasterKey
 }
 
+// AuthHash contains a scaffold authentication hash.
 type AuthHash string
 
+// UserKeyInput contains scaffold user-key unwrap inputs.
 type UserKeyInput struct {
 	MasterKey        MasterKey
 	EncryptedUserKey string
@@ -43,6 +48,7 @@ type UserKey struct {
 	Bytes []byte
 }
 
+// Cipher contains scaffold decrypted cipher fields.
 type Cipher struct {
 	ID       string
 	Name     string
@@ -51,6 +57,7 @@ type Cipher struct {
 	URI      string
 }
 
+// EncryptedAttachment contains scaffold encrypted attachment fields.
 type EncryptedAttachment struct {
 	ID  string
 	Key string

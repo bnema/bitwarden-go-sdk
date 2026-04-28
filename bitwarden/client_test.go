@@ -2,7 +2,6 @@ package bitwarden
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"testing"
 
@@ -36,5 +35,5 @@ func TestUnsupportedMethodsReturnSentinel(t *testing.T) {
 	require.ErrorIs(t, client.Login(context.Background(), LoginOptions{}), ErrUnsupported)
 	require.ErrorIs(t, client.Sync(context.Background()), ErrUnsupported)
 	_, err := client.Vault().Search(context.Background(), "github")
-	require.True(t, errors.Is(err, ErrUnsupported))
+	require.ErrorIs(t, err, ErrUnsupported)
 }

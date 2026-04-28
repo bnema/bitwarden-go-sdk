@@ -2,6 +2,7 @@ package out
 
 import "context"
 
+// Logger records structured SDK messages.
 type Logger interface {
 	DebugContext(ctx context.Context, msg string, args ...any)
 	InfoContext(ctx context.Context, msg string, args ...any)
