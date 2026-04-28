@@ -30,6 +30,7 @@ func TestCipherEncryptDecryptRoundtrip(t *testing.T) {
 
 	original := ports.Cipher{
 		ID:       "cipher-abc-123",
+		FolderID: "folder-1",
 		Name:     "My Test Login",
 		Username: "alice@example.com",
 		Password: "s3cret!",
@@ -39,6 +40,7 @@ func TestCipherEncryptDecryptRoundtrip(t *testing.T) {
 	enc, err := eng.EncryptCipher(context.Background(), key, original)
 	require.NoError(t, err)
 	assert.Equal(t, "cipher-abc-123", enc.ID, "ID must be preserved")
+	assert.Equal(t, "folder-1", enc.FolderID, "FolderID must be preserved")
 	assert.Equal(t, 1, enc.Type, "must be login type 1")
 	assert.NotEmpty(t, enc.Name, "encrypted name must not be empty")
 	assert.NotEqual(t, original.Name, enc.Name, "encrypted name must differ from plaintext")
@@ -53,6 +55,7 @@ func TestCipherEncryptDecryptRoundtrip(t *testing.T) {
 	dec, err := eng.DecryptCipher(context.Background(), key, enc)
 	require.NoError(t, err)
 	assert.Equal(t, "cipher-abc-123", dec.ID, "ID must survive roundtrip")
+	assert.Equal(t, "folder-1", dec.FolderID, "FolderID must survive roundtrip")
 	assert.Equal(t, "My Test Login", dec.Name, "name must decrypt to original")
 	assert.Equal(t, "alice@example.com", dec.Username, "username must decrypt to original")
 	assert.Equal(t, "s3cret!", dec.Password, "password must decrypt to original")

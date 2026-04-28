@@ -45,26 +45,26 @@ func TestNewClient_AppliesLoggerOption(t *testing.T) {
 	require.Same(t, logger, client.logger)
 }
 
-func TestUnsupportedMethodsReturnSentinel(t *testing.T) {
+func TestDefaultClientIsLocked(t *testing.T) {
 	client, err := NewClient()
 	require.NoError(t, err)
 
-	// Sync
+	// Sync returns ErrLocked when client is locked.
 	err = client.Sync(context.Background())
-	require.ErrorIs(t, err, ErrUnsupported)
-	verifyUnsupportedError(t, err, "Client.Sync")
+	require.ErrorIs(t, err, ErrLocked)
 
-	// Vault.Search
+	// Vault methods still return ErrLocked on a locked client without account
+	// (the hasAccount check returns false, so the vault service check fires).
+	_, err = client.Vault().List(context.Background())
+	require.ErrorIs(t, err, ErrLocked)
+
 	_, err = client.Vault().Search(context.Background(), "github")
-	require.ErrorIs(t, err, ErrUnsupported)
-	verifyUnsupportedError(t, err, "Vault.Search")
+	require.ErrorIs(t, err, ErrLocked)
 
-	// Vault.Get
 	_, err = client.Vault().Get(context.Background(), "item-1")
-	require.ErrorIs(t, err, ErrUnsupported)
-	verifyUnsupportedError(t, err, "Vault.Get")
+	require.ErrorIs(t, err, ErrLocked)
 
-	// Vault.Password
+	// Vault.Password remains unsupported.
 	_, err = client.Vault().Password(context.Background(), "item-1")
 	require.ErrorIs(t, err, ErrUnsupported)
 	verifyUnsupportedError(t, err, "Vault.Password")

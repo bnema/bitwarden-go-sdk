@@ -15,6 +15,8 @@ type CryptoEngine interface {
 	DecryptAttachmentKey(ctx context.Context, key UserKey, attachment EncryptedAttachment) (AttachmentKey, error)
 	EncryptAttachment(ctx context.Context, key AttachmentKey, src io.Reader, dst io.Writer) error
 	DecryptAttachment(ctx context.Context, key AttachmentKey, src io.Reader, dst io.Writer) error
+	EncryptFolderName(ctx context.Context, key UserKey, name string) (string, error)
+	DecryptFolderName(ctx context.Context, key UserKey, encryptedName string) (string, error)
 }
 
 // MasterKeyInput contains scaffold master-key derivation inputs.
@@ -79,6 +81,7 @@ type Cipher struct {
 	Name     string
 	Notes    string
 	Favorite bool
+	FolderID string
 
 	// Legacy login scaffold fields kept until later public API phases finish
 	// replacing direct fields with Login.

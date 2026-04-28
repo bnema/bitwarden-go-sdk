@@ -21,6 +21,9 @@ type SafeRecordedRequest struct {
 	// Path is the request URL path, e.g. "/api/identity/connect/token".
 	Path string
 
+	// QueryKeys holds the query parameter keys from the request URL, if any.
+	QueryKeys []string
+
 	// ContentType is the value of the Content-Type header, if present.
 	ContentType string
 
@@ -63,6 +66,10 @@ func (r *Recorder) Requests() []SafeRecordedRequest {
 		if req.KnownFields != nil {
 			out[i].KnownFields = make([]string, len(req.KnownFields))
 			copy(out[i].KnownFields, req.KnownFields)
+		}
+		if req.QueryKeys != nil {
+			out[i].QueryKeys = make([]string, len(req.QueryKeys))
+			copy(out[i].QueryKeys, req.QueryKeys)
 		}
 	}
 	return out

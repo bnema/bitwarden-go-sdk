@@ -10,24 +10,29 @@ import (
 	"sync/atomic"
 
 	"github.com/bnema/bitwarden-go-sdk/internal/adapters/config"
+	adaptercrypto "github.com/bnema/bitwarden-go-sdk/internal/adapters/crypto"
 	adapterhttp "github.com/bnema/bitwarden-go-sdk/internal/adapters/http"
+	"github.com/bnema/bitwarden-go-sdk/internal/adapters/memory"
 	coreerrors "github.com/bnema/bitwarden-go-sdk/internal/core/errors"
+	corevault "github.com/bnema/bitwarden-go-sdk/internal/core/vault"
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 )
 
 // Client is the public Bitwarden SDK facade.
 type Client struct {
-	environment config.Environment
-	httpClient  *http.Client
-	logger      *slog.Logger
-	identity    ports.IdentityClient
-	crypto      ports.CryptoEngine
-	tokens      ports.TokenStore
-	mu          sync.Mutex
-	accountID   string
-	userKey     ports.UserKey
-	closed      bool
-	locked      atomic.Bool
+	environment  config.Environment
+	httpClient   *http.Client
+	logger       *slog.Logger
+	identity     ports.IdentityClient
+	crypto       ports.CryptoEngine
+	tokens       ports.TokenStore
+	api          ports.APIClient
+	mu           sync.Mutex
+	accountID    string
+	userKey      ports.UserKey
+	closed       bool
+	locked       atomic.Bool
+	vaultService *corevault.Service
 }
 
 // NewClient constructs a scaffold client with the supplied options.
@@ -82,15 +87,60 @@ func NewClient(options ...Option) (*Client, error) {
 		}
 	}
 
+	crypto := cfg.crypto
+	if crypto == nil {
+		crypto = adaptercrypto.NewEngine()
+	}
+
+	tokens := cfg.tokens
+	if tokens == nil {
+		tokens = memory.NewTokenStore()
+	}
+
 	client := &Client{
 		environment: env,
 		httpClient:  cfg.httpClient,
 		logger:      cfg.logger,
 		identity:    identity,
-		crypto:      cfg.crypto,
-		tokens:      cfg.tokens,
+		crypto:      crypto,
+		tokens:      tokens,
 	}
 	client.locked.Store(true)
+
+	// Build API client if not injected.
+	api := cfg.api
+	if api == nil {
+		tokenProvider := func(ctx context.Context) (ports.SecretBytes, error) {
+			client.mu.Lock()
+			accountID := client.accountID
+			client.mu.Unlock()
+			if accountID == "" {
+				return ports.SecretBytes{}, &coreerrors.Error{
+					Kind:    coreerrors.KindValidation,
+					Op:      "http.VaultClient",
+					Message: "no account logged in",
+				}
+			}
+			tokens, err := client.tokens.LoadTokens(ctx, accountID)
+			if err != nil {
+				return ports.SecretBytes{}, err
+			}
+			return tokens.AccessToken.Clone(), nil
+		}
+		api, err = adapterhttp.NewVaultClient(env.API, cfg.httpClient, tokenProvider)
+		if err != nil {
+			return nil, fmt.Errorf("bitwarden: %w", err)
+		}
+	}
+	client.api = api
+
+	client.vaultService = corevault.NewService(corevault.Dependencies{
+		API:     api,
+		Crypto:  crypto,
+		UserKey: client.userKey,
+		Locked:  true,
+	})
+
 	return client, nil
 }
 
@@ -107,14 +157,17 @@ func (c *Client) Login(ctx context.Context, options LoginOptions) error {
 	return nil
 }
 
-// Sync refreshes local vault state when real behavior is implemented.
+// Sync refreshes local vault state by fetching and decrypting cipher data from
+// the server.
 func (c *Client) Sync(ctx context.Context) error {
-	_ = ctx
-	return mapCoreError(&coreerrors.Error{
-		Kind:    coreerrors.KindUnsupported,
-		Op:      "Client.Sync",
-		Message: "sync not yet implemented",
-	})
+	if c.IsLocked() {
+		return mapCoreError(&coreerrors.Error{
+			Kind:    coreerrors.KindLocked,
+			Op:      "Client.Sync",
+			Message: "client is locked",
+		})
+	}
+	return mapCoreError(c.vaultService.Sync(ctx))
 }
 
 // Vault returns the vault facade for item operations.
@@ -128,6 +181,7 @@ func (c *Client) Lock() {
 	c.userKey.Close()
 	c.mu.Unlock()
 	c.locked.Store(true)
+	c.vaultService.Clear()
 }
 
 // IsLocked reports whether the client is locked.
@@ -143,6 +197,7 @@ func (c *Client) Logout(ctx context.Context) error {
 	c.userKey.Close()
 	c.mu.Unlock()
 	c.locked.Store(true)
+	c.vaultService.Clear()
 	if accountID != "" && c.tokens != nil {
 		if err := c.tokens.DeleteTokens(ctx, accountID); err != nil {
 			return mapCoreError(err)
@@ -162,6 +217,7 @@ func (c *Client) Close() error {
 	c.userKey.Close()
 	c.mu.Unlock()
 	c.locked.Store(true)
+	c.vaultService.Clear()
 	return nil
 }
 
@@ -171,37 +227,163 @@ func (c *Client) hasAccount() bool {
 	return c.accountID != ""
 }
 
+// vaultItem maps a core vault.Item to a public bitwarden.Item.
+func (c *Client) vaultItem(item corevault.Item) Item {
+	pub := Item{
+		ID:       ItemID(item.ID),
+		Name:     item.Name,
+		Notes:    item.Notes,
+		Favorite: item.Favorite,
+		FolderID: item.FolderID,
+	}
+
+	switch item.Type {
+	case corevault.TypeLogin:
+		pub.Type = ItemTypeLogin
+	case corevault.TypeSecureNote:
+		pub.Type = ItemTypeSecureNote
+	case corevault.TypeCard:
+		pub.Type = ItemTypeCard
+	case corevault.TypeIdentity:
+		pub.Type = ItemTypeIdentity
+	default:
+		pub.Type = ItemType(fmt.Sprintf("type_%d", item.Type))
+	}
+
+	if item.Login != nil {
+		pub.Username = item.Login.Username
+		if len(item.Login.URIs) > 0 {
+			pub.URI = item.Login.URIs[0].URI
+			pub.URIs = make([]string, len(item.Login.URIs))
+			for i, u := range item.Login.URIs {
+				pub.URIs[i] = u.URI
+			}
+		}
+		if item.Login.Password != "" {
+			pub.Password = NewSecretString(item.Login.Password)
+		}
+		if item.Login.TOTP != "" {
+			pub.TOTP = NewSecretString(item.Login.TOTP)
+		}
+	}
+
+	if len(item.Fields) > 0 {
+		pub.Fields = make([]Field, len(item.Fields))
+		for i, f := range item.Fields {
+			pub.Fields[i] = Field{
+				Name:     f.Name,
+				Value:    f.Value,
+				Type:     f.Type,
+				LinkedID: f.LinkedID,
+			}
+		}
+	}
+
+	if item.Card != nil {
+		pub.Card = &Card{
+			CardholderName: item.Card.CardholderName,
+			Brand:          item.Card.Brand,
+			ExpMonth:       item.Card.ExpMonth,
+			ExpYear:        item.Card.ExpYear,
+		}
+		if item.Card.Number != "" {
+			pub.Card.Number = NewSecretString(item.Card.Number)
+		}
+		if item.Card.Code != "" {
+			pub.Card.Code = NewSecretString(item.Card.Code)
+		}
+	}
+
+	if item.Identity != nil {
+		pub.Identity = &Identity{
+			Title:      item.Identity.Title,
+			FirstName:  item.Identity.FirstName,
+			MiddleName: item.Identity.MiddleName,
+			LastName:   item.Identity.LastName,
+			Address1:   item.Identity.Address1,
+			Address2:   item.Identity.Address2,
+			Address3:   item.Identity.Address3,
+			City:       item.Identity.City,
+			State:      item.Identity.State,
+			PostalCode: item.Identity.PostalCode,
+			Country:    item.Identity.Country,
+			Company:    item.Identity.Company,
+			Email:      item.Identity.Email,
+			Phone:      item.Identity.Phone,
+			Username:   item.Identity.Username,
+		}
+		if item.Identity.SSN != "" {
+			pub.Identity.SSN = NewSecretString(item.Identity.SSN)
+		}
+		if item.Identity.PassportNumber != "" {
+			pub.Identity.PassportNumber = NewSecretString(item.Identity.PassportNumber)
+		}
+		if item.Identity.LicenseNumber != "" {
+			pub.Identity.LicenseNumber = NewSecretString(item.Identity.LicenseNumber)
+		}
+	}
+
+	return pub
+}
+
+// vaultItems maps a slice of core vault.Items to public bitwarden.Items.
+func (c *Client) vaultItems(items []corevault.Item) []Item {
+	if items == nil {
+		return nil
+	}
+	result := make([]Item, len(items))
+	for i, item := range items {
+		result[i] = c.vaultItem(item)
+	}
+	return result
+}
+
 // Vault is the public facade for vault item operations.
 type Vault struct {
 	client *Client
 }
 
-// Search finds vault items when real behavior is implemented.
-func (v *Vault) Search(ctx context.Context, query string) ([]Item, error) {
-	_ = ctx
-	_ = query
+// List returns all vault items.
+func (v *Vault) List(_ context.Context) ([]Item, error) {
+	if v.client.IsLocked() && v.client.hasAccount() {
+		return nil, mapCoreError(&coreerrors.Error{Kind: coreerrors.KindLocked, Op: "Vault.List", Message: "client is locked"})
+	}
+	items, err := v.client.vaultService.List()
+	if err != nil {
+		return nil, mapCoreError(err)
+	}
+	return v.client.vaultItems(items), nil
+}
+
+// Search finds vault items whose safe fields contain query (case-insensitive).
+func (v *Vault) Search(_ context.Context, query string) ([]Item, error) {
 	if v.client.IsLocked() && v.client.hasAccount() {
 		return nil, mapCoreError(&coreerrors.Error{Kind: coreerrors.KindLocked, Op: "Vault.Search", Message: "client is locked"})
 	}
-	return nil, mapCoreError(&coreerrors.Error{
-		Kind:    coreerrors.KindUnsupported,
-		Op:      "Vault.Search",
-		Message: "search not yet implemented",
-	})
+	items, err := v.client.vaultService.Search(query)
+	if err != nil {
+		return nil, mapCoreError(err)
+	}
+	return v.client.vaultItems(items), nil
 }
 
-// Get returns a vault item when real behavior is implemented.
-func (v *Vault) Get(ctx context.Context, id ItemID) (Item, error) {
-	_ = ctx
-	_ = id
+// Get returns a vault item by ID.
+func (v *Vault) Get(_ context.Context, id ItemID) (Item, error) {
 	if v.client.IsLocked() && v.client.hasAccount() {
 		return Item{}, mapCoreError(&coreerrors.Error{Kind: coreerrors.KindLocked, Op: "Vault.Get", Message: "client is locked"})
 	}
-	return Item{}, mapCoreError(&coreerrors.Error{
-		Kind:    coreerrors.KindUnsupported,
-		Op:      "Vault.Get",
-		Message: "get not yet implemented",
-	})
+	item, ok, err := v.client.vaultService.Get(string(id))
+	if err != nil {
+		return Item{}, mapCoreError(err)
+	}
+	if !ok {
+		return Item{}, mapCoreError(&coreerrors.Error{
+			Kind:    coreerrors.KindNotFound,
+			Op:      "Vault.Get",
+			Message: fmt.Sprintf("item %q not found", string(id)),
+		})
+	}
+	return v.client.vaultItem(item), nil
 }
 
 // Password returns an item's password when real behavior is implemented.

@@ -63,6 +63,7 @@ type EncryptedCipher struct {
 	Name     string
 	Notes    string
 	Favorite bool
+	FolderID string
 
 	// Legacy login scaffold fields kept until later public API phases finish
 	// replacing direct fields with Login.

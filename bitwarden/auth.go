@@ -67,6 +67,8 @@ func (c *Client) BeginLogin(ctx context.Context, options LoginOptions) (LoginRes
 	c.userKey = result.Login.UserKey
 	c.mu.Unlock()
 	c.locked.Store(false)
+	c.vaultService.SetUserKey(result.Login.UserKey)
+	c.vaultService.SetLocked(false)
 	return LoginResult{AccountID: result.Login.AccountID}, nil
 }
 
@@ -87,6 +89,8 @@ func (c *Client) CompleteLogin(ctx context.Context, options CompleteLoginOptions
 	c.userKey = result.UserKey
 	c.mu.Unlock()
 	c.locked.Store(false)
+	c.vaultService.SetUserKey(result.UserKey)
+	c.vaultService.SetLocked(false)
 	return LoginResult{AccountID: result.AccountID}, nil
 }
 

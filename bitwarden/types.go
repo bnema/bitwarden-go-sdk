@@ -22,6 +22,46 @@ type LoginOptions struct {
 // ItemID identifies a vault item.
 type ItemID string
 
+// Field is a public custom field on a vault item.
+type Field struct {
+	Name     string
+	Value    string
+	Type     int
+	LinkedID int
+}
+
+// Card is the public payment-card shape.
+type Card struct {
+	CardholderName string
+	Brand          string
+	Number         *Secret
+	ExpMonth       string
+	ExpYear        string
+	Code           *Secret
+}
+
+// Identity is the public identity-profile shape.
+type Identity struct {
+	Title          string
+	FirstName      string
+	MiddleName     string
+	LastName       string
+	Address1       string
+	Address2       string
+	Address3       string
+	City           string
+	State          string
+	PostalCode     string
+	Country        string
+	Company        string
+	Email          string
+	Phone          string
+	SSN            *Secret
+	Username       string
+	PassportNumber *Secret
+	LicenseNumber  *Secret
+}
+
 // Item is the public vault item shape.
 type Item struct {
 	ID       ItemID
@@ -29,6 +69,16 @@ type Item struct {
 	Username string
 	URI      string
 	Type     ItemType
+
+	Notes    string
+	Favorite bool
+	FolderID string
+	Password *Secret
+	TOTP     *Secret
+	URIs     []string
+	Fields   []Field
+	Card     *Card
+	Identity *Identity
 }
 
 // ItemType identifies the kind of vault item.
@@ -39,4 +89,8 @@ const (
 	ItemTypeLogin ItemType = "login"
 	// ItemTypeSecureNote identifies a secure note item.
 	ItemTypeSecureNote ItemType = "secure_note"
+	// ItemTypeCard identifies a payment card item.
+	ItemTypeCard ItemType = "card"
+	// ItemTypeIdentity identifies an identity profile item.
+	ItemTypeIdentity ItemType = "identity"
 )

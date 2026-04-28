@@ -252,6 +252,78 @@ func (_c *MockCryptoEngine_DecryptCipher_Call) RunAndReturn(run func(ctx context
 	return _c
 }
 
+// DecryptFolderName provides a mock function for the type MockCryptoEngine
+func (_mock *MockCryptoEngine) DecryptFolderName(ctx context.Context, key ports.UserKey, encryptedName string) (string, error) {
+	ret := _mock.Called(ctx, key, encryptedName)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DecryptFolderName")
+	}
+
+	var r0 string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.UserKey, string) (string, error)); ok {
+		return returnFunc(ctx, key, encryptedName)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.UserKey, string) string); ok {
+		r0 = returnFunc(ctx, key, encryptedName)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.UserKey, string) error); ok {
+		r1 = returnFunc(ctx, key, encryptedName)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockCryptoEngine_DecryptFolderName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DecryptFolderName'
+type MockCryptoEngine_DecryptFolderName_Call struct {
+	*mock.Call
+}
+
+// DecryptFolderName is a helper method to define mock.On call
+//   - ctx context.Context
+//   - key ports.UserKey
+//   - encryptedName string
+func (_e *MockCryptoEngine_Expecter) DecryptFolderName(ctx interface{}, key interface{}, encryptedName interface{}) *MockCryptoEngine_DecryptFolderName_Call {
+	return &MockCryptoEngine_DecryptFolderName_Call{Call: _e.mock.On("DecryptFolderName", ctx, key, encryptedName)}
+}
+
+func (_c *MockCryptoEngine_DecryptFolderName_Call) Run(run func(ctx context.Context, key ports.UserKey, encryptedName string)) *MockCryptoEngine_DecryptFolderName_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 ports.UserKey
+		if args[1] != nil {
+			arg1 = args[1].(ports.UserKey)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCryptoEngine_DecryptFolderName_Call) Return(s string, err error) *MockCryptoEngine_DecryptFolderName_Call {
+	_c.Call.Return(s, err)
+	return _c
+}
+
+func (_c *MockCryptoEngine_DecryptFolderName_Call) RunAndReturn(run func(ctx context.Context, key ports.UserKey, encryptedName string) (string, error)) *MockCryptoEngine_DecryptFolderName_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeriveMasterKey provides a mock function for the type MockCryptoEngine
 func (_mock *MockCryptoEngine) DeriveMasterKey(ctx context.Context, input ports.MasterKeyInput) (ports.MasterKey, error) {
 	ret := _mock.Called(ctx, input)
@@ -455,6 +527,78 @@ func (_c *MockCryptoEngine_EncryptCipher_Call) Return(encryptedCipher ports.Encr
 }
 
 func (_c *MockCryptoEngine_EncryptCipher_Call) RunAndReturn(run func(ctx context.Context, key ports.UserKey, cipher ports.Cipher) (ports.EncryptedCipher, error)) *MockCryptoEngine_EncryptCipher_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// EncryptFolderName provides a mock function for the type MockCryptoEngine
+func (_mock *MockCryptoEngine) EncryptFolderName(ctx context.Context, key ports.UserKey, name string) (string, error) {
+	ret := _mock.Called(ctx, key, name)
+
+	if len(ret) == 0 {
+		panic("no return value specified for EncryptFolderName")
+	}
+
+	var r0 string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.UserKey, string) (string, error)); ok {
+		return returnFunc(ctx, key, name)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.UserKey, string) string); ok {
+		r0 = returnFunc(ctx, key, name)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.UserKey, string) error); ok {
+		r1 = returnFunc(ctx, key, name)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockCryptoEngine_EncryptFolderName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'EncryptFolderName'
+type MockCryptoEngine_EncryptFolderName_Call struct {
+	*mock.Call
+}
+
+// EncryptFolderName is a helper method to define mock.On call
+//   - ctx context.Context
+//   - key ports.UserKey
+//   - name string
+func (_e *MockCryptoEngine_Expecter) EncryptFolderName(ctx interface{}, key interface{}, name interface{}) *MockCryptoEngine_EncryptFolderName_Call {
+	return &MockCryptoEngine_EncryptFolderName_Call{Call: _e.mock.On("EncryptFolderName", ctx, key, name)}
+}
+
+func (_c *MockCryptoEngine_EncryptFolderName_Call) Run(run func(ctx context.Context, key ports.UserKey, name string)) *MockCryptoEngine_EncryptFolderName_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 ports.UserKey
+		if args[1] != nil {
+			arg1 = args[1].(ports.UserKey)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCryptoEngine_EncryptFolderName_Call) Return(s string, err error) *MockCryptoEngine_EncryptFolderName_Call {
+	_c.Call.Return(s, err)
+	return _c
+}
+
+func (_c *MockCryptoEngine_EncryptFolderName_Call) RunAndReturn(run func(ctx context.Context, key ports.UserKey, name string) (string, error)) *MockCryptoEngine_EncryptFolderName_Call {
 	_c.Call.Return(run)
 	return _c
 }

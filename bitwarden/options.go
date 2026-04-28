@@ -19,6 +19,7 @@ type clientConfig struct {
 	identity   ports.IdentityClient
 	crypto     ports.CryptoEngine
 	tokens     ports.TokenStore
+	api        ports.APIClient
 }
 
 // Option configures a Client.
@@ -96,6 +97,14 @@ func WithCryptoEngine(crypto ports.CryptoEngine) Option {
 func WithTokenStore(tokens ports.TokenStore) Option {
 	return func(cfg *clientConfig) error {
 		cfg.tokens = tokens
+		return nil
+	}
+}
+
+// WithAPIClient injects an API client. It is intended for tests.
+func WithAPIClient(api ports.APIClient) Option {
+	return func(cfg *clientConfig) error {
+		cfg.api = api
 		return nil
 	}
 }

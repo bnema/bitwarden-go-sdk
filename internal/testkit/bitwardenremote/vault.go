@@ -54,9 +54,18 @@ func (s *Server) recordJSONBody(r *http.Request) bool {
 		knownFields = append(knownFields, k)
 	}
 
+	var queryKeys []string
+	if len(r.URL.Query()) > 0 {
+		queryKeys = make([]string, 0, len(r.URL.Query()))
+		for k := range r.URL.Query() {
+			queryKeys = append(queryKeys, k)
+		}
+	}
+
 	s.recorder.Record(SafeRecordedRequest{
 		Method:      r.Method,
 		Path:        r.URL.Path,
+		QueryKeys:   queryKeys,
 		ContentType: r.Header.Get("Content-Type"),
 		AuthPresent: r.Header.Get("Authorization") != "",
 		KnownFields: knownFields,
@@ -68,9 +77,17 @@ func (s *Server) recordJSONBody(r *http.Request) bool {
 // recordRequestMetadata records the request with minimal metadata and no
 // body parsing (for GET/DELETE or endpoints where we do not parse the body).
 func (s *Server) recordRequestMetadata(r *http.Request) {
+	var queryKeys []string
+	if len(r.URL.Query()) > 0 {
+		queryKeys = make([]string, 0, len(r.URL.Query()))
+		for k := range r.URL.Query() {
+			queryKeys = append(queryKeys, k)
+		}
+	}
 	s.recorder.Record(SafeRecordedRequest{
 		Method:      r.Method,
 		Path:        r.URL.Path,
+		QueryKeys:   queryKeys,
 		ContentType: r.Header.Get("Content-Type"),
 		AuthPresent: r.Header.Get("Authorization") != "",
 		KnownFields: nil,
@@ -81,9 +98,17 @@ func (s *Server) recordRequestMetadata(r *http.Request) {
 // reading or storing the body — just method/path/content-type/auth-present
 // with a KnownFields hint.
 func (s *Server) recordAttachmentUpload(r *http.Request) {
+	var queryKeys []string
+	if len(r.URL.Query()) > 0 {
+		queryKeys = make([]string, 0, len(r.URL.Query()))
+		for k := range r.URL.Query() {
+			queryKeys = append(queryKeys, k)
+		}
+	}
 	s.recorder.Record(SafeRecordedRequest{
 		Method:      r.Method,
 		Path:        r.URL.Path,
+		QueryKeys:   queryKeys,
 		ContentType: r.Header.Get("Content-Type"),
 		AuthPresent: r.Header.Get("Authorization") != "",
 		KnownFields: []string{"attachment"},

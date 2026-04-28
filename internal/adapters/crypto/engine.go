@@ -287,7 +287,7 @@ func (e *Engine) EncryptCipher(ctx context.Context, key ports.UserKey, cipher po
 	if typeID == 0 {
 		typeID = 1
 	}
-	enc := ports.EncryptedCipher{ID: cipher.ID, Type: typeID, Favorite: cipher.Favorite}
+	enc := ports.EncryptedCipher{ID: cipher.ID, Type: typeID, Favorite: cipher.Favorite, FolderID: cipher.FolderID}
 	var err error
 	if enc.Name, err = encryptCipherString(key.Bytes, cipher.Name); err != nil {
 		return ports.EncryptedCipher{}, err
@@ -390,7 +390,7 @@ func (e *Engine) DecryptCipher(ctx context.Context, key ports.UserKey, cipher po
 		}
 	}
 
-	dec := ports.Cipher{ID: cipher.ID, Type: cipher.Type, Favorite: cipher.Favorite}
+	dec := ports.Cipher{ID: cipher.ID, Type: cipher.Type, Favorite: cipher.Favorite, FolderID: cipher.FolderID}
 	var err error
 	if dec.Name, err = decryptCipherString(key.Bytes, cipher.Name); err != nil {
 		return ports.Cipher{}, err
