@@ -1,0 +1,17 @@
+all: false
+template: testify
+include-auto-generated: true
+packages:
+  github.com/bnema/bitwarden-go-sdk/internal/ports/out:
+    config:
+      dir: "internal/ports/out/mocks"
+      filename: "mock_{{.InterfaceName | snakecase}}.go"
+      pkgname: "mocks"
+    interfaces:
+      APIClient: {}
+      Clock: {}
+      CryptoEngine: {}
+      IdentityClient: {}
+      Logger: {}
+      Random: {}
+      TokenStore: {}
