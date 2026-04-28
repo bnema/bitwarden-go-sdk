@@ -21,7 +21,7 @@ func TestBeginLoginReturnsChallengeProviders(t *testing.T) {
 	crypto.EXPECT().MakeAuthHash(mock.Anything, mock.Anything).Return(ports.AuthHash("auth-hash"), nil)
 	identity.EXPECT().LoginPassword(mock.Anything, mock.Anything).Return(ports.TokenResponse{}, twoFactorCoreError("0", "1"))
 
-	client, err := NewClient(WithIdentityClient(identity), WithCryptoEngine(crypto), WithTokenStore(store))
+	client, err := NewClient(withIdentityClient(identity), withCryptoEngine(crypto), withTokenStore(store))
 	require.NoError(t, err)
 	result, err := client.BeginLogin(context.Background(), LoginOptions{Email: "alice@example.com", Password: "password"})
 	require.NoError(t, err)
@@ -44,7 +44,7 @@ func TestCompleteLoginUnlocksClient(t *testing.T) {
 	crypto.EXPECT().UnlockUserKey(mock.Anything, ports.UserKeyInput{MasterKey: masterKey, EncryptedUserKey: "enc-user"}).Return(userKey, nil)
 	store.EXPECT().SaveTokens(mock.Anything, mock.Anything).Return(nil)
 
-	client, err := NewClient(WithIdentityClient(identity), WithCryptoEngine(crypto), WithTokenStore(store))
+	client, err := NewClient(withIdentityClient(identity), withCryptoEngine(crypto), withTokenStore(store))
 	require.NoError(t, err)
 	begin, err := client.BeginLogin(context.Background(), LoginOptions{Email: "alice@example.com", Password: "password"})
 	require.NoError(t, err)

@@ -25,10 +25,10 @@ func TestVaultCreateEncryptsAndUpdatesList(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -148,10 +148,10 @@ func TestVaultCreateWithPasswordSecretDoesNotExposeViaFmtSprint(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -259,10 +259,10 @@ func TestVaultUpdateEncryptsAndUpdatesList(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -388,10 +388,10 @@ func TestVaultTrashRemovesFromList(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -479,10 +479,10 @@ func TestVaultRestoreUpsertsList(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -581,10 +581,10 @@ func TestVaultDeleteRemovesFromList(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -672,10 +672,10 @@ func TestVaultWritesLockedReturnErrLocked(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 	require.True(t, client.IsLocked())
@@ -738,7 +738,7 @@ func TestVaultWritesLockedReturnErrLocked(t *testing.T) {
 }
 
 func TestVaultCreateLockedBeforeLogin(t *testing.T) {
-	client, err := NewClient(WithAPIClient(mocks.NewMockAPIClient(t)))
+	client, err := NewClient(withAPIClient(mocks.NewMockAPIClient(t)))
 	require.NoError(t, err)
 	require.True(t, client.IsLocked())
 
@@ -751,7 +751,7 @@ func TestVaultCreateLockedBeforeLogin(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 func TestVaultCreateNilCardReturnsValidationError(t *testing.T) {
-	client, err := NewClient(WithAPIClient(mocks.NewMockAPIClient(t)))
+	client, err := NewClient(withAPIClient(mocks.NewMockAPIClient(t)))
 	require.NoError(t, err)
 
 	// Create an Item with TypeCard but nil Card — should not panic.
@@ -769,7 +769,7 @@ func TestVaultCreateNilCardReturnsValidationError(t *testing.T) {
 }
 
 func TestVaultCreateNilIdentityReturnsValidationError(t *testing.T) {
-	client, err := NewClient(WithAPIClient(mocks.NewMockAPIClient(t)))
+	client, err := NewClient(withAPIClient(mocks.NewMockAPIClient(t)))
 	require.NoError(t, err)
 
 	// Create an Item with TypeIdentity but nil Identity — should not panic.

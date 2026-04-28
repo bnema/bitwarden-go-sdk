@@ -65,10 +65,10 @@ func TestAttachmentsMetadataSuccess(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 	loginAndUnlock(t, client, identity, crypto, store)
@@ -108,10 +108,10 @@ func TestAttachmentsUploadSuccess(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 	loginAndUnlock(t, client, identity, crypto.MockCryptoEngine, store)
@@ -165,10 +165,10 @@ func TestAttachmentsDownloadSuccess(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 	loginAndUnlock(t, client, identity, crypto, store)
@@ -209,10 +209,10 @@ func TestAttachmentsDeleteSuccess(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 	loginAndUnlock(t, client, identity, crypto, store)
@@ -233,10 +233,10 @@ func TestAttachmentsLockedReturnsErrLocked(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 	require.True(t, client.IsLocked())
@@ -263,10 +263,10 @@ func TestAttachmentsUploadWithStringsReaderUsesWrapAttachmentKey(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 	loginAndUnlock(t, client, identity, crypto.MockCryptoEngine, store)

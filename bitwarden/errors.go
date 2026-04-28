@@ -31,7 +31,7 @@ const (
 	ErrorKindDecryptionFailed ErrorKind = "decryption failed"
 	// ErrorKindRateLimited indicates the service rate-limited the request.
 	ErrorKindRateLimited ErrorKind = "rate limited"
-	// ErrorKindUnsupported indicates scaffold behavior has not been implemented.
+	// ErrorKindUnsupported indicates the requested operation is unsupported.
 	ErrorKindUnsupported ErrorKind = "unsupported operation"
 	// ErrorKindPermissionDenied indicates the request is forbidden.
 	ErrorKindPermissionDenied ErrorKind = "permission denied"

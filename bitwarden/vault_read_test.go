@@ -20,10 +20,10 @@ func TestClientSyncThenListSearchGet(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 	require.True(t, client.IsLocked())
@@ -196,10 +196,10 @@ func TestVaultReadLocked(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 	require.True(t, client.IsLocked())
@@ -264,10 +264,10 @@ func TestVaultItemMapsCardAndIdentity(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -383,7 +383,7 @@ func TestVaultItemMapsCardAndIdentity(t *testing.T) {
 
 func TestSyncUsesHTTPVaultClientWithContractTestkit(t *testing.T) {
 	// This test verifies that using a mock API client directly (via
-	// WithAPIClient) triggers the expected HTTP vault client code path.
+	// withAPIClient) triggers the expected HTTP vault client code path.
 	// We use the mock to avoid requiring a running server.
 	api := mocks.NewMockAPIClient(t)
 	crypto := mocks.NewMockCryptoEngine(t)
@@ -391,10 +391,10 @@ func TestSyncUsesHTTPVaultClientWithContractTestkit(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 	require.True(t, client.IsLocked())

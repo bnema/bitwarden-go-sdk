@@ -10,10 +10,9 @@ const (
 	RegionEU Region = "eu"
 )
 
-// LoginOptions is the public login input shape for the client facade.
-// Password is a plain string in the scaffold so callers can compile against the
-// intended API. The auth implementation plan must revisit this with Go 1.26
-// secret-memory handling before real login behavior is added.
+// LoginOptions configures a master-password login attempt.
+// Password is consumed to derive Bitwarden auth material and is not logged or
+// persisted by the SDK.
 type LoginOptions struct {
 	Email    string
 	Password string

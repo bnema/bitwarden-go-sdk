@@ -76,33 +76,33 @@ func WithLogger(logger *slog.Logger) Option {
 	}
 }
 
-// WithIdentityClient injects an identity client. It is intended for tests and
+// withIdentityClient injects an identity client. It is intended for tests and
 // local-first adapters; production callers normally rely on SDK defaults.
-func WithIdentityClient(identity ports.IdentityClient) Option {
+func withIdentityClient(identity ports.IdentityClient) Option {
 	return func(cfg *clientConfig) error {
 		cfg.identity = identity
 		return nil
 	}
 }
 
-// WithCryptoEngine injects a crypto engine. It is intended for tests.
-func WithCryptoEngine(crypto ports.CryptoEngine) Option {
+// withCryptoEngine injects a crypto engine. It is intended for tests.
+func withCryptoEngine(crypto ports.CryptoEngine) Option {
 	return func(cfg *clientConfig) error {
 		cfg.crypto = crypto
 		return nil
 	}
 }
 
-// WithTokenStore injects a token store. TokenStore is a sensitive boundary.
-func WithTokenStore(tokens ports.TokenStore) Option {
+// withTokenStore injects a token store. TokenStore is a sensitive boundary.
+func withTokenStore(tokens ports.TokenStore) Option {
 	return func(cfg *clientConfig) error {
 		cfg.tokens = tokens
 		return nil
 	}
 }
 
-// WithAPIClient injects an API client. It is intended for tests.
-func WithAPIClient(api ports.APIClient) Option {
+// withAPIClient injects an API client. It is intended for tests.
+func withAPIClient(api ports.APIClient) Option {
 	return func(cfg *clientConfig) error {
 		cfg.api = api
 		return nil

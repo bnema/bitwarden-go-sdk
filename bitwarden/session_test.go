@@ -64,7 +64,7 @@ func loggedInClientForSessionTests(t *testing.T, store ports.TokenStore) *Client
 	crypto.EXPECT().MakeAuthHash(mock.Anything, mock.Anything).Return(ports.AuthHash("auth-hash"), nil)
 	identity.EXPECT().LoginPassword(mock.Anything, mock.Anything).Return(ports.TokenResponse{Tokens: tokens, AccountID: "account-1", EncryptedUserKey: "enc-user"}, nil)
 	crypto.EXPECT().UnlockUserKey(mock.Anything, ports.UserKeyInput{MasterKey: masterKey, EncryptedUserKey: "enc-user"}).Return(userKey, nil)
-	client, err := NewClient(WithIdentityClient(identity), WithCryptoEngine(crypto), WithTokenStore(store))
+	client, err := NewClient(withIdentityClient(identity), withCryptoEngine(crypto), withTokenStore(store))
 	require.NoError(t, err)
 	_, err = client.BeginLogin(context.Background(), LoginOptions{Email: "alice@example.com", Password: "password"})
 	require.NoError(t, err)

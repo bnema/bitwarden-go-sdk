@@ -47,10 +47,10 @@ func TestPublicAttachmentMetadataContract(t *testing.T) {
 		Once()
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -109,10 +109,10 @@ func TestPublicAttachmentUploadContract(t *testing.T) {
 		Once()
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -185,10 +185,10 @@ func TestPublicAttachmentDownloadContract(t *testing.T) {
 		Once()
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -232,10 +232,10 @@ func TestPublicAttachmentDeleteContract(t *testing.T) {
 	store.EXPECT().SaveTokens(mock.Anything, mock.Anything).Return(nil)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 

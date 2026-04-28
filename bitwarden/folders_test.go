@@ -19,10 +19,10 @@ func TestFoldersListSuccess(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -62,10 +62,10 @@ func TestFoldersCreateSuccess(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -99,10 +99,10 @@ func TestFoldersUpdateSuccess(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -136,10 +136,10 @@ func TestFoldersDeleteSuccess(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -161,10 +161,10 @@ func TestFoldersLockedReturnsErrLocked(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 	require.True(t, client.IsLocked())

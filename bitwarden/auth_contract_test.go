@@ -31,7 +31,7 @@ func TestPublicLoginContract(t *testing.T) {
 	crypto.EXPECT().UnlockUserKey(mock.Anything, mock.Anything).Return(userKey, nil)
 	store.EXPECT().SaveTokens(mock.Anything, mock.Anything).Return(nil)
 
-	client, err := NewClient(WithIdentityClient(identity), WithCryptoEngine(crypto), WithTokenStore(store))
+	client, err := NewClient(withIdentityClient(identity), withCryptoEngine(crypto), withTokenStore(store))
 	require.NoError(t, err)
 
 	result, err := client.BeginLogin(context.Background(), LoginOptions{Email: "alice@example.com", Password: "password"})
@@ -65,7 +65,7 @@ func TestPublicTwoFactorLoginContract(t *testing.T) {
 	crypto.EXPECT().UnlockUserKey(mock.Anything, mock.Anything).Return(userKey, nil)
 	store.EXPECT().SaveTokens(mock.Anything, mock.Anything).Return(nil)
 
-	client, err := NewClient(WithIdentityClient(identity), WithCryptoEngine(crypto), WithTokenStore(store))
+	client, err := NewClient(withIdentityClient(identity), withCryptoEngine(crypto), withTokenStore(store))
 	require.NoError(t, err)
 
 	// BeginLogin should return a two-factor challenge.

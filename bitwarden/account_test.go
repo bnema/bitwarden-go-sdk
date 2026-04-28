@@ -20,10 +20,10 @@ func TestAccount_Profile_Success(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 	require.True(t, client.IsLocked())
@@ -69,10 +69,10 @@ func TestAccount_Subscription_Success(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -105,10 +105,10 @@ func TestAccount_Capabilities_Free(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -145,10 +145,10 @@ func TestAccount_Capabilities_PaidPersonal(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -182,10 +182,10 @@ func TestAccount_Capabilities_PremiumFromOrganization(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 
@@ -219,10 +219,10 @@ func TestAccount_Profile_Unauthorized(t *testing.T) {
 	store := mocks.NewMockTokenStore(t)
 
 	client, err := NewClient(
-		WithIdentityClient(identity),
-		WithCryptoEngine(crypto),
-		WithTokenStore(store),
-		WithAPIClient(api),
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		withTokenStore(store),
+		withAPIClient(api),
 	)
 	require.NoError(t, err)
 

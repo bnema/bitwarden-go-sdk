@@ -36,7 +36,7 @@ type Client struct {
 	vaultService *corevault.Service
 }
 
-// NewClient constructs a scaffold client with the supplied options.
+// NewClient constructs a Bitwarden client with the supplied options.
 func NewClient(options ...Option) (*Client, error) {
 	cfg := &clientConfig{
 		region:     RegionUS,
