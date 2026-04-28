@@ -36,13 +36,6 @@ type LoginResult struct {
 	UserID string
 }
 
-// TokenSet contains scaffold OAuth token fields.
-type TokenSet struct {
-	AccessToken  string
-	RefreshToken string
-	ExpiresInSec int
-}
-
 // KDFConfig contains scaffold key-derivation settings.
 type KDFConfig struct {
 	Type        string

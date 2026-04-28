@@ -38,60 +38,66 @@ func (_m *MockTokenStore) EXPECT() *MockTokenStore_Expecter {
 	return &MockTokenStore_Expecter{mock: &_m.Mock}
 }
 
-// ClearTokens provides a mock function for the type MockTokenStore
-func (_mock *MockTokenStore) ClearTokens(ctx context.Context) error {
-	ret := _mock.Called(ctx)
+// DeleteTokens provides a mock function for the type MockTokenStore
+func (_mock *MockTokenStore) DeleteTokens(ctx context.Context, accountID string) error {
+	ret := _mock.Called(ctx, accountID)
 
 	if len(ret) == 0 {
-		panic("no return value specified for ClearTokens")
+		panic("no return value specified for DeleteTokens")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
-		r0 = returnFunc(ctx)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, accountID)
 	} else {
 		r0 = ret.Error(0)
 	}
 	return r0
 }
 
-// MockTokenStore_ClearTokens_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ClearTokens'
-type MockTokenStore_ClearTokens_Call struct {
+// MockTokenStore_DeleteTokens_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteTokens'
+type MockTokenStore_DeleteTokens_Call struct {
 	*mock.Call
 }
 
-// ClearTokens is a helper method to define mock.On call
+// DeleteTokens is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockTokenStore_Expecter) ClearTokens(ctx interface{}) *MockTokenStore_ClearTokens_Call {
-	return &MockTokenStore_ClearTokens_Call{Call: _e.mock.On("ClearTokens", ctx)}
+//   - accountID string
+func (_e *MockTokenStore_Expecter) DeleteTokens(ctx interface{}, accountID interface{}) *MockTokenStore_DeleteTokens_Call {
+	return &MockTokenStore_DeleteTokens_Call{Call: _e.mock.On("DeleteTokens", ctx, accountID)}
 }
 
-func (_c *MockTokenStore_ClearTokens_Call) Run(run func(ctx context.Context)) *MockTokenStore_ClearTokens_Call {
+func (_c *MockTokenStore_DeleteTokens_Call) Run(run func(ctx context.Context, accountID string)) *MockTokenStore_DeleteTokens_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
 }
 
-func (_c *MockTokenStore_ClearTokens_Call) Return(err error) *MockTokenStore_ClearTokens_Call {
+func (_c *MockTokenStore_DeleteTokens_Call) Return(err error) *MockTokenStore_DeleteTokens_Call {
 	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *MockTokenStore_ClearTokens_Call) RunAndReturn(run func(ctx context.Context) error) *MockTokenStore_ClearTokens_Call {
+func (_c *MockTokenStore_DeleteTokens_Call) RunAndReturn(run func(ctx context.Context, accountID string) error) *MockTokenStore_DeleteTokens_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // LoadTokens provides a mock function for the type MockTokenStore
-func (_mock *MockTokenStore) LoadTokens(ctx context.Context) (ports.TokenSet, error) {
-	ret := _mock.Called(ctx)
+func (_mock *MockTokenStore) LoadTokens(ctx context.Context, accountID string) (ports.TokenSet, error) {
+	ret := _mock.Called(ctx, accountID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for LoadTokens")
@@ -99,16 +105,16 @@ func (_mock *MockTokenStore) LoadTokens(ctx context.Context) (ports.TokenSet, er
 
 	var r0 ports.TokenSet
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) (ports.TokenSet, error)); ok {
-		return returnFunc(ctx)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (ports.TokenSet, error)); ok {
+		return returnFunc(ctx, accountID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) ports.TokenSet); ok {
-		r0 = returnFunc(ctx)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ports.TokenSet); ok {
+		r0 = returnFunc(ctx, accountID)
 	} else {
 		r0 = ret.Get(0).(ports.TokenSet)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = returnFunc(ctx)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, accountID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -122,18 +128,24 @@ type MockTokenStore_LoadTokens_Call struct {
 
 // LoadTokens is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockTokenStore_Expecter) LoadTokens(ctx interface{}) *MockTokenStore_LoadTokens_Call {
-	return &MockTokenStore_LoadTokens_Call{Call: _e.mock.On("LoadTokens", ctx)}
+//   - accountID string
+func (_e *MockTokenStore_Expecter) LoadTokens(ctx interface{}, accountID interface{}) *MockTokenStore_LoadTokens_Call {
+	return &MockTokenStore_LoadTokens_Call{Call: _e.mock.On("LoadTokens", ctx, accountID)}
 }
 
-func (_c *MockTokenStore_LoadTokens_Call) Run(run func(ctx context.Context)) *MockTokenStore_LoadTokens_Call {
+func (_c *MockTokenStore_LoadTokens_Call) Run(run func(ctx context.Context, accountID string)) *MockTokenStore_LoadTokens_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
@@ -144,7 +156,7 @@ func (_c *MockTokenStore_LoadTokens_Call) Return(tokenSet ports.TokenSet, err er
 	return _c
 }
 
-func (_c *MockTokenStore_LoadTokens_Call) RunAndReturn(run func(ctx context.Context) (ports.TokenSet, error)) *MockTokenStore_LoadTokens_Call {
+func (_c *MockTokenStore_LoadTokens_Call) RunAndReturn(run func(ctx context.Context, accountID string) (ports.TokenSet, error)) *MockTokenStore_LoadTokens_Call {
 	_c.Call.Return(run)
 	return _c
 }

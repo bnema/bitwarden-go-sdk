@@ -19,4 +19,6 @@ Assume an attacker may read files in the user's home directory.
 
 ## SDK role
 
-The SDK exposes storage boundaries but does not impose an opinionated persistent disk cache in V1. Consumers such as `gtk4ls-bitwarden` own application-specific persistent cache policy unless a future SDK adapter is explicitly designed and threat-modeled.
+The core SDK does not provide disk persistence. It only exposes interfaces; the application provides its own storage policy.
+
+Consumers such as `gtk4ls-bitwarden` own application-specific persistent cache policy unless a future SDK adapter is explicitly designed and threat-modeled.

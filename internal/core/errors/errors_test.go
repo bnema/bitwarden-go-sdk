@@ -71,3 +71,78 @@ func TestErrorUnwrap(t *testing.T) {
 		t.Fatal("Unwrap should return Cause")
 	}
 }
+
+func TestErrorsIsByKindAllKinds(t *testing.T) {
+	kinds := []Kind{
+		KindUnknown,
+		KindUnauthenticated,
+		KindPermissionDenied,
+		KindNotFound,
+		KindConflict,
+		KindValidation,
+		KindRateLimited,
+		KindUnavailable,
+		KindTemporary,
+		KindNetwork,
+		KindTwoFactorRequired,
+		KindCrypto,
+		KindLocked,
+		KindUnsupported,
+	}
+	for _, k := range kinds {
+		err := &Error{Kind: k}
+		if !stderrors.Is(err, &Error{Kind: k}) {
+			t.Errorf("errors.Is should match Kind=%q", k)
+		}
+	}
+}
+
+func TestErrorSafeDetails(t *testing.T) {
+	secret := "DO_NOT_LEAK"
+	err := &Error{
+		Kind:               KindValidation,
+		Op:                 "ValidateItem",
+		Status:             422,
+		Code:               "ERR_VALIDATION",
+		Message:            "invalid field",
+		RetryAfter:         15,
+		TwoFactorProviders: []string{"email", "totp"},
+		Cause:              fmt.Errorf("%s", secret),
+	}
+	msg := err.Error()
+	// Safe fields must appear.
+	if !strings.Contains(msg, "op=ValidateItem") {
+		t.Error("Error() should contain Op")
+	}
+	if !strings.Contains(msg, "code=ERR_VALIDATION") {
+		t.Error("Error() should contain Code")
+	}
+	if !strings.Contains(msg, "message=invalid field") {
+		t.Error("Error() should contain Message")
+	}
+	if !strings.Contains(msg, "status=422") {
+		t.Error("Error() should contain Status")
+	}
+	if !strings.Contains(msg, "retry_after=15") {
+		t.Error("Error() should contain RetryAfter")
+	}
+	if !strings.Contains(msg, "providers=email,totp") {
+		t.Error("Error() should contain TwoFactorProviders")
+	}
+	// Cause text must NOT appear.
+	if strings.Contains(msg, secret) {
+		t.Errorf("Error() must not leak Cause text")
+	}
+}
+
+func TestZeroValueErrorNonEmpty(t *testing.T) {
+	err := &Error{}
+	msg := err.Error()
+	if msg == "" {
+		t.Fatal("zero-value *Error{} should have non-empty Error()")
+	}
+	// Must at least contain the fixed prefix.
+	if !strings.Contains(msg, "bitwarden error") {
+		t.Errorf("Error() should contain 'bitwarden error'; got: %q", msg)
+	}
+}

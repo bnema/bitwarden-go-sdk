@@ -31,3 +31,5 @@ Forbidden data:
 ## Error model
 
 Public errors must support `errors.Is` and `errors.As` for auth, 2FA, locked state, not found, decryption failure, rate limits, and API status details.
+
+The core SDK does not provide disk persistence. It only exposes interfaces; the application provides its own storage policy. TokenStore implementations handle runtime secrets and must not log access or refresh token values.
