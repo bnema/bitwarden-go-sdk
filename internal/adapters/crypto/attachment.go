@@ -9,16 +9,14 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"io"
-	"os"
 
 	"github.com/bnema/bitwarden-go-sdk/internal/core/errors"
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 )
 
 const (
-	attachmentChunkSize       = 32 * 1024
-	attachmentMemorySpoolSize = 1 << 20
-	attachmentHeaderSize      = 1 + aes.BlockSize + macLength
+	attachmentChunkSize  = 32 * 1024
+	attachmentHeaderSize = 1 + aes.BlockSize + macLength
 )
 
 // WrapAttachmentKey encrypts an attachment key (arbitrary bytes) as a type-2 EncString
@@ -296,36 +294,12 @@ func cryptoError(kind errors.Kind, op, code, message string) error {
 
 type attachmentSpool struct {
 	buf      bytes.Buffer
-	file     *os.File
-	path     string
-	size     int64
 	readFrom io.Reader
 }
 
 func newAttachmentSpool() (*attachmentSpool, error) { return &attachmentSpool{}, nil }
 
-func (s *attachmentSpool) Write(p []byte) (int, error) {
-	if s.file == nil && s.size+int64(len(p)) > attachmentMemorySpoolSize {
-		file, err := os.CreateTemp("", "bitwarden-go-sdk-attachment-*")
-		if err != nil {
-			return 0, err
-		}
-		s.file = file
-		s.path = file.Name()
-		if _, err := s.buf.WriteTo(file); err != nil {
-			return 0, err
-		}
-	}
-	var n int
-	var err error
-	if s.file != nil {
-		n, err = s.file.Write(p)
-	} else {
-		n, err = s.buf.Write(p)
-	}
-	s.size += int64(n)
-	return n, err
-}
+func (s *attachmentSpool) Write(p []byte) (int, error) { return s.buf.Write(p) }
 
 func (s *attachmentSpool) Read(p []byte) (int, error) {
 	if s.readFrom == nil {
@@ -335,27 +309,11 @@ func (s *attachmentSpool) Read(p []byte) (int, error) {
 }
 
 func (s *attachmentSpool) Rewind() error {
-	if s.file != nil {
-		if _, err := s.file.Seek(0, io.SeekStart); err != nil {
-			return err
-		}
-		s.readFrom = s.file
-		return nil
-	}
 	s.readFrom = bytes.NewReader(s.buf.Bytes())
 	return nil
 }
 
-func (s *attachmentSpool) Close() error {
-	var err error
-	if s.file != nil {
-		err = s.file.Close()
-		if removeErr := os.Remove(s.path); err == nil && removeErr != nil && !os.IsNotExist(removeErr) {
-			err = removeErr
-		}
-	}
-	return err
-}
+func (s *attachmentSpool) Close() error { return nil }
 
 var _ interface {
 	WrapAttachmentKey(ctx context.Context, key ports.UserKey, attachmentKey ports.AttachmentKey) (string, error)
