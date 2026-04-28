@@ -1,0 +1,9 @@
+package out
+
+import "context"
+
+type TokenStore interface {
+	LoadTokens(ctx context.Context) (TokenSet, error)
+	SaveTokens(ctx context.Context, tokens TokenSet) error
+	ClearTokens(ctx context.Context) error
+}
