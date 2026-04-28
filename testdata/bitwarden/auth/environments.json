@@ -1,0 +1,68 @@
+{
+  "source": {
+    "commit": "91d233be9ba48da556b5b450782be1aa00b1a10e",
+    "files": [
+      "libs/common/src/platform/services/default-environment.service.ts",
+      "libs/common/src/platform/services/default-environment.service.spec.ts"
+    ]
+  },
+  "cloud": {
+    "us": {
+      "webVault": "https://vault.bitwarden.com",
+      "api": "https://api.bitwarden.com",
+      "identity": "https://identity.bitwarden.com",
+      "icons": "https://icons.bitwarden.net",
+      "notifications": "https://notifications.bitwarden.com",
+      "events": "https://events.bitwarden.com",
+      "scim": "https://scim.bitwarden.com/v2",
+      "send": "https://send.bitwarden.com/#"
+    },
+    "eu": {
+      "webVault": "https://vault.bitwarden.eu",
+      "api": "https://api.bitwarden.eu",
+      "identity": "https://identity.bitwarden.eu",
+      "icons": "https://icons.bitwarden.eu",
+      "notifications": "https://notifications.bitwarden.eu",
+      "events": "https://events.bitwarden.eu",
+      "scim": "https://vault.bitwarden.eu/scim/v2",
+      "send": "https://vault.bitwarden.eu/#/send/"
+    }
+  },
+  "selfHosted": [
+    {
+      "name": "root-base",
+      "input": "https://bitwarden.example.com/",
+      "derived": {
+        "webVault": "https://bitwarden.example.com",
+        "api": "https://bitwarden.example.com/api",
+        "identity": "https://bitwarden.example.com/identity",
+        "icons": "https://bitwarden.example.com/icons",
+        "notifications": "https://bitwarden.example.com/notifications",
+        "events": "https://bitwarden.example.com/events",
+        "scim": "https://bitwarden.example.com/scim/v2",
+        "send": "https://bitwarden.example.com/#/send/"
+      }
+    },
+    {
+      "name": "subpath-base",
+      "input": "https://example.com/bitwarden/",
+      "derived": {
+        "webVault": "https://example.com/bitwarden",
+        "api": "https://example.com/bitwarden/api",
+        "identity": "https://example.com/bitwarden/identity",
+        "icons": "https://example.com/bitwarden/icons",
+        "notifications": "https://example.com/bitwarden/notifications",
+        "events": "https://example.com/bitwarden/events",
+        "scim": "https://example.com/bitwarden/scim/v2",
+        "send": "https://example.com/bitwarden/#/send/"
+      }
+    }
+  ],
+  "sdkValidationRejects": [
+    { "name": "http-scheme", "input": "http://bitwarden.example.com" },
+    { "name": "userinfo", "input": "https://user@example.com" },
+    { "name": "query", "input": "https://bitwarden.example.com?region=us" },
+    { "name": "fragment", "input": "https://bitwarden.example.com/#/vault" },
+    { "name": "relative", "input": "bitwarden.example.com" }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "source": "sdk-internal/crates/bitwarden-crypto/src/keys/master_key.rs:test_password_hash_pbkdf2,test_password_hash_argon2id",
+  "commit": "3aa1201692e5d56efa763c7dec1161254d4c9e4b",
+  "vectors": [
+    {
+      "name": "official-sdk-pbkdf2-auth-hash-normalized-email",
+      "password": "asdfasdf",
+      "emails": ["test@bitwarden.com", "TEST@bitwarden.com", " test@bitwarden.com"],
+      "kdf": { "type": "PBKDF2", "iterations": 100000 },
+      "serverAuthHashBase64": "wmyadRMyBZOH7P/a/ucTCbSghKgdzDpPqUnu/DAVtSw="
+    },
+    {
+      "name": "official-sdk-argon2id-auth-hash",
+      "password": "asdfasdf",
+      "email": "test_salt",
+      "kdf": { "type": "Argon2id", "iterations": 4, "memoryMiB": 32, "parallelism": 2 },
+      "serverAuthHashBase64": "PR6UjYmjmppTYcdyTiNbAhPJuQQOmynKbdEl1oyi/iQ="
+    }
+  ]
+}

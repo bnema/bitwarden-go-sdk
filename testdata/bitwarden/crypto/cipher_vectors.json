@@ -1,0 +1,10 @@
+{
+  "source": "clients cipher.ts and cipher.service.ts source mapping",
+  "commit": "91d233be9ba48da556b5b450782be1aa00b1a10e",
+  "fieldMapping": {
+    "topLevelEncryptedFields": ["name", "notes"],
+    "loginEncryptedFields": ["username", "password", "totp", "uris[].uri", "uris[].uriChecksum"],
+    "customFieldEncryptedFields": ["name", "value"],
+    "supportedCipherTypes": ["login", "secureNote", "card", "identity"]
+  }
+}

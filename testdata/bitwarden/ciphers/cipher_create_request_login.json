@@ -1,0 +1,20 @@
+{
+  "type": 1,
+  "folderId": "folder-id-1",
+  "organizationId": null,
+  "name": "2.sanitized-iv|sanitized-name|sanitized-mac",
+  "notes": "2.sanitized-iv|sanitized-notes|sanitized-mac",
+  "favorite": false,
+  "login": {
+    "username": "2.sanitized-iv|sanitized-username|sanitized-mac",
+    "password": "2.sanitized-iv|sanitized-password|sanitized-mac",
+    "totp": "2.sanitized-iv|sanitized-totp|sanitized-mac",
+    "uris": [
+      { "uri": "2.sanitized-iv|sanitized-uri|sanitized-mac", "match": null, "uriChecksum": "2.sanitized-iv|sanitized-checksum|sanitized-mac" }
+    ]
+  },
+  "fields": [],
+  "passwordHistory": [],
+  "reprompt": 0,
+  "key": null
+}

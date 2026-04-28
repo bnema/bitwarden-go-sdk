@@ -1,0 +1,9 @@
+{
+  "source": "clients attachment.ts, cipher.service.ts, default-cipher-encryption.service.ts source mapping",
+  "commit": "91d233be9ba48da556b5b450782be1aa00b1a10e",
+  "fieldMapping": {
+    "encryptedMetadataFields": ["fileName"],
+    "wrappedFields": ["key"],
+    "contentFormat": "EncString buffer format from bitwarden-crypto symmetric EncString"
+  }
+}

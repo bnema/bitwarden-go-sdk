@@ -1,0 +1,7 @@
+{
+  "AttachmentId": "attachment-id-1",
+  "FileUploadType": 1,
+  "CipherResponse": { "Id": "cipher-id-1", "RevisionDate": "2026-01-02T00:00:00Z" },
+  "CipherMiniResponse": null,
+  "Url": "https://storage.example.invalid/sanitized-sas-url"
+}

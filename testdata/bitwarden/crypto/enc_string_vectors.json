@@ -1,0 +1,34 @@
+{
+  "source": "sdk-internal/crates/bitwarden-crypto/src/enc_string/symmetric.rs",
+  "commit": "3aa1201692e5d56efa763c7dec1161254d4c9e4b",
+  "parseVectors": [
+    {
+      "name": "type-2-text-format",
+      "serialized": "2.AAAAAAAAAAAAAAAAAAAAAA==|AQIDBA==|AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "type": 2,
+      "ivLength": 16,
+      "dataLength": 4,
+      "macLength": 32
+    },
+    {
+      "name": "type-0-legacy-text-format",
+      "serialized": "0.AAAAAAAAAAAAAAAAAAAAAA==|AQIDBA==",
+      "type": 0,
+      "ivLength": 16,
+      "dataLength": 4
+    },
+    {
+      "name": "type-7-cose-text-format",
+      "serialized": "7.AQIDBA==",
+      "type": 7,
+      "dataLength": 4
+    }
+  ],
+  "bufferVectors": [
+    {
+      "name": "type-2-buffer-layout",
+      "type": 2,
+      "layout": "type byte, iv 16 bytes, mac 32 bytes, data remaining"
+    }
+  ]
+}

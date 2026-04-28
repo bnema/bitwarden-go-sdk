@@ -1,0 +1,22 @@
+{
+  "Id": "user-id-1",
+  "Name": "Sanitized User",
+  "Email": "user@example.com",
+  "EmailVerified": true,
+  "Premium": true,
+  "PremiumFromOrganization": false,
+  "Culture": "en-US",
+  "TwoFactorEnabled": true,
+  "Key": "2.sanitized-iv|sanitized-user-key|sanitized-mac",
+  "AvatarColor": "#3366cc",
+  "CreationDate": "2026-01-01T00:00:00Z",
+  "PrivateKey": null,
+  "AccountKeys": null,
+  "SecurityStamp": "sanitized-security-stamp",
+  "ForcePasswordReset": false,
+  "UsesKeyConnector": false,
+  "VerifyDevices": true,
+  "Organizations": [],
+  "Providers": [],
+  "ProviderOrganizations": []
+}

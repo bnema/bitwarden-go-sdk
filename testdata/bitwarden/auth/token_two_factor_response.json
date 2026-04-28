@@ -1,0 +1,17 @@
+{
+  "TwoFactorProviders": {
+    "0": null,
+    "1": { "Email": "u***@example.com" },
+    "2": { "Host": "api-abcdef.duosecurity.com" },
+    "3": null
+  },
+  "TwoFactorProviders2": {
+    "0": {},
+    "1": { "Email": "u***@example.com" },
+    "2": { "Host": "api-abcdef.duosecurity.com" },
+    "3": {}
+  },
+  "MasterPasswordPolicy": null,
+  "SsoEmail2faSessionToken": null,
+  "Email": "user@example.com"
+}

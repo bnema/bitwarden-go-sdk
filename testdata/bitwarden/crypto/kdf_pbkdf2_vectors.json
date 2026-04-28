@@ -1,0 +1,13 @@
+{
+  "source": "sdk-internal/crates/bitwarden-crypto/src/keys/kdf.rs:test_master_key_derive_pbkdf2",
+  "commit": "3aa1201692e5d56efa763c7dec1161254d4c9e4b",
+  "vectors": [
+    {
+      "name": "official-sdk-pbkdf2-master-key",
+      "password": "67t9b5g67$%Dh89n",
+      "email": "test_key",
+      "kdf": { "type": "PBKDF2", "iterations": 10000 },
+      "derivedKeyBytes": [31,79,104,226,150,71,177,90,194,80,172,209,17,129,132,81,138,167,69,167,254,149,2,27,39,197,64,42,22,195,86,75]
+    }
+  ]
+}

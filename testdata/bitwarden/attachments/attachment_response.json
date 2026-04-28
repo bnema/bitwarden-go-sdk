@@ -1,0 +1,8 @@
+{
+  "Id": "attachment-id-1",
+  "Url": "https://download.example.invalid/sanitized-attachment",
+  "FileName": "2.sanitized-iv|sanitized-file-name|sanitized-mac",
+  "Key": "2.sanitized-iv|sanitized-attachment-key|sanitized-mac",
+  "Size": 128,
+  "SizeName": "128 B"
+}
