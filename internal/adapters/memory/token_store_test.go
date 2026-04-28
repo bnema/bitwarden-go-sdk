@@ -2,6 +2,8 @@ package memory_test
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -11,11 +13,127 @@ import (
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 )
 
+// --- SecretBytes tests ---
+
+func TestSecretBytesStringRedacts(t *testing.T) {
+	sb := ports.NewSecretBytes([]byte("secret-token-value"))
+	out := sb.String()
+	if out == "secret-token-value" {
+		t.Fatalf("SecretBytes.String() must not expose plaintext; got: %q", out)
+	}
+	if strings.Contains(out, "secret-token-value") {
+		t.Fatalf("SecretBytes.String() must not include plaintext; got: %q", out)
+	}
+}
+
+func TestSecretBytesGoStringRedacts(t *testing.T) {
+	sb := ports.NewSecretBytes([]byte("secret-token-value"))
+	out := fmt.Sprintf("%#v", sb)
+	if out == "secret-token-value" {
+		t.Fatalf("SecretBytes.GoString() must not expose plaintext; got: %q", out)
+	}
+	if strings.Contains(out, "secret-token-value") {
+		t.Fatalf("SecretBytes.GoString() must not include plaintext; got: %q", out)
+	}
+}
+
+func TestSecretBytesFormatRedacts(t *testing.T) {
+	sb := ports.NewSecretBytes([]byte("secret-token-value"))
+	out := fmt.Sprintf("%s", sb)
+	if strings.Contains(out, "secret-token-value") {
+		t.Fatalf("SecretBytes %%s format must not expose plaintext; got: %q", out)
+	}
+	outv := fmt.Sprintf("%v", sb)
+	if strings.Contains(outv, "secret-token-value") {
+		t.Fatalf("SecretBytes %%v format must not expose plaintext; got: %q", outv)
+	}
+}
+
+func TestSecretBytesBytesReturnsCopy(t *testing.T) {
+	sb := ports.NewSecretBytes([]byte("secret-token-value"))
+	b := sb.Bytes()
+	if string(b) != "secret-token-value" {
+		t.Fatalf("Bytes() returned wrong value: %q", string(b))
+	}
+	// Mutating the returned copy must not affect the SecretBytes.
+	b[0] = 'X'
+	b2 := sb.Bytes()
+	if string(b2) != "secret-token-value" {
+		t.Fatalf("Mutation of Bytes() copy leaked into SecretBytes: got %q", string(b2))
+	}
+}
+
+func TestSecretBytesNewCopiesInput(t *testing.T) {
+	original := []byte("original-token")
+	sb := ports.NewSecretBytes(original)
+	// Mutate the original slice.
+	original[0] = 'X'
+	b := sb.Bytes()
+	if string(b) != "original-token" {
+		t.Fatalf("NewSecretBytes must copy input; got %q, want %q", string(b), "original-token")
+	}
+}
+
+func TestSecretBytesCloneIsDeep(t *testing.T) {
+	sb := ports.NewSecretBytes([]byte("clone-me"))
+	cloned := sb.Clone()
+	b := cloned.Bytes()
+	if string(b) != "clone-me" {
+		t.Fatalf("Clone mismatch: got %q, want %q", string(b), "clone-me")
+	}
+	// Mutating the clone's copy must not affect the original.
+	b[0] = 'X'
+	b2 := sb.Bytes()
+	if string(b2) == "Xlone-me" {
+		t.Fatal("Clone Bytes() mutation leaked into original")
+	}
+	// Mutating clone internals: since Bytes() returns copy, we trust Clone is deep.
+}
+
+func TestSecretBytesCloseZeroesBytes(t *testing.T) {
+	sb := ports.NewSecretBytes([]byte("close-me-token"))
+	// Snapshot a Bytes() copy before Close (since Close zeroes internal bytes).
+	beforeClose := sb.Bytes()
+	if string(beforeClose) != "close-me-token" {
+		t.Fatalf("Bytes() before Close: got %q", string(beforeClose))
+	}
+
+	sb.Close()
+
+	// After Close, Bytes() returns nil.
+	afterClose := sb.Bytes()
+	if afterClose != nil {
+		t.Fatalf("Bytes() after Close should return nil; got: %q", string(afterClose))
+	}
+
+	// String after Close still redacted.
+	if s := sb.String(); s == "close-me-token" {
+		t.Fatal("String() after Close must not expose plaintext")
+	}
+}
+
+func TestSecretBytesCloseIsIdempotent(t *testing.T) {
+	sb := ports.NewSecretBytes([]byte("idempotent-token"))
+	sb.Close()
+	sb.Close() // must not panic
+	if b := sb.Bytes(); b != nil {
+		t.Fatalf("Bytes() after two Closes should return nil; got: %q", string(b))
+	}
+}
+
+func TestSecretBytesNilBytesReturnsNil(t *testing.T) {
+	var sb ports.SecretBytes
+	b := sb.Bytes()
+	if b != nil {
+		t.Fatalf("Bytes() on zero-value SecretBytes should return nil; got: %q", string(b))
+	}
+}
+
 func mustTokenSet(accountID string) ports.TokenSet {
 	return ports.TokenSet{
 		AccountID:    accountID,
-		AccessToken:  []byte("access-token-data"),
-		RefreshToken: []byte("refresh-token-data"),
+		AccessToken:  ports.NewSecretBytes([]byte("access-token-data")),
+		RefreshToken: ports.NewSecretBytes([]byte("refresh-token-data")),
 		TokenType:    "Bearer",
 		ExpiresAt:    time.Now().Add(time.Hour),
 	}
@@ -39,6 +157,8 @@ func TestTokenStore_SaveThenLoadReturnsCopy(t *testing.T) {
 	ctx := context.Background()
 
 	orig := mustTokenSet("acct-1")
+	origAccessCopy := orig.AccessToken.Bytes()
+	origRefreshCopy := orig.RefreshToken.Bytes()
 
 	err := store.SaveTokens(ctx, orig)
 	if err != nil {
@@ -54,10 +174,12 @@ func TestTokenStore_SaveThenLoadReturnsCopy(t *testing.T) {
 	if loaded.AccountID != orig.AccountID {
 		t.Errorf("AccountID mismatch: %q vs %q", loaded.AccountID, orig.AccountID)
 	}
-	if string(loaded.AccessToken) != string(orig.AccessToken) {
+	loadedAccess := loaded.AccessToken.Bytes()
+	loadedRefresh := loaded.RefreshToken.Bytes()
+	if string(loadedAccess) != string(origAccessCopy) {
 		t.Error("AccessToken mismatch")
 	}
-	if string(loaded.RefreshToken) != string(orig.RefreshToken) {
+	if string(loadedRefresh) != string(origRefreshCopy) {
 		t.Error("RefreshToken mismatch")
 	}
 	if loaded.TokenType != orig.TokenType {
@@ -67,30 +189,39 @@ func TestTokenStore_SaveThenLoadReturnsCopy(t *testing.T) {
 		t.Errorf("ExpiresAt mismatch: %v vs %v", loaded.ExpiresAt, orig.ExpiresAt)
 	}
 
-	// Mutating the original must not affect the stored value.
-	orig.AccessToken[0] = 'X'
-	orig.RefreshToken[0] = 'Y'
+	// Mutating a Bytes() copy from the original SecretBytes must not affect the stored value.
+	// Bytes() returns a copy, so mutation can't leak — but verify anyway.
+	mutatedAccess := orig.AccessToken.Bytes()
+	mutatedAccess[0] = 'X'
+	mutatedRefresh := orig.RefreshToken.Bytes()
+	mutatedRefresh[0] = 'Y'
 
 	reloaded, err := store.LoadTokens(ctx, "acct-1")
 	if err != nil {
 		t.Fatalf("unexpected reload error: %v", err)
 	}
-	if string(reloaded.AccessToken) == string(orig.AccessToken) {
-		t.Error("mutation of original AccessToken leaked into stored value")
+	reloadedAccess := reloaded.AccessToken.Bytes()
+	if string(reloadedAccess) == string(mutatedAccess) {
+		t.Error("mutation of Bytes() copy from original AccessToken leaked into stored value")
 	}
-	if string(reloaded.RefreshToken) == string(orig.RefreshToken) {
-		t.Error("mutation of original RefreshToken leaked into stored value")
+	reloadedRefresh := reloaded.RefreshToken.Bytes()
+	if string(reloadedRefresh) == string(mutatedRefresh) {
+		t.Error("mutation of Bytes() copy from original RefreshToken leaked into stored value")
+	}
+	if string(reloadedAccess) != string(origAccessCopy) {
+		t.Error("stored AccessToken should equal original")
 	}
 
-	// Mutating the loaded tokens must not affect the stored value.
-	loaded.AccessToken[0] = 'Z'
+	// Mutating the loaded Bytes() copy must not affect the stored value.
+	loadedAccess[0] = 'Z'
 
 	reloaded2, err := store.LoadTokens(ctx, "acct-1")
 	if err != nil {
 		t.Fatalf("unexpected reload2 error: %v", err)
 	}
-	if string(reloaded2.AccessToken) == string(loaded.AccessToken) {
-		t.Error("mutation of loaded AccessToken leaked into stored value")
+	reloaded2Access := reloaded2.AccessToken.Bytes()
+	if string(reloaded2Access) == string(loadedAccess) {
+		t.Error("mutation of loaded Bytes() copy AccessToken leaked into stored value")
 	}
 }
 

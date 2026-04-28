@@ -54,6 +54,9 @@ func (s *Secret) Reveal() (*RevealedSecret, error) {
 
 // Close clears the owned byte buffer. It is idempotent.
 func (s *Secret) Close() error {
+	for i := range s.buf {
+		s.buf[i] = 0
+	}
 	s.buf = nil
 	return nil
 }
@@ -77,6 +80,9 @@ func (r *RevealedSecret) String() string {
 
 // Close clears the revealed copy. It is idempotent.
 func (r *RevealedSecret) Close() error {
+	for i := range r.buf {
+		r.buf[i] = 0
+	}
 	r.buf = nil
 	return nil
 }

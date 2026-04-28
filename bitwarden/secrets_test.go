@@ -118,6 +118,25 @@ func TestRevealedSecretCloseClearsCopy(t *testing.T) {
 	}
 }
 
+func TestRevealedSecretCloseZeroesUnderlyingBytes(t *testing.T) {
+	secret := NewSecretString("revealed-data-that-must-be-zeroed")
+	revealed, err := secret.Reveal()
+	if err != nil {
+		t.Fatalf("Reveal() returned error: %v", err)
+	}
+	// Keep an alias to the underlying buffer before Close.
+	aliased := revealed.buf
+	if err := revealed.Close(); err != nil {
+		t.Fatalf("Close() returned error: %v", err)
+	}
+	// The underlying bytes must all be zero before the slice is released.
+	for i, b := range aliased {
+		if b != 0 {
+			t.Fatalf("underlying RevealedSecret buffer at index %d not zeroed; got %d (0x%02x)", i, b, b)
+		}
+	}
+}
+
 func TestRevealedSecretCloseIsIdempotent(t *testing.T) {
 	secret := NewSecretString("idempotent-close")
 	revealed, err := secret.Reveal()
@@ -142,6 +161,21 @@ func TestSecretCloseClearsOwnedBuffer(t *testing.T) {
 	// In-package access: inspect the unexported buffer.
 	if secret.buf != nil {
 		t.Fatalf("Secret.buf after Close should be nil; got: %q", string(secret.buf))
+	}
+}
+
+func TestSecretCloseZeroesUnderlyingBytes(t *testing.T) {
+	secret := NewSecretString("sensitive-data-that-must-be-zeroed")
+	// Keep an alias to the underlying buffer before Close.
+	aliased := secret.buf
+	if err := secret.Close(); err != nil {
+		t.Fatalf("Close() returned error: %v", err)
+	}
+	// The underlying bytes must all be zero before the slice is released.
+	for i, b := range aliased {
+		if b != 0 {
+			t.Fatalf("underlying Secret buffer at index %d not zeroed; got %d (0x%02x)", i, b, b)
+		}
 	}
 }
 

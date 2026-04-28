@@ -48,10 +48,41 @@ func TestUnsupportedMethodsReturnSentinel(t *testing.T) {
 	client, err := NewClient()
 	require.NoError(t, err)
 
-	require.ErrorIs(t, client.Login(context.Background(), LoginOptions{}), ErrUnsupported)
-	require.ErrorIs(t, client.Sync(context.Background()), ErrUnsupported)
+	// Login
+	err = client.Login(context.Background(), LoginOptions{})
+	require.ErrorIs(t, err, ErrUnsupported)
+	verifyUnsupportedError(t, err, "Client.Login")
+
+	// Sync
+	err = client.Sync(context.Background())
+	require.ErrorIs(t, err, ErrUnsupported)
+	verifyUnsupportedError(t, err, "Client.Sync")
+
+	// Vault.Search
 	_, err = client.Vault().Search(context.Background(), "github")
 	require.ErrorIs(t, err, ErrUnsupported)
+	verifyUnsupportedError(t, err, "Vault.Search")
+
+	// Vault.Get
+	_, err = client.Vault().Get(context.Background(), "item-1")
+	require.ErrorIs(t, err, ErrUnsupported)
+	verifyUnsupportedError(t, err, "Vault.Get")
+
+	// Vault.Password
+	_, err = client.Vault().Password(context.Background(), "item-1")
+	require.ErrorIs(t, err, ErrUnsupported)
+	verifyUnsupportedError(t, err, "Vault.Password")
+}
+
+// verifyUnsupportedError asserts the error satisfies errors.As(*Error) and
+// exposes ErrorKindUnsupported with the expected Op field.
+func verifyUnsupportedError(t *testing.T, err error, expectedOp string) {
+	t.Helper()
+	var pubErr *Error
+	require.ErrorAs(t, err, &pubErr, "errors.As should succeed for %s", expectedOp)
+	require.Equal(t, ErrorKindUnsupported, pubErr.Kind, "Kind should be ErrorKindUnsupported for %s", expectedOp)
+	require.Equal(t, expectedOp, pubErr.Op, "Op should be %q", expectedOp)
+	require.NotEmpty(t, pubErr.Message, "Message should not be empty for %s", expectedOp)
 }
 
 func TestNewClient_WithRegionEU_ReturnsEUServerURLs(t *testing.T) {

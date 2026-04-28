@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 
 	"github.com/bnema/bitwarden-go-sdk/internal/adapters/config"
+	coreerrors "github.com/bnema/bitwarden-go-sdk/internal/core/errors"
 )
 
 // Client is the public Bitwarden SDK facade.
@@ -76,13 +77,21 @@ func NewClient(options ...Option) (*Client, error) {
 func (c *Client) Login(ctx context.Context, options LoginOptions) error {
 	_ = ctx
 	_ = options
-	return ErrUnsupported
+	return mapCoreError(&coreerrors.Error{
+		Kind:    coreerrors.KindUnsupported,
+		Op:      "Client.Login",
+		Message: "login not yet implemented",
+	})
 }
 
 // Sync refreshes local vault state when real behavior is implemented.
 func (c *Client) Sync(ctx context.Context) error {
 	_ = ctx
-	return ErrUnsupported
+	return mapCoreError(&coreerrors.Error{
+		Kind:    coreerrors.KindUnsupported,
+		Op:      "Client.Sync",
+		Message: "sync not yet implemented",
+	})
 }
 
 // Vault returns the vault facade for item operations.
@@ -115,19 +124,31 @@ type Vault struct {
 func (v *Vault) Search(ctx context.Context, query string) ([]Item, error) {
 	_ = ctx
 	_ = query
-	return nil, ErrUnsupported
+	return nil, mapCoreError(&coreerrors.Error{
+		Kind:    coreerrors.KindUnsupported,
+		Op:      "Vault.Search",
+		Message: "search not yet implemented",
+	})
 }
 
 // Get returns a vault item when real behavior is implemented.
 func (v *Vault) Get(ctx context.Context, id ItemID) (Item, error) {
 	_ = ctx
 	_ = id
-	return Item{}, ErrUnsupported
+	return Item{}, mapCoreError(&coreerrors.Error{
+		Kind:    coreerrors.KindUnsupported,
+		Op:      "Vault.Get",
+		Message: "get not yet implemented",
+	})
 }
 
 // Password returns an item's password when real behavior is implemented.
 func (v *Vault) Password(ctx context.Context, id ItemID) (string, error) {
 	_ = ctx
 	_ = id
-	return "", ErrUnsupported
+	return "", mapCoreError(&coreerrors.Error{
+		Kind:    coreerrors.KindUnsupported,
+		Op:      "Vault.Password",
+		Message: "password not yet implemented",
+	})
 }
