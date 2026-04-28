@@ -6,6 +6,7 @@ package mocks
 
 import (
 	"context"
+	"io"
 
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 	mock "github.com/stretchr/testify/mock"
@@ -290,6 +291,78 @@ func (_c *MockAPIClient_CreateFolder_Call) RunAndReturn(run func(ctx context.Con
 	return _c
 }
 
+// DeleteAttachment provides a mock function for the type MockAPIClient
+func (_mock *MockAPIClient) DeleteAttachment(ctx context.Context, cipherID string, attachmentID string) (ports.EncryptedCipher, error) {
+	ret := _mock.Called(ctx, cipherID, attachmentID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteAttachment")
+	}
+
+	var r0 ports.EncryptedCipher
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (ports.EncryptedCipher, error)); ok {
+		return returnFunc(ctx, cipherID, attachmentID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) ports.EncryptedCipher); ok {
+		r0 = returnFunc(ctx, cipherID, attachmentID)
+	} else {
+		r0 = ret.Get(0).(ports.EncryptedCipher)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, cipherID, attachmentID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAPIClient_DeleteAttachment_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteAttachment'
+type MockAPIClient_DeleteAttachment_Call struct {
+	*mock.Call
+}
+
+// DeleteAttachment is a helper method to define mock.On call
+//   - ctx context.Context
+//   - cipherID string
+//   - attachmentID string
+func (_e *MockAPIClient_Expecter) DeleteAttachment(ctx interface{}, cipherID interface{}, attachmentID interface{}) *MockAPIClient_DeleteAttachment_Call {
+	return &MockAPIClient_DeleteAttachment_Call{Call: _e.mock.On("DeleteAttachment", ctx, cipherID, attachmentID)}
+}
+
+func (_c *MockAPIClient_DeleteAttachment_Call) Run(run func(ctx context.Context, cipherID string, attachmentID string)) *MockAPIClient_DeleteAttachment_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAPIClient_DeleteAttachment_Call) Return(encryptedCipher ports.EncryptedCipher, err error) *MockAPIClient_DeleteAttachment_Call {
+	_c.Call.Return(encryptedCipher, err)
+	return _c
+}
+
+func (_c *MockAPIClient_DeleteAttachment_Call) RunAndReturn(run func(ctx context.Context, cipherID string, attachmentID string) (ports.EncryptedCipher, error)) *MockAPIClient_DeleteAttachment_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteCipher provides a mock function for the type MockAPIClient
 func (_mock *MockAPIClient) DeleteCipher(ctx context.Context, id string) error {
 	ret := _mock.Called(ctx, id)
@@ -404,6 +477,212 @@ func (_c *MockAPIClient_DeleteFolder_Call) RunAndReturn(run func(ctx context.Con
 	return _c
 }
 
+// DownloadAttachment provides a mock function for the type MockAPIClient
+func (_mock *MockAPIClient) DownloadAttachment(ctx context.Context, url string) (io.ReadCloser, error) {
+	ret := _mock.Called(ctx, url)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DownloadAttachment")
+	}
+
+	var r0 io.ReadCloser
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (io.ReadCloser, error)); ok {
+		return returnFunc(ctx, url)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) io.ReadCloser); ok {
+		r0 = returnFunc(ctx, url)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(io.ReadCloser)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, url)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAPIClient_DownloadAttachment_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DownloadAttachment'
+type MockAPIClient_DownloadAttachment_Call struct {
+	*mock.Call
+}
+
+// DownloadAttachment is a helper method to define mock.On call
+//   - ctx context.Context
+//   - url string
+func (_e *MockAPIClient_Expecter) DownloadAttachment(ctx interface{}, url interface{}) *MockAPIClient_DownloadAttachment_Call {
+	return &MockAPIClient_DownloadAttachment_Call{Call: _e.mock.On("DownloadAttachment", ctx, url)}
+}
+
+func (_c *MockAPIClient_DownloadAttachment_Call) Run(run func(ctx context.Context, url string)) *MockAPIClient_DownloadAttachment_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAPIClient_DownloadAttachment_Call) Return(readCloser io.ReadCloser, err error) *MockAPIClient_DownloadAttachment_Call {
+	_c.Call.Return(readCloser, err)
+	return _c
+}
+
+func (_c *MockAPIClient_DownloadAttachment_Call) RunAndReturn(run func(ctx context.Context, url string) (io.ReadCloser, error)) *MockAPIClient_DownloadAttachment_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetAttachment provides a mock function for the type MockAPIClient
+func (_mock *MockAPIClient) GetAttachment(ctx context.Context, cipherID string, attachmentID string) (ports.EncryptedAttachmentMetadata, error) {
+	ret := _mock.Called(ctx, cipherID, attachmentID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAttachment")
+	}
+
+	var r0 ports.EncryptedAttachmentMetadata
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (ports.EncryptedAttachmentMetadata, error)); ok {
+		return returnFunc(ctx, cipherID, attachmentID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) ports.EncryptedAttachmentMetadata); ok {
+		r0 = returnFunc(ctx, cipherID, attachmentID)
+	} else {
+		r0 = ret.Get(0).(ports.EncryptedAttachmentMetadata)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, cipherID, attachmentID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAPIClient_GetAttachment_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAttachment'
+type MockAPIClient_GetAttachment_Call struct {
+	*mock.Call
+}
+
+// GetAttachment is a helper method to define mock.On call
+//   - ctx context.Context
+//   - cipherID string
+//   - attachmentID string
+func (_e *MockAPIClient_Expecter) GetAttachment(ctx interface{}, cipherID interface{}, attachmentID interface{}) *MockAPIClient_GetAttachment_Call {
+	return &MockAPIClient_GetAttachment_Call{Call: _e.mock.On("GetAttachment", ctx, cipherID, attachmentID)}
+}
+
+func (_c *MockAPIClient_GetAttachment_Call) Run(run func(ctx context.Context, cipherID string, attachmentID string)) *MockAPIClient_GetAttachment_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAPIClient_GetAttachment_Call) Return(encryptedAttachmentMetadata ports.EncryptedAttachmentMetadata, err error) *MockAPIClient_GetAttachment_Call {
+	_c.Call.Return(encryptedAttachmentMetadata, err)
+	return _c
+}
+
+func (_c *MockAPIClient_GetAttachment_Call) RunAndReturn(run func(ctx context.Context, cipherID string, attachmentID string) (ports.EncryptedAttachmentMetadata, error)) *MockAPIClient_GetAttachment_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// InitAttachmentUpload provides a mock function for the type MockAPIClient
+func (_mock *MockAPIClient) InitAttachmentUpload(ctx context.Context, req ports.AttachmentUploadRequest) (ports.AttachmentUploadResponse, error) {
+	ret := _mock.Called(ctx, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for InitAttachmentUpload")
+	}
+
+	var r0 ports.AttachmentUploadResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.AttachmentUploadRequest) (ports.AttachmentUploadResponse, error)); ok {
+		return returnFunc(ctx, req)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.AttachmentUploadRequest) ports.AttachmentUploadResponse); ok {
+		r0 = returnFunc(ctx, req)
+	} else {
+		r0 = ret.Get(0).(ports.AttachmentUploadResponse)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.AttachmentUploadRequest) error); ok {
+		r1 = returnFunc(ctx, req)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAPIClient_InitAttachmentUpload_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'InitAttachmentUpload'
+type MockAPIClient_InitAttachmentUpload_Call struct {
+	*mock.Call
+}
+
+// InitAttachmentUpload is a helper method to define mock.On call
+//   - ctx context.Context
+//   - req ports.AttachmentUploadRequest
+func (_e *MockAPIClient_Expecter) InitAttachmentUpload(ctx interface{}, req interface{}) *MockAPIClient_InitAttachmentUpload_Call {
+	return &MockAPIClient_InitAttachmentUpload_Call{Call: _e.mock.On("InitAttachmentUpload", ctx, req)}
+}
+
+func (_c *MockAPIClient_InitAttachmentUpload_Call) Run(run func(ctx context.Context, req ports.AttachmentUploadRequest)) *MockAPIClient_InitAttachmentUpload_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 ports.AttachmentUploadRequest
+		if args[1] != nil {
+			arg1 = args[1].(ports.AttachmentUploadRequest)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAPIClient_InitAttachmentUpload_Call) Return(attachmentUploadResponse ports.AttachmentUploadResponse, err error) *MockAPIClient_InitAttachmentUpload_Call {
+	_c.Call.Return(attachmentUploadResponse, err)
+	return _c
+}
+
+func (_c *MockAPIClient_InitAttachmentUpload_Call) RunAndReturn(run func(ctx context.Context, req ports.AttachmentUploadRequest) (ports.AttachmentUploadResponse, error)) *MockAPIClient_InitAttachmentUpload_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListFolders provides a mock function for the type MockAPIClient
 func (_mock *MockAPIClient) ListFolders(ctx context.Context) ([]ports.EncryptedFolder, error) {
 	ret := _mock.Called(ctx)
@@ -462,6 +741,78 @@ func (_c *MockAPIClient_ListFolders_Call) Return(encryptedFolders []ports.Encryp
 }
 
 func (_c *MockAPIClient_ListFolders_Call) RunAndReturn(run func(ctx context.Context) ([]ports.EncryptedFolder, error)) *MockAPIClient_ListFolders_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RenewAttachmentUploadURL provides a mock function for the type MockAPIClient
+func (_mock *MockAPIClient) RenewAttachmentUploadURL(ctx context.Context, cipherID string, attachmentID string) (ports.AttachmentUploadResponse, error) {
+	ret := _mock.Called(ctx, cipherID, attachmentID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RenewAttachmentUploadURL")
+	}
+
+	var r0 ports.AttachmentUploadResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (ports.AttachmentUploadResponse, error)); ok {
+		return returnFunc(ctx, cipherID, attachmentID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) ports.AttachmentUploadResponse); ok {
+		r0 = returnFunc(ctx, cipherID, attachmentID)
+	} else {
+		r0 = ret.Get(0).(ports.AttachmentUploadResponse)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, cipherID, attachmentID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAPIClient_RenewAttachmentUploadURL_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RenewAttachmentUploadURL'
+type MockAPIClient_RenewAttachmentUploadURL_Call struct {
+	*mock.Call
+}
+
+// RenewAttachmentUploadURL is a helper method to define mock.On call
+//   - ctx context.Context
+//   - cipherID string
+//   - attachmentID string
+func (_e *MockAPIClient_Expecter) RenewAttachmentUploadURL(ctx interface{}, cipherID interface{}, attachmentID interface{}) *MockAPIClient_RenewAttachmentUploadURL_Call {
+	return &MockAPIClient_RenewAttachmentUploadURL_Call{Call: _e.mock.On("RenewAttachmentUploadURL", ctx, cipherID, attachmentID)}
+}
+
+func (_c *MockAPIClient_RenewAttachmentUploadURL_Call) Run(run func(ctx context.Context, cipherID string, attachmentID string)) *MockAPIClient_RenewAttachmentUploadURL_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAPIClient_RenewAttachmentUploadURL_Call) Return(attachmentUploadResponse ports.AttachmentUploadResponse, err error) *MockAPIClient_RenewAttachmentUploadURL_Call {
+	_c.Call.Return(attachmentUploadResponse, err)
+	return _c
+}
+
+func (_c *MockAPIClient_RenewAttachmentUploadURL_Call) RunAndReturn(run func(ctx context.Context, cipherID string, attachmentID string) (ports.AttachmentUploadResponse, error)) *MockAPIClient_RenewAttachmentUploadURL_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -855,6 +1206,138 @@ func (_c *MockAPIClient_UpdateFolder_Call) Return(encryptedFolder ports.Encrypte
 }
 
 func (_c *MockAPIClient_UpdateFolder_Call) RunAndReturn(run func(ctx context.Context, id string, folder ports.EncryptedFolder) (ports.EncryptedFolder, error)) *MockAPIClient_UpdateFolder_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UploadAttachmentDirect provides a mock function for the type MockAPIClient
+func (_mock *MockAPIClient) UploadAttachmentDirect(ctx context.Context, cipherID string, attachmentID string, content io.Reader) error {
+	ret := _mock.Called(ctx, cipherID, attachmentID, content)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UploadAttachmentDirect")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, io.Reader) error); ok {
+		r0 = returnFunc(ctx, cipherID, attachmentID, content)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockAPIClient_UploadAttachmentDirect_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UploadAttachmentDirect'
+type MockAPIClient_UploadAttachmentDirect_Call struct {
+	*mock.Call
+}
+
+// UploadAttachmentDirect is a helper method to define mock.On call
+//   - ctx context.Context
+//   - cipherID string
+//   - attachmentID string
+//   - content io.Reader
+func (_e *MockAPIClient_Expecter) UploadAttachmentDirect(ctx interface{}, cipherID interface{}, attachmentID interface{}, content interface{}) *MockAPIClient_UploadAttachmentDirect_Call {
+	return &MockAPIClient_UploadAttachmentDirect_Call{Call: _e.mock.On("UploadAttachmentDirect", ctx, cipherID, attachmentID, content)}
+}
+
+func (_c *MockAPIClient_UploadAttachmentDirect_Call) Run(run func(ctx context.Context, cipherID string, attachmentID string, content io.Reader)) *MockAPIClient_UploadAttachmentDirect_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 io.Reader
+		if args[3] != nil {
+			arg3 = args[3].(io.Reader)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAPIClient_UploadAttachmentDirect_Call) Return(err error) *MockAPIClient_UploadAttachmentDirect_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockAPIClient_UploadAttachmentDirect_Call) RunAndReturn(run func(ctx context.Context, cipherID string, attachmentID string, content io.Reader) error) *MockAPIClient_UploadAttachmentDirect_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UploadAttachmentExternal provides a mock function for the type MockAPIClient
+func (_mock *MockAPIClient) UploadAttachmentExternal(ctx context.Context, uploadURL string, content io.Reader) error {
+	ret := _mock.Called(ctx, uploadURL, content)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UploadAttachmentExternal")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, io.Reader) error); ok {
+		r0 = returnFunc(ctx, uploadURL, content)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockAPIClient_UploadAttachmentExternal_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UploadAttachmentExternal'
+type MockAPIClient_UploadAttachmentExternal_Call struct {
+	*mock.Call
+}
+
+// UploadAttachmentExternal is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uploadURL string
+//   - content io.Reader
+func (_e *MockAPIClient_Expecter) UploadAttachmentExternal(ctx interface{}, uploadURL interface{}, content interface{}) *MockAPIClient_UploadAttachmentExternal_Call {
+	return &MockAPIClient_UploadAttachmentExternal_Call{Call: _e.mock.On("UploadAttachmentExternal", ctx, uploadURL, content)}
+}
+
+func (_c *MockAPIClient_UploadAttachmentExternal_Call) Run(run func(ctx context.Context, uploadURL string, content io.Reader)) *MockAPIClient_UploadAttachmentExternal_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 io.Reader
+		if args[2] != nil {
+			arg2 = args[2].(io.Reader)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAPIClient_UploadAttachmentExternal_Call) Return(err error) *MockAPIClient_UploadAttachmentExternal_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockAPIClient_UploadAttachmentExternal_Call) RunAndReturn(run func(ctx context.Context, uploadURL string, content io.Reader) error) *MockAPIClient_UploadAttachmentExternal_Call {
 	_c.Call.Return(run)
 	return _c
 }

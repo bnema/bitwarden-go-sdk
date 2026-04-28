@@ -33,6 +33,23 @@ func deterministicType2Bytes(t *testing.T, key []byte, plaintext []byte) string 
 	return serialized
 }
 
+func TestWrapAttachmentKeyRoundtrip(t *testing.T) {
+	eng := NewEngine()
+	userKey := testUserKey64()
+	origKey := testAttachmentKey64()
+
+	wrapped, err := eng.WrapAttachmentKey(context.Background(), userKey, origKey)
+	require.NoError(t, err)
+	require.NotEmpty(t, wrapped)
+
+	got, err := eng.DecryptAttachmentKey(context.Background(), userKey, ports.EncryptedAttachment{
+		ID:  "att-1",
+		Key: wrapped,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, origKey.Bytes, got.Bytes)
+}
+
 func TestAttachmentKeyDecryptsDeterministicWrappedKey(t *testing.T) {
 	eng := NewEngine()
 	userKey := testUserKey64()

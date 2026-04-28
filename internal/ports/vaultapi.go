@@ -1,6 +1,9 @@
 package ports
 
-import "context"
+import (
+	"context"
+	"io"
+)
 
 // APIClient defines scaffold Bitwarden API operations.
 // Types in this package are compile-safe scaffold contracts. The source-mapping
@@ -15,6 +18,14 @@ type APIClient interface {
 	DeleteCipher(ctx context.Context, id string) error
 	TrashCipher(ctx context.Context, id string) error
 	RestoreCipher(ctx context.Context, id string) (EncryptedCipher, error)
+
+	GetAttachment(ctx context.Context, cipherID, attachmentID string) (EncryptedAttachmentMetadata, error)
+	InitAttachmentUpload(ctx context.Context, req AttachmentUploadRequest) (AttachmentUploadResponse, error)
+	UploadAttachmentDirect(ctx context.Context, cipherID, attachmentID string, content io.Reader) error
+	UploadAttachmentExternal(ctx context.Context, uploadURL string, content io.Reader) error
+	RenewAttachmentUploadURL(ctx context.Context, cipherID, attachmentID string) (AttachmentUploadResponse, error)
+	DownloadAttachment(ctx context.Context, url string) (io.ReadCloser, error)
+	DeleteAttachment(ctx context.Context, cipherID, attachmentID string) (EncryptedCipher, error)
 
 	ListFolders(ctx context.Context) ([]EncryptedFolder, error)
 	CreateFolder(ctx context.Context, folder EncryptedFolder) (EncryptedFolder, error)
@@ -135,6 +146,33 @@ type EncryptedIdentityCipher struct {
 	Username       string
 	PassportNumber string
 	LicenseNumber  string
+}
+
+// EncryptedAttachmentMetadata contains scaffold encrypted attachment metadata fields.
+type EncryptedAttachmentMetadata struct {
+	ID       string
+	CipherID string
+	FileName string
+	Key      string
+	Size     int64
+	SizeName string
+	URL      string
+}
+
+// AttachmentUploadRequest contains scaffold attachment upload request fields.
+type AttachmentUploadRequest struct {
+	CipherID string
+	FileName string
+	Key      string
+	FileSize int64
+}
+
+// AttachmentUploadResponse contains scaffold attachment upload response fields.
+type AttachmentUploadResponse struct {
+	AttachmentID   string
+	FileUploadType int
+	URL            string
+	Cipher         EncryptedCipher
 }
 
 // EncryptedCipherField contains encrypted custom field values and plaintext metadata.

@@ -77,6 +77,9 @@ func (s *Server) registerRoutes() {
 	// External attachment upload (self-contained local URL)
 	s.mux.Handle("/external-attachment-upload/", http.HandlerFunc(s.externalAttachmentUploadHandler))
 
+	// Attachment download (self-contained local URL, no auth required)
+	s.mux.Handle("/attachment-download/", http.HandlerFunc(s.attachmentDownloadContentHandler))
+
 	// Sync
 	s.mux.HandleFunc("/sync", s.syncHandler)
 	s.mux.HandleFunc("/sync/revision-date", s.syncRevisionDateHandler)
@@ -154,9 +157,22 @@ func (s *Server) folderPathRouter(w http.ResponseWriter, r *http.Request) {
 }
 
 // attachmentPathRouter dispatches based on the path under /ciphers/.../attachment/.
-// DELETE routes to delete, POST/PUT routes to upload content.
+//   - DELETE                             -> deleteAttachmentHandler
+//   - GET with /renew suffix             -> renewAttachmentUploadURLHandler
+//   - GET                                -> getAttachmentMetadataHandler
+//   - POST/PUT                           -> uploadAttachmentContentHandler
 func (s *Server) attachmentPathRouter(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+
+	// Check for /renew suffix first.
+	if strings.HasSuffix(path, "/renew") && r.Method == http.MethodGet {
+		s.renewAttachmentUploadURLHandler(w, r)
+		return
+	}
+
 	switch r.Method {
+	case http.MethodGet:
+		s.getAttachmentMetadataHandler(w, r)
 	case http.MethodPost, http.MethodPut:
 		s.uploadAttachmentContentHandler(w, r)
 	case http.MethodDelete:

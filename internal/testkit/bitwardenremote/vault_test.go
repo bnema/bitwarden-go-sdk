@@ -41,6 +41,8 @@ func TestVaultRequiresAuthorization(t *testing.T) {
 		{method: "POST", path: "/ciphers/abc-123/attachment/v2", body: `{"fileName":"test.txt","fileSize":128}`},
 		{method: "POST", path: "/ciphers/abc-123/attachment", body: `{"fileName":"test.txt","fileSize":128}`},
 		{method: "DELETE", path: "/ciphers/abc-123/attachment/att-1", body: ""},
+		{method: "GET", path: "/ciphers/abc-123/attachment/att-1", body: ""},
+		{method: "GET", path: "/ciphers/abc-123/attachment/att-1/renew", body: ""},
 	}
 
 	// /config should be accessible without auth

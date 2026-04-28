@@ -21,6 +21,22 @@ const (
 	attachmentHeaderSize      = 1 + aes.BlockSize + macLength
 )
 
+// WrapAttachmentKey encrypts an attachment key (arbitrary bytes) as a type-2 EncString
+// using the user key. The user key must be 64 bytes.
+func (e *Engine) WrapAttachmentKey(ctx context.Context, key ports.UserKey, attachmentKey ports.AttachmentKey) (string, error) {
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
+	if len(key.Bytes) != 64 {
+		return "", cryptoError(errors.KindValidation, "crypto.WrapAttachmentKey", "invalid_key_length", "user key must be 64 bytes")
+	}
+	wrapped, err := encryptType2(key.Bytes, string(attachmentKey.Bytes))
+	if err != nil {
+		return "", cryptoError(errors.KindCrypto, "crypto.WrapAttachmentKey", "encryption_failed", "failed to wrap attachment key")
+	}
+	return wrapped, nil
+}
+
 // DecryptAttachmentKey decrypts an encrypted attachment key using the user key.
 func (e *Engine) DecryptAttachmentKey(ctx context.Context, key ports.UserKey, attachment ports.EncryptedAttachment) (ports.AttachmentKey, error) {
 	if err := ctx.Err(); err != nil {
@@ -342,6 +358,7 @@ func (s *attachmentSpool) Close() error {
 }
 
 var _ interface {
+	WrapAttachmentKey(ctx context.Context, key ports.UserKey, attachmentKey ports.AttachmentKey) (string, error)
 	DecryptAttachmentKey(ctx context.Context, key ports.UserKey, attachment ports.EncryptedAttachment) (ports.AttachmentKey, error)
 	EncryptAttachment(ctx context.Context, key ports.AttachmentKey, src io.Reader, dst io.Writer) error
 	DecryptAttachment(ctx context.Context, key ports.AttachmentKey, src io.Reader, dst io.Writer) error

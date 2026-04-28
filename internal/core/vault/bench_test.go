@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"testing"
@@ -68,6 +69,34 @@ func (f *benchFakeAPI) DeleteFolder(_ context.Context, _ string) error {
 	return nil
 }
 
+func (f *benchFakeAPI) GetAttachment(_ context.Context, _, _ string) (ports.EncryptedAttachmentMetadata, error) {
+	return ports.EncryptedAttachmentMetadata{}, nil
+}
+
+func (f *benchFakeAPI) InitAttachmentUpload(_ context.Context, _ ports.AttachmentUploadRequest) (ports.AttachmentUploadResponse, error) {
+	return ports.AttachmentUploadResponse{}, nil
+}
+
+func (f *benchFakeAPI) UploadAttachmentDirect(_ context.Context, _, _ string, _ io.Reader) error {
+	return nil
+}
+
+func (f *benchFakeAPI) UploadAttachmentExternal(_ context.Context, _ string, _ io.Reader) error {
+	return nil
+}
+
+func (f *benchFakeAPI) RenewAttachmentUploadURL(_ context.Context, _, _ string) (ports.AttachmentUploadResponse, error) {
+	return ports.AttachmentUploadResponse{}, nil
+}
+
+func (f *benchFakeAPI) DeleteAttachment(_ context.Context, _, _ string) (ports.EncryptedCipher, error) {
+	return ports.EncryptedCipher{}, nil
+}
+
+func (f *benchFakeAPI) DownloadAttachment(_ context.Context, _ string) (io.ReadCloser, error) {
+	return io.NopCloser(bytes.NewReader(nil)), nil
+}
+
 type benchFakeCrypto struct{}
 
 func (benchFakeCrypto) DeriveMasterKey(_ context.Context, _ ports.MasterKeyInput) (ports.MasterKey, error) {
@@ -95,6 +124,10 @@ func (benchFakeCrypto) DecryptCipher(_ context.Context, _ ports.UserKey, ec port
 
 func (benchFakeCrypto) EncryptCipher(_ context.Context, _ ports.UserKey, _ ports.Cipher) (ports.EncryptedCipher, error) {
 	return ports.EncryptedCipher{}, nil
+}
+
+func (benchFakeCrypto) WrapAttachmentKey(_ context.Context, _ ports.UserKey, _ ports.AttachmentKey) (string, error) {
+	return "", nil
 }
 
 func (benchFakeCrypto) DecryptAttachmentKey(_ context.Context, _ ports.UserKey, _ ports.EncryptedAttachment) (ports.AttachmentKey, error) {

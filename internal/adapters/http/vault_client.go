@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -849,6 +850,315 @@ func (c *VaultClient) DeleteFolder(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+// ---------------------------------------------------------------------------
+// Attachment operations
+// ---------------------------------------------------------------------------
+
+// GetAttachment fetches attachment metadata via GET /ciphers/{cipherID}/attachment/{attachmentID}.
+func (c *VaultClient) GetAttachment(ctx context.Context, cipherID, attachmentID string) (ports.EncryptedAttachmentMetadata, error) {
+	u := c.baseURL + "/ciphers/" + url.PathEscape(cipherID) + "/attachment/" + url.PathEscape(attachmentID)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		return ports.EncryptedAttachmentMetadata{}, fmt.Errorf("create get attachment request: %w", err)
+	}
+	req.Header.Set("Accept", "application/json")
+
+	if err := c.setAuthHeader(ctx, req); err != nil {
+		return ports.EncryptedAttachmentMetadata{}, err
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return ports.EncryptedAttachmentMetadata{}, fmt.Errorf("get attachment: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return ports.EncryptedAttachmentMetadata{}, c.parseErrorResponse(resp)
+	}
+
+	var attResp dto.AttachmentResponseDTO
+	if err := json.NewDecoder(resp.Body).Decode(&attResp); err != nil {
+		return ports.EncryptedAttachmentMetadata{}, fmt.Errorf("decode attachment response: %w", err)
+	}
+
+	return ports.EncryptedAttachmentMetadata{
+		ID:       attResp.ID,
+		CipherID: cipherID,
+		FileName: attResp.FileName,
+		Key:      attResp.Key,
+		Size:     attResp.Size,
+		SizeName: attResp.SizeName,
+		URL:      attResp.URL,
+	}, nil
+}
+
+// InitAttachmentUpload initialises an attachment upload via POST /ciphers/{cipherID}/attachment/v2.
+func (c *VaultClient) InitAttachmentUpload(ctx context.Context, req ports.AttachmentUploadRequest) (ports.AttachmentUploadResponse, error) {
+	reqBody, err := json.Marshal(dto.AttachmentRequestDTO{
+		FileName: req.FileName,
+		Key:      req.Key,
+		FileSize: req.FileSize,
+	})
+	if err != nil {
+		return ports.AttachmentUploadResponse{}, fmt.Errorf("marshal attachment request: %w", err)
+	}
+
+	u := c.baseURL + "/ciphers/" + url.PathEscape(req.CipherID) + "/attachment/v2"
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, u, bytes.NewReader(reqBody))
+	if err != nil {
+		return ports.AttachmentUploadResponse{}, fmt.Errorf("create init attachment upload request: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Accept", "application/json")
+
+	if err := c.setAuthHeader(ctx, httpReq); err != nil {
+		return ports.AttachmentUploadResponse{}, err
+	}
+
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		return ports.AttachmentUploadResponse{}, fmt.Errorf("init attachment upload: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		return ports.AttachmentUploadResponse{}, c.parseErrorResponse(resp)
+	}
+
+	var uploadResp dto.AttachmentUploadDataResponseDTO
+	if err := json.NewDecoder(resp.Body).Decode(&uploadResp); err != nil {
+		return ports.AttachmentUploadResponse{}, fmt.Errorf("decode attachment upload response: %w", err)
+	}
+
+	result := ports.AttachmentUploadResponse{
+		AttachmentID:   uploadResp.AttachmentID,
+		FileUploadType: uploadResp.FileUploadType,
+	}
+	if uploadResp.URL != nil {
+		result.URL = *uploadResp.URL
+	}
+
+	// Map CipherResponse if present.
+	if uploadResp.CipherResponse != nil {
+		result.Cipher = ports.EncryptedCipher{
+			ID: uploadResp.CipherResponse.ID,
+		}
+	}
+
+	return result, nil
+}
+
+// UploadAttachmentDirect uploads attachment content via POST /ciphers/{cipherID}/attachment/{attachmentID}
+// using multipart/form-data with field name "data".
+// The pipe and goroutine are started only after setAuthHeader succeeds to avoid
+// leaking goroutines when the token provider returns an error.
+func (c *VaultClient) UploadAttachmentDirect(ctx context.Context, cipherID, attachmentID string, content io.Reader) error {
+	u := c.baseURL + "/ciphers/" + url.PathEscape(cipherID) + "/attachment/" + url.PathEscape(attachmentID)
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, u, nil)
+	if err != nil {
+		return fmt.Errorf("create upload attachment request: %w", err)
+	}
+	httpReq.Header.Set("Content-Type", "multipart/form-data; boundary=placeholder")
+
+	if err := c.setAuthHeader(ctx, httpReq); err != nil {
+		return err
+	}
+
+	// Only start the pipe and multipart pump after auth is confirmed.
+	pr, pw := io.Pipe()
+	mp := multipart.NewWriter(pw)
+
+	httpReq.Body = pr
+	httpReq.Header.Set("Content-Type", mp.FormDataContentType())
+
+	go func() {
+		var writeErr error
+		defer func() {
+			_ = mp.Close()
+			_ = pw.CloseWithError(writeErr)
+		}()
+
+		dataField, err := mp.CreateFormField("data")
+		if err != nil {
+			writeErr = fmt.Errorf("create multipart form field: %w", err)
+			return
+		}
+
+		if _, err := io.Copy(dataField, content); err != nil {
+			writeErr = fmt.Errorf("copy content to multipart field: %w", err)
+			return
+		}
+	}()
+
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("upload attachment direct: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		return c.parseErrorResponse(resp)
+	}
+
+	return nil
+}
+
+// UploadAttachmentExternal uploads attachment content by PUTing to the
+// provided uploadURL. No authorization header is sent to external URLs.
+func (c *VaultClient) UploadAttachmentExternal(ctx context.Context, uploadURL string, content io.Reader) error {
+	// Validate the URL is http/https.
+	parsedURL, err := url.Parse(uploadURL)
+	if err != nil {
+		return fmt.Errorf("parse upload URL: %w", err)
+	}
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+		return fmt.Errorf("upload URL must have http or https scheme, got %q", parsedURL.Scheme)
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPut, uploadURL, content)
+	if err != nil {
+		return fmt.Errorf("create external upload request: %w", err)
+	}
+
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("external upload: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent {
+		return &coreerrors.Error{
+			Kind:   coreerrors.KindUnknown,
+			Status: resp.StatusCode,
+		}
+	}
+
+	return nil
+}
+
+// RenewAttachmentUploadURL renews an attachment upload URL via
+// GET /ciphers/{cipherID}/attachment/{attachmentID}/renew.
+func (c *VaultClient) RenewAttachmentUploadURL(ctx context.Context, cipherID, attachmentID string) (ports.AttachmentUploadResponse, error) {
+	u := c.baseURL + "/ciphers/" + url.PathEscape(cipherID) + "/attachment/" + url.PathEscape(attachmentID) + "/renew"
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		return ports.AttachmentUploadResponse{}, fmt.Errorf("create renew attachment URL request: %w", err)
+	}
+	httpReq.Header.Set("Accept", "application/json")
+
+	if err := c.setAuthHeader(ctx, httpReq); err != nil {
+		return ports.AttachmentUploadResponse{}, err
+	}
+
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		return ports.AttachmentUploadResponse{}, fmt.Errorf("renew attachment URL: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return ports.AttachmentUploadResponse{}, c.parseErrorResponse(resp)
+	}
+
+	var renewResp dto.AttachmentUploadDataResponseDTO
+	if err := json.NewDecoder(resp.Body).Decode(&renewResp); err != nil {
+		return ports.AttachmentUploadResponse{}, fmt.Errorf("decode renew response: %w", err)
+	}
+
+	result := ports.AttachmentUploadResponse{
+		AttachmentID:   renewResp.AttachmentID,
+		FileUploadType: renewResp.FileUploadType,
+	}
+	if renewResp.URL != nil {
+		result.URL = *renewResp.URL
+	}
+
+	return result, nil
+}
+
+// DownloadAttachment downloads the attachment bytes from the given URL.
+// The URL must be http or https. No auth header is sent for absolute attachment URLs.
+// Success (200) returns the body as an io.ReadCloser. Non-200 responses drain
+// the body and return an error.
+func (c *VaultClient) DownloadAttachment(ctx context.Context, attachmentURL string) (io.ReadCloser, error) {
+	parsedURL, err := url.Parse(attachmentURL)
+	if err != nil {
+		return nil, fmt.Errorf("parse attachment URL: %w", err)
+	}
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+		return nil, fmt.Errorf("attachment URL must have http or https scheme, got %q", parsedURL.Scheme)
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, attachmentURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("create download attachment request: %w", err)
+	}
+
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("download attachment: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		defer func() { _ = resp.Body.Close() }()
+		_, _ = io.Copy(io.Discard, resp.Body)
+		return nil, &coreerrors.Error{
+			Kind:   coreerrors.KindUnknown,
+			Status: resp.StatusCode,
+		}
+	}
+
+	return resp.Body, nil
+}
+
+// DeleteAttachment deletes an attachment via DELETE /ciphers/{cipherID}/attachment/{attachmentID}.
+// Returns the updated cipher if present in the response.
+func (c *VaultClient) DeleteAttachment(ctx context.Context, cipherID, attachmentID string) (ports.EncryptedCipher, error) {
+	u := c.baseURL + "/ciphers/" + url.PathEscape(cipherID) + "/attachment/" + url.PathEscape(attachmentID)
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodDelete, u, nil)
+	if err != nil {
+		return ports.EncryptedCipher{}, fmt.Errorf("create delete attachment request: %w", err)
+	}
+	httpReq.Header.Set("Accept", "application/json")
+
+	if err := c.setAuthHeader(ctx, httpReq); err != nil {
+		return ports.EncryptedCipher{}, err
+	}
+
+	resp, err := c.client.Do(httpReq)
+	if err != nil {
+		return ports.EncryptedCipher{}, fmt.Errorf("delete attachment: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		return ports.EncryptedCipher{}, c.parseErrorResponse(resp)
+	}
+
+	// If no content, return empty cipher.
+	if resp.StatusCode == http.StatusNoContent {
+		return ports.EncryptedCipher{}, nil
+	}
+
+	var deleteResp dto.DeleteAttachmentResponseDTO
+	if err := json.NewDecoder(resp.Body).Decode(&deleteResp); err != nil {
+		return ports.EncryptedCipher{}, fmt.Errorf("decode delete attachment response: %w", err)
+	}
+
+	cipher := ports.EncryptedCipher{}
+	if deleteResp.Cipher != nil {
+		cipher.ID = deleteResp.Cipher.ID
+	}
+
+	return cipher, nil
 }
 
 // Ensure compile-time check that VaultClient implements ports.APIClient.

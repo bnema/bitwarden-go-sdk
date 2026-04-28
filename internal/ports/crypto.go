@@ -12,6 +12,7 @@ type CryptoEngine interface {
 	UnlockUserKey(ctx context.Context, input UserKeyInput) (UserKey, error)
 	DecryptCipher(ctx context.Context, key UserKey, cipher EncryptedCipher) (Cipher, error)
 	EncryptCipher(ctx context.Context, key UserKey, cipher Cipher) (EncryptedCipher, error)
+	WrapAttachmentKey(ctx context.Context, key UserKey, attachmentKey AttachmentKey) (string, error)
 	DecryptAttachmentKey(ctx context.Context, key UserKey, attachment EncryptedAttachment) (AttachmentKey, error)
 	EncryptAttachment(ctx context.Context, key AttachmentKey, src io.Reader, dst io.Writer) error
 	DecryptAttachment(ctx context.Context, key AttachmentKey, src io.Reader, dst io.Writer) error

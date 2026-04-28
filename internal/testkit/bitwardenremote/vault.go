@@ -465,3 +465,54 @@ func (s *Server) deleteAttachmentHandler(w http.ResponseWriter, r *http.Request)
 	s.recordRequestMetadata(r)
 	s.writeJSON(w, http.StatusOK, attachmentDeleteResponse)
 }
+
+// ---------------------------------------------------------------------------
+// GET /ciphers/{cipherID}/attachment/{attachmentID}  — get attachment metadata
+// ---------------------------------------------------------------------------
+
+func (s *Server) getAttachmentMetadataHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if !s.requireAuth(w, r) {
+		return
+	}
+	s.recordRequestMetadata(r)
+	body := fmt.Sprintf(attachmentMetadataResponseTemplate, s.srv.URL)
+	s.writeJSON(w, http.StatusOK, body)
+}
+
+// ---------------------------------------------------------------------------
+// GET /attachment-download/{attachmentID}  — download attachment content
+//
+// No auth required — models a direct download URL. Returns deterministic
+// encrypted bytes without reading or storing the request body.
+// ---------------------------------------------------------------------------
+
+func (s *Server) attachmentDownloadContentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	s.recordRequestMetadata(r)
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("encrypted attachment bytes"))
+}
+
+// ---------------------------------------------------------------------------
+// GET /ciphers/{cipherID}/attachment/{attachmentID}/renew  — renew upload URL
+// ---------------------------------------------------------------------------
+
+func (s *Server) renewAttachmentUploadURLHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if !s.requireAuth(w, r) {
+		return
+	}
+	s.recordRequestMetadata(r)
+	s.writeJSON(w, http.StatusOK, attachmentUploadDataRenewResponse)
+}

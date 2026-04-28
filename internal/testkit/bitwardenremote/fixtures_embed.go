@@ -161,6 +161,25 @@ const attachmentUploadAzureResponseTemplate = `{
   "Url": "%s/external-attachment-upload/attachment-id-1"
 }`
 
+// attachmentMetadataResponseTemplate uses %s for the server base URL so the
+// download URL points back to the test server, making it self-contained.
+const attachmentMetadataResponseTemplate = `{
+  "Id": "attachment-id-1",
+  "Url": "%s/attachment-download/attachment-id-1",
+  "FileName": "2.sanitized-iv|sanitized-file-name|sanitized-mac",
+  "Key": "2.sanitized-iv|sanitized-attachment-key|sanitized-mac",
+  "Size": 128,
+  "SizeName": "128 B"
+}`
+
+const attachmentUploadDataRenewResponse = `{
+  "AttachmentId": "attachment-id-1",
+  "FileUploadType": 0,
+  "CipherResponse": null,
+  "CipherMiniResponse": null,
+  "Url": null
+}`
+
 const attachmentDeleteResponse = `{
   "Cipher": {
     "Id": "cipher-id-1",
