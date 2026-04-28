@@ -304,7 +304,7 @@ func TestConfig_NonOK(t *testing.T) {
 
 // -------- AccountProfile tests --------
 
-func TestAccountProfile_Success(t *testing.T) {
+func TestAccountProfileUsingContractTestkit(t *testing.T) {
 	t.Parallel()
 	server := bitwardenremote.NewServer(t, bitwardenremote.NewScenario())
 
@@ -325,6 +325,30 @@ func TestAccountProfile_Success(t *testing.T) {
 	}
 	if profile.Name != "Sanitized User" {
 		t.Errorf("expected Name=Sanitized User, got %s", profile.Name)
+	}
+	if !profile.EmailVerified {
+		t.Error("expected EmailVerified=true")
+	}
+	if !profile.Premium {
+		t.Error("expected Premium=true")
+	}
+	if profile.PremiumFromOrganization {
+		t.Error("expected PremiumFromOrganization=false")
+	}
+	if profile.Culture != "en-US" {
+		t.Errorf("expected Culture=en-US, got %s", profile.Culture)
+	}
+	if !profile.TwoFactorEnabled {
+		t.Error("expected TwoFactorEnabled=true")
+	}
+	if profile.ForcePasswordReset {
+		t.Error("expected ForcePasswordReset=false")
+	}
+	if profile.UsesKeyConnector {
+		t.Error("expected UsesKeyConnector=false")
+	}
+	if !profile.VerifyDevices {
+		t.Error("expected VerifyDevices=true")
 	}
 }
 
@@ -352,7 +376,7 @@ func TestAccountProfile_Unauthorized(t *testing.T) {
 
 // -------- Subscription tests --------
 
-func TestSubscription_Success(t *testing.T) {
+func TestAccountSubscriptionUsingContractTestkit(t *testing.T) {
 	t.Parallel()
 	server := bitwardenremote.NewServer(t, bitwardenremote.NewScenario())
 
@@ -367,6 +391,51 @@ func TestSubscription_Success(t *testing.T) {
 	}
 	if sub.Plan == "" {
 		t.Error("expected non-empty Plan")
+	}
+	if sub.StorageName == "" {
+		t.Error("expected non-empty StorageName")
+	}
+	if sub.StorageGB <= 0 {
+		t.Errorf("expected StorageGB > 0, got %d", sub.StorageGB)
+	}
+	if sub.MaxStorageGB <= 0 {
+		t.Errorf("expected MaxStorageGB > 0, got %d", sub.MaxStorageGB)
+	}
+
+	// Verify auth was present on the request.
+	recorder := server.Recorder()
+	reqs := recorder.Requests()
+	found := false
+	for _, r := range reqs {
+		if r.Path == "/accounts/subscription" && r.AuthPresent {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("expected recorded /accounts/subscription request with auth")
+	}
+}
+
+func TestSubscription_Unauthorized(t *testing.T) {
+	t.Parallel()
+	server := bitwardenremote.NewServer(t, bitwardenremote.NewScenario(bitwardenremote.WithExpiredAccessToken()))
+
+	client, err := adaptershttp.NewVaultClient(server.IdentityURL(), server.HTTPClient(), nopTokenProvider("tok"))
+	if err != nil {
+		t.Fatalf("NewVaultClient: %v", err)
+	}
+
+	_, err = client.Subscription(context.Background())
+	if err == nil {
+		t.Fatal("expected error for expired token")
+	}
+	var cerr *coreerrors.Error
+	if !errors.As(err, &cerr) {
+		t.Fatalf("expected *coreerrors.Error, got %T", err)
+	}
+	if cerr.Kind != coreerrors.KindUnauthenticated {
+		t.Errorf("expected KindUnauthenticated, got %s", cerr.Kind)
 	}
 }
 

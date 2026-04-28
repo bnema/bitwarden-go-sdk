@@ -42,15 +42,26 @@ type ServerConfig struct {
 
 // AccountProfile contains scaffold account profile fields.
 type AccountProfile struct {
-	ID    string
-	Email string
-	Name  string
+	ID                      string
+	Email                   string
+	Name                    string
+	EmailVerified           bool
+	Premium                 bool
+	PremiumFromOrganization bool
+	Culture                 string
+	TwoFactorEnabled        bool
+	ForcePasswordReset      bool
+	UsesKeyConnector        bool
+	VerifyDevices           bool
 }
 
 // Subscription contains scaffold subscription fields.
 type Subscription struct {
-	Plan      string
-	IsPremium bool
+	Plan         string
+	IsPremium    bool
+	StorageName  string
+	StorageGB    int
+	MaxStorageGB int
 }
 
 // SyncOptions contains scaffold sync request options.

@@ -164,15 +164,23 @@ func (c *VaultClient) AccountProfile(ctx context.Context) (ports.AccountProfile,
 	}
 
 	return ports.AccountProfile{
-		ID:    profile.ID,
-		Email: profile.Email,
-		Name:  profile.Name,
+		ID:                      profile.ID,
+		Email:                   profile.Email,
+		Name:                    profile.Name,
+		EmailVerified:           profile.EmailVerified,
+		Premium:                 profile.Premium,
+		PremiumFromOrganization: profile.PremiumFromOrganization,
+		Culture:                 profile.Culture,
+		TwoFactorEnabled:        profile.TwoFactorEnabled,
+		ForcePasswordReset:      profile.ForcePasswordReset,
+		UsesKeyConnector:        profile.UsesKeyConnector,
+		VerifyDevices:           profile.VerifyDevices,
 	}, nil
 }
 
 // Subscription fetches the user's subscription information.
 func (c *VaultClient) Subscription(ctx context.Context) (ports.Subscription, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/plans/subscription", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/accounts/subscription", nil)
 	if err != nil {
 		return ports.Subscription{}, fmt.Errorf("create subscription request: %w", err)
 	}
@@ -197,9 +205,13 @@ func (c *VaultClient) Subscription(ctx context.Context) (ports.Subscription, err
 		return ports.Subscription{}, fmt.Errorf("decode subscription response: %w", err)
 	}
 
+	premium := sub.StorageName != "" && sub.StorageName != "Free"
 	return ports.Subscription{
-		Plan:      sub.StorageName,
-		IsPremium: sub.StorageName != "" && sub.StorageName != "Free",
+		Plan:         sub.StorageName,
+		IsPremium:    premium,
+		StorageName:  sub.StorageName,
+		StorageGB:    sub.StorageGB,
+		MaxStorageGB: sub.MaxStorageGB,
 	}, nil
 }
 
@@ -598,9 +610,13 @@ func (c *VaultClient) parseErrorResponse(resp *http.Response) error {
 func (c *VaultClient) mapSyncResult(s dto.SyncResponseDTO) ports.SyncResult {
 	result := ports.SyncResult{
 		Profile: ports.AccountProfile{
-			ID:    s.Profile.ID,
-			Email: s.Profile.Email,
-			Name:  s.Profile.Name,
+			ID:                      s.Profile.ID,
+			Email:                   s.Profile.Email,
+			Name:                    s.Profile.Name,
+			EmailVerified:           s.Profile.EmailVerified,
+			Premium:                 s.Profile.Premium,
+			PremiumFromOrganization: s.Profile.PremiumFromOrganization,
+			TwoFactorEnabled:        s.Profile.TwoFactorEnabled,
 		},
 		Folders: make([]ports.EncryptedFolder, 0, len(s.Folders)),
 		Ciphers: make([]ports.EncryptedCipher, 0, len(s.Ciphers)),

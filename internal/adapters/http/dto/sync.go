@@ -16,9 +16,13 @@ type SyncResponseDTO struct {
 
 // ProfileDTO maps the Profile object inside a sync response.
 type ProfileDTO struct {
-	ID    string `json:"Id"`
-	Name  string `json:"Name"`
-	Email string `json:"Email"`
+	ID                      string `json:"Id"`
+	Name                    string `json:"Name"`
+	Email                   string `json:"Email"`
+	EmailVerified           bool   `json:"EmailVerified"`
+	Premium                 bool   `json:"Premium"`
+	PremiumFromOrganization bool   `json:"PremiumFromOrganization"`
+	TwoFactorEnabled        bool   `json:"TwoFactorEnabled"`
 }
 
 // FolderDTO maps a folder object.
@@ -124,9 +128,17 @@ type ConfigResponseDTO struct {
 
 // AccountProfileResponseDTO maps the /accounts/profile response.
 type AccountProfileResponseDTO struct {
-	ID    string `json:"Id"`
-	Email string `json:"Email"`
-	Name  string `json:"Name"`
+	ID                      string `json:"Id"`
+	Email                   string `json:"Email"`
+	Name                    string `json:"Name"`
+	EmailVerified           bool   `json:"EmailVerified"`
+	Premium                 bool   `json:"Premium"`
+	PremiumFromOrganization bool   `json:"PremiumFromOrganization"`
+	Culture                 string `json:"Culture"`
+	TwoFactorEnabled        bool   `json:"TwoFactorEnabled"`
+	ForcePasswordReset      bool   `json:"ForcePasswordReset"`
+	UsesKeyConnector        bool   `json:"UsesKeyConnector"`
+	VerifyDevices           bool   `json:"VerifyDevices"`
 }
 
 // ---------------------------------------------------------------------------
@@ -135,11 +147,9 @@ type AccountProfileResponseDTO struct {
 
 // SubscriptionResponseDTO maps the subscription endpoint response.
 type SubscriptionResponseDTO struct {
-	Plan      string `json:"plan,omitempty"`
-	IsPremium *bool  `json:"isPremium,omitempty"`
-	// Bitwarden API doesn't have plan/isPremium in subscription, so
-	// we map from StorageName / customer discount field as available.
-	StorageName string `json:"StorageName"`
+	StorageName  string `json:"StorageName"`
+	StorageGB    int    `json:"StorageGb"`
+	MaxStorageGB int    `json:"MaxStorageGb"`
 }
 
 // ---------------------------------------------------------------------------
