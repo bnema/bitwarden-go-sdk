@@ -53,9 +53,86 @@ type EncryptedFolder struct {
 	Name string
 }
 
-// EncryptedCipher contains scaffold encrypted cipher fields.
+// EncryptedCipher contains encrypted cipher fields.
+// Encrypted string fields hold Bitwarden type-2 EncStrings. Plain metadata
+// fields such as Type, Favorite, URI Match, and field Type/LinkedID are not
+// encrypted by Bitwarden's composite cipher format.
 type EncryptedCipher struct {
-	ID   string
+	ID       string
+	Type     int
+	Name     string
+	Notes    string
+	Favorite bool
+
+	// Legacy login scaffold fields kept until later public API phases finish
+	// replacing direct fields with Login.
+	Username string
+	Password string
+	URI      string
+
+	Login      *EncryptedLoginCipher
+	SecureNote *EncryptedSecureNoteCipher
+	Card       *EncryptedCardCipher
+	Identity   *EncryptedIdentityCipher
+	Fields     []EncryptedCipherField
+}
+
+// EncryptedLoginCipher contains encrypted login-specific cipher fields.
+type EncryptedLoginCipher struct {
+	Username string
+	Password string
+	TOTP     string
+	URIs     []EncryptedLoginURI
+}
+
+// EncryptedLoginURI contains encrypted URI fields and plaintext match metadata.
+type EncryptedLoginURI struct {
+	URI         string
+	Match       int
+	URIChecksum string
+}
+
+// EncryptedSecureNoteCipher contains secure-note metadata.
+type EncryptedSecureNoteCipher struct {
 	Type int
-	Name string
+}
+
+// EncryptedCardCipher contains encrypted payment-card fields.
+type EncryptedCardCipher struct {
+	CardholderName string
+	Brand          string
+	Number         string
+	ExpMonth       string
+	ExpYear        string
+	Code           string
+}
+
+// EncryptedIdentityCipher contains encrypted identity-profile fields.
+type EncryptedIdentityCipher struct {
+	Title          string
+	FirstName      string
+	MiddleName     string
+	LastName       string
+	Address1       string
+	Address2       string
+	Address3       string
+	City           string
+	State          string
+	PostalCode     string
+	Country        string
+	Company        string
+	Email          string
+	Phone          string
+	SSN            string
+	Username       string
+	PassportNumber string
+	LicenseNumber  string
+}
+
+// EncryptedCipherField contains encrypted custom field values and plaintext metadata.
+type EncryptedCipherField struct {
+	Name     string
+	Value    string
+	Type     int
+	LinkedID int
 }

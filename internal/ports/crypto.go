@@ -1,6 +1,9 @@
 package ports
 
-import "context"
+import (
+	"context"
+	"io"
+)
 
 // CryptoEngine defines scaffold cryptographic operations.
 type CryptoEngine interface {
@@ -10,6 +13,8 @@ type CryptoEngine interface {
 	DecryptCipher(ctx context.Context, key UserKey, cipher EncryptedCipher) (Cipher, error)
 	EncryptCipher(ctx context.Context, key UserKey, cipher Cipher) (EncryptedCipher, error)
 	DecryptAttachmentKey(ctx context.Context, key UserKey, attachment EncryptedAttachment) (AttachmentKey, error)
+	EncryptAttachment(ctx context.Context, key AttachmentKey, src io.Reader, dst io.Writer) error
+	DecryptAttachment(ctx context.Context, key AttachmentKey, src io.Reader, dst io.Writer) error
 }
 
 // MasterKeyInput contains scaffold master-key derivation inputs.
@@ -48,13 +53,88 @@ type UserKey struct {
 	Bytes []byte
 }
 
-// Cipher contains scaffold decrypted cipher fields.
+// Cipher contains decrypted cipher fields covered by the v0.1.0 crypto
+// adapter. Composite encryption mirrors Bitwarden: only string payload fields
+// become EncStrings; metadata such as Type, Favorite, URI Match, and field
+// Type/LinkedID remains plaintext.
 type Cipher struct {
 	ID       string
+	Type     int
 	Name     string
+	Notes    string
+	Favorite bool
+
+	// Legacy login scaffold fields kept until later public API phases finish
+	// replacing direct fields with Login.
 	Username string
 	Password string
 	URI      string
+
+	Login      *LoginCipher
+	SecureNote *SecureNoteCipher
+	Card       *CardCipher
+	Identity   *IdentityCipher
+	Fields     []CipherField
+}
+
+// LoginCipher contains decrypted login-specific cipher fields.
+type LoginCipher struct {
+	Username string
+	Password string
+	TOTP     string
+	URIs     []LoginURI
+}
+
+// LoginURI contains a decrypted login URI and plaintext match metadata.
+type LoginURI struct {
+	URI         string
+	Match       int
+	URIChecksum string
+}
+
+// SecureNoteCipher contains secure-note metadata; note text lives on Cipher.Notes.
+type SecureNoteCipher struct {
+	Type int
+}
+
+// CardCipher contains decrypted payment-card fields.
+type CardCipher struct {
+	CardholderName string
+	Brand          string
+	Number         string
+	ExpMonth       string
+	ExpYear        string
+	Code           string
+}
+
+// IdentityCipher contains decrypted identity-profile fields.
+type IdentityCipher struct {
+	Title          string
+	FirstName      string
+	MiddleName     string
+	LastName       string
+	Address1       string
+	Address2       string
+	Address3       string
+	City           string
+	State          string
+	PostalCode     string
+	Country        string
+	Company        string
+	Email          string
+	Phone          string
+	SSN            string
+	Username       string
+	PassportNumber string
+	LicenseNumber  string
+}
+
+// CipherField contains a decrypted custom field and plaintext metadata.
+type CipherField struct {
+	Name     string
+	Value    string
+	Type     int
+	LinkedID int
 }
 
 // EncryptedAttachment contains scaffold encrypted attachment fields.
