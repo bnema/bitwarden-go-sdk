@@ -92,8 +92,8 @@ func NewSelfHosted(base string) (Environment, error) {
 		return Environment{}, errors.New("self-hosted URL must have a host")
 	}
 
-	// Strip trailing slash from path.
-	u.Path = strings.TrimSuffix(u.Path, "/")
+	// Strip all trailing slashes from path.
+	u.Path = strings.TrimRight(u.Path, "/")
 
 	// Rebuild to get the normalized base URL.
 	baseURL := u.Scheme + "://" + u.Host + u.Path

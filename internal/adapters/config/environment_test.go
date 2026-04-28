@@ -189,6 +189,41 @@ func TestEnvironment_NewSelfHosted_SubpathBase(t *testing.T) {
 	}
 }
 
+func TestEnvironment_NewSelfHosted_MultipleTrailingSlashes(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		base string
+		want Environment
+	}{
+		{
+			name: "multiple trailing slashes are all stripped",
+			base: "https://example.com/bitwarden//",
+			want: wantEnvironment(
+				"https://example.com/bitwarden",
+				"https://example.com/bitwarden/api",
+				"https://example.com/bitwarden/identity",
+				"https://example.com/bitwarden/icons",
+				"https://example.com/bitwarden/notifications",
+				"https://example.com/bitwarden/events",
+				"https://example.com/bitwarden/scim/v2",
+				"https://example.com/bitwarden/#/send/",
+			),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewSelfHosted(tt.base)
+			if err != nil {
+				t.Fatalf("NewSelfHosted(%q) returned error: %v", tt.base, err)
+			}
+			assertEnvironmentEqual(t, got, tt.want)
+		})
+	}
+}
+
 func TestEnvironment_NewSelfHosted_RejectsInvalid(t *testing.T) {
 	t.Parallel()
 
