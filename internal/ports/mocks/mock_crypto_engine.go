@@ -7,7 +7,7 @@ package mocks
 import (
 	"context"
 
-	"github.com/bnema/bitwarden-go-sdk/internal/ports/out"
+	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -39,24 +39,24 @@ func (_m *MockCryptoEngine) EXPECT() *MockCryptoEngine_Expecter {
 }
 
 // DecryptAttachmentKey provides a mock function for the type MockCryptoEngine
-func (_mock *MockCryptoEngine) DecryptAttachmentKey(ctx context.Context, key out.UserKey, attachment out.EncryptedAttachment) (out.AttachmentKey, error) {
+func (_mock *MockCryptoEngine) DecryptAttachmentKey(ctx context.Context, key ports.UserKey, attachment ports.EncryptedAttachment) (ports.AttachmentKey, error) {
 	ret := _mock.Called(ctx, key, attachment)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DecryptAttachmentKey")
 	}
 
-	var r0 out.AttachmentKey
+	var r0 ports.AttachmentKey
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.UserKey, out.EncryptedAttachment) (out.AttachmentKey, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.UserKey, ports.EncryptedAttachment) (ports.AttachmentKey, error)); ok {
 		return returnFunc(ctx, key, attachment)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.UserKey, out.EncryptedAttachment) out.AttachmentKey); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.UserKey, ports.EncryptedAttachment) ports.AttachmentKey); ok {
 		r0 = returnFunc(ctx, key, attachment)
 	} else {
-		r0 = ret.Get(0).(out.AttachmentKey)
+		r0 = ret.Get(0).(ports.AttachmentKey)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, out.UserKey, out.EncryptedAttachment) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.UserKey, ports.EncryptedAttachment) error); ok {
 		r1 = returnFunc(ctx, key, attachment)
 	} else {
 		r1 = ret.Error(1)
@@ -71,25 +71,25 @@ type MockCryptoEngine_DecryptAttachmentKey_Call struct {
 
 // DecryptAttachmentKey is a helper method to define mock.On call
 //   - ctx context.Context
-//   - key out.UserKey
-//   - attachment out.EncryptedAttachment
+//   - key ports.UserKey
+//   - attachment ports.EncryptedAttachment
 func (_e *MockCryptoEngine_Expecter) DecryptAttachmentKey(ctx interface{}, key interface{}, attachment interface{}) *MockCryptoEngine_DecryptAttachmentKey_Call {
 	return &MockCryptoEngine_DecryptAttachmentKey_Call{Call: _e.mock.On("DecryptAttachmentKey", ctx, key, attachment)}
 }
 
-func (_c *MockCryptoEngine_DecryptAttachmentKey_Call) Run(run func(ctx context.Context, key out.UserKey, attachment out.EncryptedAttachment)) *MockCryptoEngine_DecryptAttachmentKey_Call {
+func (_c *MockCryptoEngine_DecryptAttachmentKey_Call) Run(run func(ctx context.Context, key ports.UserKey, attachment ports.EncryptedAttachment)) *MockCryptoEngine_DecryptAttachmentKey_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 out.UserKey
+		var arg1 ports.UserKey
 		if args[1] != nil {
-			arg1 = args[1].(out.UserKey)
+			arg1 = args[1].(ports.UserKey)
 		}
-		var arg2 out.EncryptedAttachment
+		var arg2 ports.EncryptedAttachment
 		if args[2] != nil {
-			arg2 = args[2].(out.EncryptedAttachment)
+			arg2 = args[2].(ports.EncryptedAttachment)
 		}
 		run(
 			arg0,
@@ -100,35 +100,35 @@ func (_c *MockCryptoEngine_DecryptAttachmentKey_Call) Run(run func(ctx context.C
 	return _c
 }
 
-func (_c *MockCryptoEngine_DecryptAttachmentKey_Call) Return(attachmentKey out.AttachmentKey, err error) *MockCryptoEngine_DecryptAttachmentKey_Call {
+func (_c *MockCryptoEngine_DecryptAttachmentKey_Call) Return(attachmentKey ports.AttachmentKey, err error) *MockCryptoEngine_DecryptAttachmentKey_Call {
 	_c.Call.Return(attachmentKey, err)
 	return _c
 }
 
-func (_c *MockCryptoEngine_DecryptAttachmentKey_Call) RunAndReturn(run func(ctx context.Context, key out.UserKey, attachment out.EncryptedAttachment) (out.AttachmentKey, error)) *MockCryptoEngine_DecryptAttachmentKey_Call {
+func (_c *MockCryptoEngine_DecryptAttachmentKey_Call) RunAndReturn(run func(ctx context.Context, key ports.UserKey, attachment ports.EncryptedAttachment) (ports.AttachmentKey, error)) *MockCryptoEngine_DecryptAttachmentKey_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // DecryptCipher provides a mock function for the type MockCryptoEngine
-func (_mock *MockCryptoEngine) DecryptCipher(ctx context.Context, key out.UserKey, cipher out.EncryptedCipher) (out.Cipher, error) {
+func (_mock *MockCryptoEngine) DecryptCipher(ctx context.Context, key ports.UserKey, cipher ports.EncryptedCipher) (ports.Cipher, error) {
 	ret := _mock.Called(ctx, key, cipher)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DecryptCipher")
 	}
 
-	var r0 out.Cipher
+	var r0 ports.Cipher
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.UserKey, out.EncryptedCipher) (out.Cipher, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.UserKey, ports.EncryptedCipher) (ports.Cipher, error)); ok {
 		return returnFunc(ctx, key, cipher)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.UserKey, out.EncryptedCipher) out.Cipher); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.UserKey, ports.EncryptedCipher) ports.Cipher); ok {
 		r0 = returnFunc(ctx, key, cipher)
 	} else {
-		r0 = ret.Get(0).(out.Cipher)
+		r0 = ret.Get(0).(ports.Cipher)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, out.UserKey, out.EncryptedCipher) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.UserKey, ports.EncryptedCipher) error); ok {
 		r1 = returnFunc(ctx, key, cipher)
 	} else {
 		r1 = ret.Error(1)
@@ -143,25 +143,25 @@ type MockCryptoEngine_DecryptCipher_Call struct {
 
 // DecryptCipher is a helper method to define mock.On call
 //   - ctx context.Context
-//   - key out.UserKey
-//   - cipher out.EncryptedCipher
+//   - key ports.UserKey
+//   - cipher ports.EncryptedCipher
 func (_e *MockCryptoEngine_Expecter) DecryptCipher(ctx interface{}, key interface{}, cipher interface{}) *MockCryptoEngine_DecryptCipher_Call {
 	return &MockCryptoEngine_DecryptCipher_Call{Call: _e.mock.On("DecryptCipher", ctx, key, cipher)}
 }
 
-func (_c *MockCryptoEngine_DecryptCipher_Call) Run(run func(ctx context.Context, key out.UserKey, cipher out.EncryptedCipher)) *MockCryptoEngine_DecryptCipher_Call {
+func (_c *MockCryptoEngine_DecryptCipher_Call) Run(run func(ctx context.Context, key ports.UserKey, cipher ports.EncryptedCipher)) *MockCryptoEngine_DecryptCipher_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 out.UserKey
+		var arg1 ports.UserKey
 		if args[1] != nil {
-			arg1 = args[1].(out.UserKey)
+			arg1 = args[1].(ports.UserKey)
 		}
-		var arg2 out.EncryptedCipher
+		var arg2 ports.EncryptedCipher
 		if args[2] != nil {
-			arg2 = args[2].(out.EncryptedCipher)
+			arg2 = args[2].(ports.EncryptedCipher)
 		}
 		run(
 			arg0,
@@ -172,35 +172,35 @@ func (_c *MockCryptoEngine_DecryptCipher_Call) Run(run func(ctx context.Context,
 	return _c
 }
 
-func (_c *MockCryptoEngine_DecryptCipher_Call) Return(cipher1 out.Cipher, err error) *MockCryptoEngine_DecryptCipher_Call {
+func (_c *MockCryptoEngine_DecryptCipher_Call) Return(cipher1 ports.Cipher, err error) *MockCryptoEngine_DecryptCipher_Call {
 	_c.Call.Return(cipher1, err)
 	return _c
 }
 
-func (_c *MockCryptoEngine_DecryptCipher_Call) RunAndReturn(run func(ctx context.Context, key out.UserKey, cipher out.EncryptedCipher) (out.Cipher, error)) *MockCryptoEngine_DecryptCipher_Call {
+func (_c *MockCryptoEngine_DecryptCipher_Call) RunAndReturn(run func(ctx context.Context, key ports.UserKey, cipher ports.EncryptedCipher) (ports.Cipher, error)) *MockCryptoEngine_DecryptCipher_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // DeriveMasterKey provides a mock function for the type MockCryptoEngine
-func (_mock *MockCryptoEngine) DeriveMasterKey(ctx context.Context, input out.MasterKeyInput) (out.MasterKey, error) {
+func (_mock *MockCryptoEngine) DeriveMasterKey(ctx context.Context, input ports.MasterKeyInput) (ports.MasterKey, error) {
 	ret := _mock.Called(ctx, input)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeriveMasterKey")
 	}
 
-	var r0 out.MasterKey
+	var r0 ports.MasterKey
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.MasterKeyInput) (out.MasterKey, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.MasterKeyInput) (ports.MasterKey, error)); ok {
 		return returnFunc(ctx, input)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.MasterKeyInput) out.MasterKey); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.MasterKeyInput) ports.MasterKey); ok {
 		r0 = returnFunc(ctx, input)
 	} else {
-		r0 = ret.Get(0).(out.MasterKey)
+		r0 = ret.Get(0).(ports.MasterKey)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, out.MasterKeyInput) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.MasterKeyInput) error); ok {
 		r1 = returnFunc(ctx, input)
 	} else {
 		r1 = ret.Error(1)
@@ -215,20 +215,20 @@ type MockCryptoEngine_DeriveMasterKey_Call struct {
 
 // DeriveMasterKey is a helper method to define mock.On call
 //   - ctx context.Context
-//   - input out.MasterKeyInput
+//   - input ports.MasterKeyInput
 func (_e *MockCryptoEngine_Expecter) DeriveMasterKey(ctx interface{}, input interface{}) *MockCryptoEngine_DeriveMasterKey_Call {
 	return &MockCryptoEngine_DeriveMasterKey_Call{Call: _e.mock.On("DeriveMasterKey", ctx, input)}
 }
 
-func (_c *MockCryptoEngine_DeriveMasterKey_Call) Run(run func(ctx context.Context, input out.MasterKeyInput)) *MockCryptoEngine_DeriveMasterKey_Call {
+func (_c *MockCryptoEngine_DeriveMasterKey_Call) Run(run func(ctx context.Context, input ports.MasterKeyInput)) *MockCryptoEngine_DeriveMasterKey_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 out.MasterKeyInput
+		var arg1 ports.MasterKeyInput
 		if args[1] != nil {
-			arg1 = args[1].(out.MasterKeyInput)
+			arg1 = args[1].(ports.MasterKeyInput)
 		}
 		run(
 			arg0,
@@ -238,35 +238,35 @@ func (_c *MockCryptoEngine_DeriveMasterKey_Call) Run(run func(ctx context.Contex
 	return _c
 }
 
-func (_c *MockCryptoEngine_DeriveMasterKey_Call) Return(masterKey out.MasterKey, err error) *MockCryptoEngine_DeriveMasterKey_Call {
+func (_c *MockCryptoEngine_DeriveMasterKey_Call) Return(masterKey ports.MasterKey, err error) *MockCryptoEngine_DeriveMasterKey_Call {
 	_c.Call.Return(masterKey, err)
 	return _c
 }
 
-func (_c *MockCryptoEngine_DeriveMasterKey_Call) RunAndReturn(run func(ctx context.Context, input out.MasterKeyInput) (out.MasterKey, error)) *MockCryptoEngine_DeriveMasterKey_Call {
+func (_c *MockCryptoEngine_DeriveMasterKey_Call) RunAndReturn(run func(ctx context.Context, input ports.MasterKeyInput) (ports.MasterKey, error)) *MockCryptoEngine_DeriveMasterKey_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // EncryptCipher provides a mock function for the type MockCryptoEngine
-func (_mock *MockCryptoEngine) EncryptCipher(ctx context.Context, key out.UserKey, cipher out.Cipher) (out.EncryptedCipher, error) {
+func (_mock *MockCryptoEngine) EncryptCipher(ctx context.Context, key ports.UserKey, cipher ports.Cipher) (ports.EncryptedCipher, error) {
 	ret := _mock.Called(ctx, key, cipher)
 
 	if len(ret) == 0 {
 		panic("no return value specified for EncryptCipher")
 	}
 
-	var r0 out.EncryptedCipher
+	var r0 ports.EncryptedCipher
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.UserKey, out.Cipher) (out.EncryptedCipher, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.UserKey, ports.Cipher) (ports.EncryptedCipher, error)); ok {
 		return returnFunc(ctx, key, cipher)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.UserKey, out.Cipher) out.EncryptedCipher); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.UserKey, ports.Cipher) ports.EncryptedCipher); ok {
 		r0 = returnFunc(ctx, key, cipher)
 	} else {
-		r0 = ret.Get(0).(out.EncryptedCipher)
+		r0 = ret.Get(0).(ports.EncryptedCipher)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, out.UserKey, out.Cipher) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.UserKey, ports.Cipher) error); ok {
 		r1 = returnFunc(ctx, key, cipher)
 	} else {
 		r1 = ret.Error(1)
@@ -281,25 +281,25 @@ type MockCryptoEngine_EncryptCipher_Call struct {
 
 // EncryptCipher is a helper method to define mock.On call
 //   - ctx context.Context
-//   - key out.UserKey
-//   - cipher out.Cipher
+//   - key ports.UserKey
+//   - cipher ports.Cipher
 func (_e *MockCryptoEngine_Expecter) EncryptCipher(ctx interface{}, key interface{}, cipher interface{}) *MockCryptoEngine_EncryptCipher_Call {
 	return &MockCryptoEngine_EncryptCipher_Call{Call: _e.mock.On("EncryptCipher", ctx, key, cipher)}
 }
 
-func (_c *MockCryptoEngine_EncryptCipher_Call) Run(run func(ctx context.Context, key out.UserKey, cipher out.Cipher)) *MockCryptoEngine_EncryptCipher_Call {
+func (_c *MockCryptoEngine_EncryptCipher_Call) Run(run func(ctx context.Context, key ports.UserKey, cipher ports.Cipher)) *MockCryptoEngine_EncryptCipher_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 out.UserKey
+		var arg1 ports.UserKey
 		if args[1] != nil {
-			arg1 = args[1].(out.UserKey)
+			arg1 = args[1].(ports.UserKey)
 		}
-		var arg2 out.Cipher
+		var arg2 ports.Cipher
 		if args[2] != nil {
-			arg2 = args[2].(out.Cipher)
+			arg2 = args[2].(ports.Cipher)
 		}
 		run(
 			arg0,
@@ -310,35 +310,35 @@ func (_c *MockCryptoEngine_EncryptCipher_Call) Run(run func(ctx context.Context,
 	return _c
 }
 
-func (_c *MockCryptoEngine_EncryptCipher_Call) Return(encryptedCipher out.EncryptedCipher, err error) *MockCryptoEngine_EncryptCipher_Call {
+func (_c *MockCryptoEngine_EncryptCipher_Call) Return(encryptedCipher ports.EncryptedCipher, err error) *MockCryptoEngine_EncryptCipher_Call {
 	_c.Call.Return(encryptedCipher, err)
 	return _c
 }
 
-func (_c *MockCryptoEngine_EncryptCipher_Call) RunAndReturn(run func(ctx context.Context, key out.UserKey, cipher out.Cipher) (out.EncryptedCipher, error)) *MockCryptoEngine_EncryptCipher_Call {
+func (_c *MockCryptoEngine_EncryptCipher_Call) RunAndReturn(run func(ctx context.Context, key ports.UserKey, cipher ports.Cipher) (ports.EncryptedCipher, error)) *MockCryptoEngine_EncryptCipher_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // MakeAuthHash provides a mock function for the type MockCryptoEngine
-func (_mock *MockCryptoEngine) MakeAuthHash(ctx context.Context, input out.AuthHashInput) (out.AuthHash, error) {
+func (_mock *MockCryptoEngine) MakeAuthHash(ctx context.Context, input ports.AuthHashInput) (ports.AuthHash, error) {
 	ret := _mock.Called(ctx, input)
 
 	if len(ret) == 0 {
 		panic("no return value specified for MakeAuthHash")
 	}
 
-	var r0 out.AuthHash
+	var r0 ports.AuthHash
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.AuthHashInput) (out.AuthHash, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.AuthHashInput) (ports.AuthHash, error)); ok {
 		return returnFunc(ctx, input)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.AuthHashInput) out.AuthHash); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.AuthHashInput) ports.AuthHash); ok {
 		r0 = returnFunc(ctx, input)
 	} else {
-		r0 = ret.Get(0).(out.AuthHash)
+		r0 = ret.Get(0).(ports.AuthHash)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, out.AuthHashInput) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.AuthHashInput) error); ok {
 		r1 = returnFunc(ctx, input)
 	} else {
 		r1 = ret.Error(1)
@@ -353,20 +353,20 @@ type MockCryptoEngine_MakeAuthHash_Call struct {
 
 // MakeAuthHash is a helper method to define mock.On call
 //   - ctx context.Context
-//   - input out.AuthHashInput
+//   - input ports.AuthHashInput
 func (_e *MockCryptoEngine_Expecter) MakeAuthHash(ctx interface{}, input interface{}) *MockCryptoEngine_MakeAuthHash_Call {
 	return &MockCryptoEngine_MakeAuthHash_Call{Call: _e.mock.On("MakeAuthHash", ctx, input)}
 }
 
-func (_c *MockCryptoEngine_MakeAuthHash_Call) Run(run func(ctx context.Context, input out.AuthHashInput)) *MockCryptoEngine_MakeAuthHash_Call {
+func (_c *MockCryptoEngine_MakeAuthHash_Call) Run(run func(ctx context.Context, input ports.AuthHashInput)) *MockCryptoEngine_MakeAuthHash_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 out.AuthHashInput
+		var arg1 ports.AuthHashInput
 		if args[1] != nil {
-			arg1 = args[1].(out.AuthHashInput)
+			arg1 = args[1].(ports.AuthHashInput)
 		}
 		run(
 			arg0,
@@ -376,35 +376,35 @@ func (_c *MockCryptoEngine_MakeAuthHash_Call) Run(run func(ctx context.Context, 
 	return _c
 }
 
-func (_c *MockCryptoEngine_MakeAuthHash_Call) Return(authHash out.AuthHash, err error) *MockCryptoEngine_MakeAuthHash_Call {
+func (_c *MockCryptoEngine_MakeAuthHash_Call) Return(authHash ports.AuthHash, err error) *MockCryptoEngine_MakeAuthHash_Call {
 	_c.Call.Return(authHash, err)
 	return _c
 }
 
-func (_c *MockCryptoEngine_MakeAuthHash_Call) RunAndReturn(run func(ctx context.Context, input out.AuthHashInput) (out.AuthHash, error)) *MockCryptoEngine_MakeAuthHash_Call {
+func (_c *MockCryptoEngine_MakeAuthHash_Call) RunAndReturn(run func(ctx context.Context, input ports.AuthHashInput) (ports.AuthHash, error)) *MockCryptoEngine_MakeAuthHash_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // UnlockUserKey provides a mock function for the type MockCryptoEngine
-func (_mock *MockCryptoEngine) UnlockUserKey(ctx context.Context, input out.UserKeyInput) (out.UserKey, error) {
+func (_mock *MockCryptoEngine) UnlockUserKey(ctx context.Context, input ports.UserKeyInput) (ports.UserKey, error) {
 	ret := _mock.Called(ctx, input)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UnlockUserKey")
 	}
 
-	var r0 out.UserKey
+	var r0 ports.UserKey
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.UserKeyInput) (out.UserKey, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.UserKeyInput) (ports.UserKey, error)); ok {
 		return returnFunc(ctx, input)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.UserKeyInput) out.UserKey); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.UserKeyInput) ports.UserKey); ok {
 		r0 = returnFunc(ctx, input)
 	} else {
-		r0 = ret.Get(0).(out.UserKey)
+		r0 = ret.Get(0).(ports.UserKey)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, out.UserKeyInput) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.UserKeyInput) error); ok {
 		r1 = returnFunc(ctx, input)
 	} else {
 		r1 = ret.Error(1)
@@ -419,20 +419,20 @@ type MockCryptoEngine_UnlockUserKey_Call struct {
 
 // UnlockUserKey is a helper method to define mock.On call
 //   - ctx context.Context
-//   - input out.UserKeyInput
+//   - input ports.UserKeyInput
 func (_e *MockCryptoEngine_Expecter) UnlockUserKey(ctx interface{}, input interface{}) *MockCryptoEngine_UnlockUserKey_Call {
 	return &MockCryptoEngine_UnlockUserKey_Call{Call: _e.mock.On("UnlockUserKey", ctx, input)}
 }
 
-func (_c *MockCryptoEngine_UnlockUserKey_Call) Run(run func(ctx context.Context, input out.UserKeyInput)) *MockCryptoEngine_UnlockUserKey_Call {
+func (_c *MockCryptoEngine_UnlockUserKey_Call) Run(run func(ctx context.Context, input ports.UserKeyInput)) *MockCryptoEngine_UnlockUserKey_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 out.UserKeyInput
+		var arg1 ports.UserKeyInput
 		if args[1] != nil {
-			arg1 = args[1].(out.UserKeyInput)
+			arg1 = args[1].(ports.UserKeyInput)
 		}
 		run(
 			arg0,
@@ -442,12 +442,12 @@ func (_c *MockCryptoEngine_UnlockUserKey_Call) Run(run func(ctx context.Context,
 	return _c
 }
 
-func (_c *MockCryptoEngine_UnlockUserKey_Call) Return(userKey out.UserKey, err error) *MockCryptoEngine_UnlockUserKey_Call {
+func (_c *MockCryptoEngine_UnlockUserKey_Call) Return(userKey ports.UserKey, err error) *MockCryptoEngine_UnlockUserKey_Call {
 	_c.Call.Return(userKey, err)
 	return _c
 }
 
-func (_c *MockCryptoEngine_UnlockUserKey_Call) RunAndReturn(run func(ctx context.Context, input out.UserKeyInput) (out.UserKey, error)) *MockCryptoEngine_UnlockUserKey_Call {
+func (_c *MockCryptoEngine_UnlockUserKey_Call) RunAndReturn(run func(ctx context.Context, input ports.UserKeyInput) (ports.UserKey, error)) *MockCryptoEngine_UnlockUserKey_Call {
 	_c.Call.Return(run)
 	return _c
 }

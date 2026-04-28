@@ -1,4 +1,4 @@
-package out
+package ports
 
 // Random reads random bytes.
 type Random interface {

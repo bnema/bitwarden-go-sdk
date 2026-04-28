@@ -7,7 +7,7 @@ package mocks
 import (
 	"context"
 
-	"github.com/bnema/bitwarden-go-sdk/internal/ports/out"
+	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -39,24 +39,24 @@ func (_m *MockIdentityClient) EXPECT() *MockIdentityClient_Expecter {
 }
 
 // LoginPassword provides a mock function for the type MockIdentityClient
-func (_mock *MockIdentityClient) LoginPassword(ctx context.Context, req out.LoginRequest) (out.LoginResult, error) {
+func (_mock *MockIdentityClient) LoginPassword(ctx context.Context, req ports.LoginRequest) (ports.LoginResult, error) {
 	ret := _mock.Called(ctx, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for LoginPassword")
 	}
 
-	var r0 out.LoginResult
+	var r0 ports.LoginResult
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.LoginRequest) (out.LoginResult, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.LoginRequest) (ports.LoginResult, error)); ok {
 		return returnFunc(ctx, req)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.LoginRequest) out.LoginResult); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.LoginRequest) ports.LoginResult); ok {
 		r0 = returnFunc(ctx, req)
 	} else {
-		r0 = ret.Get(0).(out.LoginResult)
+		r0 = ret.Get(0).(ports.LoginResult)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, out.LoginRequest) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.LoginRequest) error); ok {
 		r1 = returnFunc(ctx, req)
 	} else {
 		r1 = ret.Error(1)
@@ -71,20 +71,20 @@ type MockIdentityClient_LoginPassword_Call struct {
 
 // LoginPassword is a helper method to define mock.On call
 //   - ctx context.Context
-//   - req out.LoginRequest
+//   - req ports.LoginRequest
 func (_e *MockIdentityClient_Expecter) LoginPassword(ctx interface{}, req interface{}) *MockIdentityClient_LoginPassword_Call {
 	return &MockIdentityClient_LoginPassword_Call{Call: _e.mock.On("LoginPassword", ctx, req)}
 }
 
-func (_c *MockIdentityClient_LoginPassword_Call) Run(run func(ctx context.Context, req out.LoginRequest)) *MockIdentityClient_LoginPassword_Call {
+func (_c *MockIdentityClient_LoginPassword_Call) Run(run func(ctx context.Context, req ports.LoginRequest)) *MockIdentityClient_LoginPassword_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 out.LoginRequest
+		var arg1 ports.LoginRequest
 		if args[1] != nil {
-			arg1 = args[1].(out.LoginRequest)
+			arg1 = args[1].(ports.LoginRequest)
 		}
 		run(
 			arg0,
@@ -94,33 +94,33 @@ func (_c *MockIdentityClient_LoginPassword_Call) Run(run func(ctx context.Contex
 	return _c
 }
 
-func (_c *MockIdentityClient_LoginPassword_Call) Return(loginResult out.LoginResult, err error) *MockIdentityClient_LoginPassword_Call {
+func (_c *MockIdentityClient_LoginPassword_Call) Return(loginResult ports.LoginResult, err error) *MockIdentityClient_LoginPassword_Call {
 	_c.Call.Return(loginResult, err)
 	return _c
 }
 
-func (_c *MockIdentityClient_LoginPassword_Call) RunAndReturn(run func(ctx context.Context, req out.LoginRequest) (out.LoginResult, error)) *MockIdentityClient_LoginPassword_Call {
+func (_c *MockIdentityClient_LoginPassword_Call) RunAndReturn(run func(ctx context.Context, req ports.LoginRequest) (ports.LoginResult, error)) *MockIdentityClient_LoginPassword_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Prelogin provides a mock function for the type MockIdentityClient
-func (_mock *MockIdentityClient) Prelogin(ctx context.Context, email string) (out.PreloginResult, error) {
+func (_mock *MockIdentityClient) Prelogin(ctx context.Context, email string) (ports.PreloginResult, error) {
 	ret := _mock.Called(ctx, email)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Prelogin")
 	}
 
-	var r0 out.PreloginResult
+	var r0 ports.PreloginResult
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (out.PreloginResult, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (ports.PreloginResult, error)); ok {
 		return returnFunc(ctx, email)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) out.PreloginResult); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ports.PreloginResult); ok {
 		r0 = returnFunc(ctx, email)
 	} else {
-		r0 = ret.Get(0).(out.PreloginResult)
+		r0 = ret.Get(0).(ports.PreloginResult)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
 		r1 = returnFunc(ctx, email)
@@ -160,33 +160,33 @@ func (_c *MockIdentityClient_Prelogin_Call) Run(run func(ctx context.Context, em
 	return _c
 }
 
-func (_c *MockIdentityClient_Prelogin_Call) Return(preloginResult out.PreloginResult, err error) *MockIdentityClient_Prelogin_Call {
+func (_c *MockIdentityClient_Prelogin_Call) Return(preloginResult ports.PreloginResult, err error) *MockIdentityClient_Prelogin_Call {
 	_c.Call.Return(preloginResult, err)
 	return _c
 }
 
-func (_c *MockIdentityClient_Prelogin_Call) RunAndReturn(run func(ctx context.Context, email string) (out.PreloginResult, error)) *MockIdentityClient_Prelogin_Call {
+func (_c *MockIdentityClient_Prelogin_Call) RunAndReturn(run func(ctx context.Context, email string) (ports.PreloginResult, error)) *MockIdentityClient_Prelogin_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Refresh provides a mock function for the type MockIdentityClient
-func (_mock *MockIdentityClient) Refresh(ctx context.Context, refreshToken string) (out.TokenSet, error) {
+func (_mock *MockIdentityClient) Refresh(ctx context.Context, refreshToken string) (ports.TokenSet, error) {
 	ret := _mock.Called(ctx, refreshToken)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Refresh")
 	}
 
-	var r0 out.TokenSet
+	var r0 ports.TokenSet
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (out.TokenSet, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (ports.TokenSet, error)); ok {
 		return returnFunc(ctx, refreshToken)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) out.TokenSet); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ports.TokenSet); ok {
 		r0 = returnFunc(ctx, refreshToken)
 	} else {
-		r0 = ret.Get(0).(out.TokenSet)
+		r0 = ret.Get(0).(ports.TokenSet)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
 		r1 = returnFunc(ctx, refreshToken)
@@ -226,12 +226,12 @@ func (_c *MockIdentityClient_Refresh_Call) Run(run func(ctx context.Context, ref
 	return _c
 }
 
-func (_c *MockIdentityClient_Refresh_Call) Return(tokenSet out.TokenSet, err error) *MockIdentityClient_Refresh_Call {
+func (_c *MockIdentityClient_Refresh_Call) Return(tokenSet ports.TokenSet, err error) *MockIdentityClient_Refresh_Call {
 	_c.Call.Return(tokenSet, err)
 	return _c
 }
 
-func (_c *MockIdentityClient_Refresh_Call) RunAndReturn(run func(ctx context.Context, refreshToken string) (out.TokenSet, error)) *MockIdentityClient_Refresh_Call {
+func (_c *MockIdentityClient_Refresh_Call) RunAndReturn(run func(ctx context.Context, refreshToken string) (ports.TokenSet, error)) *MockIdentityClient_Refresh_Call {
 	_c.Call.Return(run)
 	return _c
 }

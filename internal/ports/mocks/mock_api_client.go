@@ -7,7 +7,7 @@ package mocks
 import (
 	"context"
 
-	"github.com/bnema/bitwarden-go-sdk/internal/ports/out"
+	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -39,22 +39,22 @@ func (_m *MockAPIClient) EXPECT() *MockAPIClient_Expecter {
 }
 
 // AccountProfile provides a mock function for the type MockAPIClient
-func (_mock *MockAPIClient) AccountProfile(ctx context.Context) (out.AccountProfile, error) {
+func (_mock *MockAPIClient) AccountProfile(ctx context.Context) (ports.AccountProfile, error) {
 	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for AccountProfile")
 	}
 
-	var r0 out.AccountProfile
+	var r0 ports.AccountProfile
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) (out.AccountProfile, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (ports.AccountProfile, error)); ok {
 		return returnFunc(ctx)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) out.AccountProfile); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ports.AccountProfile); ok {
 		r0 = returnFunc(ctx)
 	} else {
-		r0 = ret.Get(0).(out.AccountProfile)
+		r0 = ret.Get(0).(ports.AccountProfile)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = returnFunc(ctx)
@@ -88,33 +88,33 @@ func (_c *MockAPIClient_AccountProfile_Call) Run(run func(ctx context.Context)) 
 	return _c
 }
 
-func (_c *MockAPIClient_AccountProfile_Call) Return(accountProfile out.AccountProfile, err error) *MockAPIClient_AccountProfile_Call {
+func (_c *MockAPIClient_AccountProfile_Call) Return(accountProfile ports.AccountProfile, err error) *MockAPIClient_AccountProfile_Call {
 	_c.Call.Return(accountProfile, err)
 	return _c
 }
 
-func (_c *MockAPIClient_AccountProfile_Call) RunAndReturn(run func(ctx context.Context) (out.AccountProfile, error)) *MockAPIClient_AccountProfile_Call {
+func (_c *MockAPIClient_AccountProfile_Call) RunAndReturn(run func(ctx context.Context) (ports.AccountProfile, error)) *MockAPIClient_AccountProfile_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Config provides a mock function for the type MockAPIClient
-func (_mock *MockAPIClient) Config(ctx context.Context) (out.ServerConfig, error) {
+func (_mock *MockAPIClient) Config(ctx context.Context) (ports.ServerConfig, error) {
 	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Config")
 	}
 
-	var r0 out.ServerConfig
+	var r0 ports.ServerConfig
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) (out.ServerConfig, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (ports.ServerConfig, error)); ok {
 		return returnFunc(ctx)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) out.ServerConfig); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ports.ServerConfig); ok {
 		r0 = returnFunc(ctx)
 	} else {
-		r0 = ret.Get(0).(out.ServerConfig)
+		r0 = ret.Get(0).(ports.ServerConfig)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = returnFunc(ctx)
@@ -148,35 +148,35 @@ func (_c *MockAPIClient_Config_Call) Run(run func(ctx context.Context)) *MockAPI
 	return _c
 }
 
-func (_c *MockAPIClient_Config_Call) Return(serverConfig out.ServerConfig, err error) *MockAPIClient_Config_Call {
+func (_c *MockAPIClient_Config_Call) Return(serverConfig ports.ServerConfig, err error) *MockAPIClient_Config_Call {
 	_c.Call.Return(serverConfig, err)
 	return _c
 }
 
-func (_c *MockAPIClient_Config_Call) RunAndReturn(run func(ctx context.Context) (out.ServerConfig, error)) *MockAPIClient_Config_Call {
+func (_c *MockAPIClient_Config_Call) RunAndReturn(run func(ctx context.Context) (ports.ServerConfig, error)) *MockAPIClient_Config_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // CreateCipher provides a mock function for the type MockAPIClient
-func (_mock *MockAPIClient) CreateCipher(ctx context.Context, cipher out.EncryptedCipher) (out.EncryptedCipher, error) {
+func (_mock *MockAPIClient) CreateCipher(ctx context.Context, cipher ports.EncryptedCipher) (ports.EncryptedCipher, error) {
 	ret := _mock.Called(ctx, cipher)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateCipher")
 	}
 
-	var r0 out.EncryptedCipher
+	var r0 ports.EncryptedCipher
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.EncryptedCipher) (out.EncryptedCipher, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.EncryptedCipher) (ports.EncryptedCipher, error)); ok {
 		return returnFunc(ctx, cipher)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.EncryptedCipher) out.EncryptedCipher); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.EncryptedCipher) ports.EncryptedCipher); ok {
 		r0 = returnFunc(ctx, cipher)
 	} else {
-		r0 = ret.Get(0).(out.EncryptedCipher)
+		r0 = ret.Get(0).(ports.EncryptedCipher)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, out.EncryptedCipher) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.EncryptedCipher) error); ok {
 		r1 = returnFunc(ctx, cipher)
 	} else {
 		r1 = ret.Error(1)
@@ -191,20 +191,20 @@ type MockAPIClient_CreateCipher_Call struct {
 
 // CreateCipher is a helper method to define mock.On call
 //   - ctx context.Context
-//   - cipher out.EncryptedCipher
+//   - cipher ports.EncryptedCipher
 func (_e *MockAPIClient_Expecter) CreateCipher(ctx interface{}, cipher interface{}) *MockAPIClient_CreateCipher_Call {
 	return &MockAPIClient_CreateCipher_Call{Call: _e.mock.On("CreateCipher", ctx, cipher)}
 }
 
-func (_c *MockAPIClient_CreateCipher_Call) Run(run func(ctx context.Context, cipher out.EncryptedCipher)) *MockAPIClient_CreateCipher_Call {
+func (_c *MockAPIClient_CreateCipher_Call) Run(run func(ctx context.Context, cipher ports.EncryptedCipher)) *MockAPIClient_CreateCipher_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 out.EncryptedCipher
+		var arg1 ports.EncryptedCipher
 		if args[1] != nil {
-			arg1 = args[1].(out.EncryptedCipher)
+			arg1 = args[1].(ports.EncryptedCipher)
 		}
 		run(
 			arg0,
@@ -214,12 +214,12 @@ func (_c *MockAPIClient_CreateCipher_Call) Run(run func(ctx context.Context, cip
 	return _c
 }
 
-func (_c *MockAPIClient_CreateCipher_Call) Return(encryptedCipher out.EncryptedCipher, err error) *MockAPIClient_CreateCipher_Call {
+func (_c *MockAPIClient_CreateCipher_Call) Return(encryptedCipher ports.EncryptedCipher, err error) *MockAPIClient_CreateCipher_Call {
 	_c.Call.Return(encryptedCipher, err)
 	return _c
 }
 
-func (_c *MockAPIClient_CreateCipher_Call) RunAndReturn(run func(ctx context.Context, cipher out.EncryptedCipher) (out.EncryptedCipher, error)) *MockAPIClient_CreateCipher_Call {
+func (_c *MockAPIClient_CreateCipher_Call) RunAndReturn(run func(ctx context.Context, cipher ports.EncryptedCipher) (ports.EncryptedCipher, error)) *MockAPIClient_CreateCipher_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -282,22 +282,22 @@ func (_c *MockAPIClient_DeleteCipher_Call) RunAndReturn(run func(ctx context.Con
 }
 
 // Subscription provides a mock function for the type MockAPIClient
-func (_mock *MockAPIClient) Subscription(ctx context.Context) (out.Subscription, error) {
+func (_mock *MockAPIClient) Subscription(ctx context.Context) (ports.Subscription, error) {
 	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Subscription")
 	}
 
-	var r0 out.Subscription
+	var r0 ports.Subscription
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) (out.Subscription, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (ports.Subscription, error)); ok {
 		return returnFunc(ctx)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) out.Subscription); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ports.Subscription); ok {
 		r0 = returnFunc(ctx)
 	} else {
-		r0 = ret.Get(0).(out.Subscription)
+		r0 = ret.Get(0).(ports.Subscription)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = returnFunc(ctx)
@@ -331,35 +331,35 @@ func (_c *MockAPIClient_Subscription_Call) Run(run func(ctx context.Context)) *M
 	return _c
 }
 
-func (_c *MockAPIClient_Subscription_Call) Return(subscription out.Subscription, err error) *MockAPIClient_Subscription_Call {
+func (_c *MockAPIClient_Subscription_Call) Return(subscription ports.Subscription, err error) *MockAPIClient_Subscription_Call {
 	_c.Call.Return(subscription, err)
 	return _c
 }
 
-func (_c *MockAPIClient_Subscription_Call) RunAndReturn(run func(ctx context.Context) (out.Subscription, error)) *MockAPIClient_Subscription_Call {
+func (_c *MockAPIClient_Subscription_Call) RunAndReturn(run func(ctx context.Context) (ports.Subscription, error)) *MockAPIClient_Subscription_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Sync provides a mock function for the type MockAPIClient
-func (_mock *MockAPIClient) Sync(ctx context.Context, opts out.SyncOptions) (out.SyncResult, error) {
+func (_mock *MockAPIClient) Sync(ctx context.Context, opts ports.SyncOptions) (ports.SyncResult, error) {
 	ret := _mock.Called(ctx, opts)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Sync")
 	}
 
-	var r0 out.SyncResult
+	var r0 ports.SyncResult
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.SyncOptions) (out.SyncResult, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.SyncOptions) (ports.SyncResult, error)); ok {
 		return returnFunc(ctx, opts)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.SyncOptions) out.SyncResult); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.SyncOptions) ports.SyncResult); ok {
 		r0 = returnFunc(ctx, opts)
 	} else {
-		r0 = ret.Get(0).(out.SyncResult)
+		r0 = ret.Get(0).(ports.SyncResult)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, out.SyncOptions) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.SyncOptions) error); ok {
 		r1 = returnFunc(ctx, opts)
 	} else {
 		r1 = ret.Error(1)
@@ -374,20 +374,20 @@ type MockAPIClient_Sync_Call struct {
 
 // Sync is a helper method to define mock.On call
 //   - ctx context.Context
-//   - opts out.SyncOptions
+//   - opts ports.SyncOptions
 func (_e *MockAPIClient_Expecter) Sync(ctx interface{}, opts interface{}) *MockAPIClient_Sync_Call {
 	return &MockAPIClient_Sync_Call{Call: _e.mock.On("Sync", ctx, opts)}
 }
 
-func (_c *MockAPIClient_Sync_Call) Run(run func(ctx context.Context, opts out.SyncOptions)) *MockAPIClient_Sync_Call {
+func (_c *MockAPIClient_Sync_Call) Run(run func(ctx context.Context, opts ports.SyncOptions)) *MockAPIClient_Sync_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 out.SyncOptions
+		var arg1 ports.SyncOptions
 		if args[1] != nil {
-			arg1 = args[1].(out.SyncOptions)
+			arg1 = args[1].(ports.SyncOptions)
 		}
 		run(
 			arg0,
@@ -397,35 +397,35 @@ func (_c *MockAPIClient_Sync_Call) Run(run func(ctx context.Context, opts out.Sy
 	return _c
 }
 
-func (_c *MockAPIClient_Sync_Call) Return(syncResult out.SyncResult, err error) *MockAPIClient_Sync_Call {
+func (_c *MockAPIClient_Sync_Call) Return(syncResult ports.SyncResult, err error) *MockAPIClient_Sync_Call {
 	_c.Call.Return(syncResult, err)
 	return _c
 }
 
-func (_c *MockAPIClient_Sync_Call) RunAndReturn(run func(ctx context.Context, opts out.SyncOptions) (out.SyncResult, error)) *MockAPIClient_Sync_Call {
+func (_c *MockAPIClient_Sync_Call) RunAndReturn(run func(ctx context.Context, opts ports.SyncOptions) (ports.SyncResult, error)) *MockAPIClient_Sync_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // UpdateCipher provides a mock function for the type MockAPIClient
-func (_mock *MockAPIClient) UpdateCipher(ctx context.Context, id string, cipher out.EncryptedCipher) (out.EncryptedCipher, error) {
+func (_mock *MockAPIClient) UpdateCipher(ctx context.Context, id string, cipher ports.EncryptedCipher) (ports.EncryptedCipher, error) {
 	ret := _mock.Called(ctx, id, cipher)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateCipher")
 	}
 
-	var r0 out.EncryptedCipher
+	var r0 ports.EncryptedCipher
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, out.EncryptedCipher) (out.EncryptedCipher, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, ports.EncryptedCipher) (ports.EncryptedCipher, error)); ok {
 		return returnFunc(ctx, id, cipher)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, out.EncryptedCipher) out.EncryptedCipher); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, ports.EncryptedCipher) ports.EncryptedCipher); ok {
 		r0 = returnFunc(ctx, id, cipher)
 	} else {
-		r0 = ret.Get(0).(out.EncryptedCipher)
+		r0 = ret.Get(0).(ports.EncryptedCipher)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, out.EncryptedCipher) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, ports.EncryptedCipher) error); ok {
 		r1 = returnFunc(ctx, id, cipher)
 	} else {
 		r1 = ret.Error(1)
@@ -441,12 +441,12 @@ type MockAPIClient_UpdateCipher_Call struct {
 // UpdateCipher is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-//   - cipher out.EncryptedCipher
+//   - cipher ports.EncryptedCipher
 func (_e *MockAPIClient_Expecter) UpdateCipher(ctx interface{}, id interface{}, cipher interface{}) *MockAPIClient_UpdateCipher_Call {
 	return &MockAPIClient_UpdateCipher_Call{Call: _e.mock.On("UpdateCipher", ctx, id, cipher)}
 }
 
-func (_c *MockAPIClient_UpdateCipher_Call) Run(run func(ctx context.Context, id string, cipher out.EncryptedCipher)) *MockAPIClient_UpdateCipher_Call {
+func (_c *MockAPIClient_UpdateCipher_Call) Run(run func(ctx context.Context, id string, cipher ports.EncryptedCipher)) *MockAPIClient_UpdateCipher_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -456,9 +456,9 @@ func (_c *MockAPIClient_UpdateCipher_Call) Run(run func(ctx context.Context, id 
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
-		var arg2 out.EncryptedCipher
+		var arg2 ports.EncryptedCipher
 		if args[2] != nil {
-			arg2 = args[2].(out.EncryptedCipher)
+			arg2 = args[2].(ports.EncryptedCipher)
 		}
 		run(
 			arg0,
@@ -469,12 +469,12 @@ func (_c *MockAPIClient_UpdateCipher_Call) Run(run func(ctx context.Context, id 
 	return _c
 }
 
-func (_c *MockAPIClient_UpdateCipher_Call) Return(encryptedCipher out.EncryptedCipher, err error) *MockAPIClient_UpdateCipher_Call {
+func (_c *MockAPIClient_UpdateCipher_Call) Return(encryptedCipher ports.EncryptedCipher, err error) *MockAPIClient_UpdateCipher_Call {
 	_c.Call.Return(encryptedCipher, err)
 	return _c
 }
 
-func (_c *MockAPIClient_UpdateCipher_Call) RunAndReturn(run func(ctx context.Context, id string, cipher out.EncryptedCipher) (out.EncryptedCipher, error)) *MockAPIClient_UpdateCipher_Call {
+func (_c *MockAPIClient_UpdateCipher_Call) RunAndReturn(run func(ctx context.Context, id string, cipher ports.EncryptedCipher) (ports.EncryptedCipher, error)) *MockAPIClient_UpdateCipher_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -1,21 +1,21 @@
 package core
 
-import "github.com/bnema/bitwarden-go-sdk/internal/ports/out"
+import "github.com/bnema/bitwarden-go-sdk/internal/ports"
 
 // Client wires scaffold dependencies for future SDK orchestration.
 type Client struct {
-	identity out.IdentityClient
-	api      out.APIClient
-	crypto   out.CryptoEngine
-	logger   out.Logger
+	identity ports.IdentityClient
+	api      ports.APIClient
+	crypto   ports.CryptoEngine
+	logger   ports.Logger
 }
 
 // Dependencies groups outbound dependencies used by Client.
 type Dependencies struct {
-	Identity out.IdentityClient
-	API      out.APIClient
-	Crypto   out.CryptoEngine
-	Logger   out.Logger
+	Identity ports.IdentityClient
+	API      ports.APIClient
+	Crypto   ports.CryptoEngine
+	Logger   ports.Logger
 }
 
 // NewClient constructs an internal scaffold client.

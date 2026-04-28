@@ -33,7 +33,7 @@ Local-first Go SDK for Bitwarden and official self-hosted Bitwarden instances.
 
 - `bitwarden/` — public idiomatic client API.
 - `internal/core/` — use-case orchestration.
-- `internal/ports/out/` — mockable outbound ports.
+- `internal/ports/` — mockable outbound ports.
 - `internal/adapters/` — concrete HTTP, crypto, memory, and config adapters.
 - `docs/reference/` — source-backed Bitwarden reference documentation.
 - `testdata/bitwarden/` — sanitized fixtures derived from official source mapping.

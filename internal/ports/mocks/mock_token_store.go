@@ -7,7 +7,7 @@ package mocks
 import (
 	"context"
 
-	"github.com/bnema/bitwarden-go-sdk/internal/ports/out"
+	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -90,22 +90,22 @@ func (_c *MockTokenStore_ClearTokens_Call) RunAndReturn(run func(ctx context.Con
 }
 
 // LoadTokens provides a mock function for the type MockTokenStore
-func (_mock *MockTokenStore) LoadTokens(ctx context.Context) (out.TokenSet, error) {
+func (_mock *MockTokenStore) LoadTokens(ctx context.Context) (ports.TokenSet, error) {
 	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for LoadTokens")
 	}
 
-	var r0 out.TokenSet
+	var r0 ports.TokenSet
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) (out.TokenSet, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (ports.TokenSet, error)); ok {
 		return returnFunc(ctx)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) out.TokenSet); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ports.TokenSet); ok {
 		r0 = returnFunc(ctx)
 	} else {
-		r0 = ret.Get(0).(out.TokenSet)
+		r0 = ret.Get(0).(ports.TokenSet)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = returnFunc(ctx)
@@ -139,18 +139,18 @@ func (_c *MockTokenStore_LoadTokens_Call) Run(run func(ctx context.Context)) *Mo
 	return _c
 }
 
-func (_c *MockTokenStore_LoadTokens_Call) Return(tokenSet out.TokenSet, err error) *MockTokenStore_LoadTokens_Call {
+func (_c *MockTokenStore_LoadTokens_Call) Return(tokenSet ports.TokenSet, err error) *MockTokenStore_LoadTokens_Call {
 	_c.Call.Return(tokenSet, err)
 	return _c
 }
 
-func (_c *MockTokenStore_LoadTokens_Call) RunAndReturn(run func(ctx context.Context) (out.TokenSet, error)) *MockTokenStore_LoadTokens_Call {
+func (_c *MockTokenStore_LoadTokens_Call) RunAndReturn(run func(ctx context.Context) (ports.TokenSet, error)) *MockTokenStore_LoadTokens_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SaveTokens provides a mock function for the type MockTokenStore
-func (_mock *MockTokenStore) SaveTokens(ctx context.Context, tokens out.TokenSet) error {
+func (_mock *MockTokenStore) SaveTokens(ctx context.Context, tokens ports.TokenSet) error {
 	ret := _mock.Called(ctx, tokens)
 
 	if len(ret) == 0 {
@@ -158,7 +158,7 @@ func (_mock *MockTokenStore) SaveTokens(ctx context.Context, tokens out.TokenSet
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, out.TokenSet) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.TokenSet) error); ok {
 		r0 = returnFunc(ctx, tokens)
 	} else {
 		r0 = ret.Error(0)
@@ -173,20 +173,20 @@ type MockTokenStore_SaveTokens_Call struct {
 
 // SaveTokens is a helper method to define mock.On call
 //   - ctx context.Context
-//   - tokens out.TokenSet
+//   - tokens ports.TokenSet
 func (_e *MockTokenStore_Expecter) SaveTokens(ctx interface{}, tokens interface{}) *MockTokenStore_SaveTokens_Call {
 	return &MockTokenStore_SaveTokens_Call{Call: _e.mock.On("SaveTokens", ctx, tokens)}
 }
 
-func (_c *MockTokenStore_SaveTokens_Call) Run(run func(ctx context.Context, tokens out.TokenSet)) *MockTokenStore_SaveTokens_Call {
+func (_c *MockTokenStore_SaveTokens_Call) Run(run func(ctx context.Context, tokens ports.TokenSet)) *MockTokenStore_SaveTokens_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 out.TokenSet
+		var arg1 ports.TokenSet
 		if args[1] != nil {
-			arg1 = args[1].(out.TokenSet)
+			arg1 = args[1].(ports.TokenSet)
 		}
 		run(
 			arg0,
@@ -201,7 +201,7 @@ func (_c *MockTokenStore_SaveTokens_Call) Return(err error) *MockTokenStore_Save
 	return _c
 }
 
-func (_c *MockTokenStore_SaveTokens_Call) RunAndReturn(run func(ctx context.Context, tokens out.TokenSet) error) *MockTokenStore_SaveTokens_Call {
+func (_c *MockTokenStore_SaveTokens_Call) RunAndReturn(run func(ctx context.Context, tokens ports.TokenSet) error) *MockTokenStore_SaveTokens_Call {
 	_c.Call.Return(run)
 	return _c
 }
