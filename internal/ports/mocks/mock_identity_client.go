@@ -38,25 +38,91 @@ func (_m *MockIdentityClient) EXPECT() *MockIdentityClient_Expecter {
 	return &MockIdentityClient_Expecter{mock: &_m.Mock}
 }
 
+// CompleteTwoFactor provides a mock function for the type MockIdentityClient
+func (_mock *MockIdentityClient) CompleteTwoFactor(ctx context.Context, req ports.TwoFactorTokenRequest) (ports.TokenResponse, error) {
+	ret := _mock.Called(ctx, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CompleteTwoFactor")
+	}
+
+	var r0 ports.TokenResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.TwoFactorTokenRequest) (ports.TokenResponse, error)); ok {
+		return returnFunc(ctx, req)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.TwoFactorTokenRequest) ports.TokenResponse); ok {
+		r0 = returnFunc(ctx, req)
+	} else {
+		r0 = ret.Get(0).(ports.TokenResponse)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.TwoFactorTokenRequest) error); ok {
+		r1 = returnFunc(ctx, req)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockIdentityClient_CompleteTwoFactor_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CompleteTwoFactor'
+type MockIdentityClient_CompleteTwoFactor_Call struct {
+	*mock.Call
+}
+
+// CompleteTwoFactor is a helper method to define mock.On call
+//   - ctx context.Context
+//   - req ports.TwoFactorTokenRequest
+func (_e *MockIdentityClient_Expecter) CompleteTwoFactor(ctx interface{}, req interface{}) *MockIdentityClient_CompleteTwoFactor_Call {
+	return &MockIdentityClient_CompleteTwoFactor_Call{Call: _e.mock.On("CompleteTwoFactor", ctx, req)}
+}
+
+func (_c *MockIdentityClient_CompleteTwoFactor_Call) Run(run func(ctx context.Context, req ports.TwoFactorTokenRequest)) *MockIdentityClient_CompleteTwoFactor_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 ports.TwoFactorTokenRequest
+		if args[1] != nil {
+			arg1 = args[1].(ports.TwoFactorTokenRequest)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockIdentityClient_CompleteTwoFactor_Call) Return(tokenResponse ports.TokenResponse, err error) *MockIdentityClient_CompleteTwoFactor_Call {
+	_c.Call.Return(tokenResponse, err)
+	return _c
+}
+
+func (_c *MockIdentityClient_CompleteTwoFactor_Call) RunAndReturn(run func(ctx context.Context, req ports.TwoFactorTokenRequest) (ports.TokenResponse, error)) *MockIdentityClient_CompleteTwoFactor_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // LoginPassword provides a mock function for the type MockIdentityClient
-func (_mock *MockIdentityClient) LoginPassword(ctx context.Context, req ports.LoginRequest) (ports.LoginResult, error) {
+func (_mock *MockIdentityClient) LoginPassword(ctx context.Context, req ports.PasswordTokenRequest) (ports.TokenResponse, error) {
 	ret := _mock.Called(ctx, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for LoginPassword")
 	}
 
-	var r0 ports.LoginResult
+	var r0 ports.TokenResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.LoginRequest) (ports.LoginResult, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.PasswordTokenRequest) (ports.TokenResponse, error)); ok {
 		return returnFunc(ctx, req)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.LoginRequest) ports.LoginResult); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.PasswordTokenRequest) ports.TokenResponse); ok {
 		r0 = returnFunc(ctx, req)
 	} else {
-		r0 = ret.Get(0).(ports.LoginResult)
+		r0 = ret.Get(0).(ports.TokenResponse)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.LoginRequest) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.PasswordTokenRequest) error); ok {
 		r1 = returnFunc(ctx, req)
 	} else {
 		r1 = ret.Error(1)
@@ -71,20 +137,20 @@ type MockIdentityClient_LoginPassword_Call struct {
 
 // LoginPassword is a helper method to define mock.On call
 //   - ctx context.Context
-//   - req ports.LoginRequest
+//   - req ports.PasswordTokenRequest
 func (_e *MockIdentityClient_Expecter) LoginPassword(ctx interface{}, req interface{}) *MockIdentityClient_LoginPassword_Call {
 	return &MockIdentityClient_LoginPassword_Call{Call: _e.mock.On("LoginPassword", ctx, req)}
 }
 
-func (_c *MockIdentityClient_LoginPassword_Call) Run(run func(ctx context.Context, req ports.LoginRequest)) *MockIdentityClient_LoginPassword_Call {
+func (_c *MockIdentityClient_LoginPassword_Call) Run(run func(ctx context.Context, req ports.PasswordTokenRequest)) *MockIdentityClient_LoginPassword_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 ports.LoginRequest
+		var arg1 ports.PasswordTokenRequest
 		if args[1] != nil {
-			arg1 = args[1].(ports.LoginRequest)
+			arg1 = args[1].(ports.PasswordTokenRequest)
 		}
 		run(
 			arg0,
@@ -94,12 +160,12 @@ func (_c *MockIdentityClient_LoginPassword_Call) Run(run func(ctx context.Contex
 	return _c
 }
 
-func (_c *MockIdentityClient_LoginPassword_Call) Return(loginResult ports.LoginResult, err error) *MockIdentityClient_LoginPassword_Call {
-	_c.Call.Return(loginResult, err)
+func (_c *MockIdentityClient_LoginPassword_Call) Return(tokenResponse ports.TokenResponse, err error) *MockIdentityClient_LoginPassword_Call {
+	_c.Call.Return(tokenResponse, err)
 	return _c
 }
 
-func (_c *MockIdentityClient_LoginPassword_Call) RunAndReturn(run func(ctx context.Context, req ports.LoginRequest) (ports.LoginResult, error)) *MockIdentityClient_LoginPassword_Call {
+func (_c *MockIdentityClient_LoginPassword_Call) RunAndReturn(run func(ctx context.Context, req ports.PasswordTokenRequest) (ports.TokenResponse, error)) *MockIdentityClient_LoginPassword_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -171,25 +237,25 @@ func (_c *MockIdentityClient_Prelogin_Call) RunAndReturn(run func(ctx context.Co
 }
 
 // Refresh provides a mock function for the type MockIdentityClient
-func (_mock *MockIdentityClient) Refresh(ctx context.Context, refreshToken string) (ports.TokenSet, error) {
-	ret := _mock.Called(ctx, refreshToken)
+func (_mock *MockIdentityClient) Refresh(ctx context.Context, req ports.RefreshTokenRequest) (ports.TokenResponse, error) {
+	ret := _mock.Called(ctx, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Refresh")
 	}
 
-	var r0 ports.TokenSet
+	var r0 ports.TokenResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (ports.TokenSet, error)); ok {
-		return returnFunc(ctx, refreshToken)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.RefreshTokenRequest) (ports.TokenResponse, error)); ok {
+		return returnFunc(ctx, req)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ports.TokenSet); ok {
-		r0 = returnFunc(ctx, refreshToken)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.RefreshTokenRequest) ports.TokenResponse); ok {
+		r0 = returnFunc(ctx, req)
 	} else {
-		r0 = ret.Get(0).(ports.TokenSet)
+		r0 = ret.Get(0).(ports.TokenResponse)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = returnFunc(ctx, refreshToken)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.RefreshTokenRequest) error); ok {
+		r1 = returnFunc(ctx, req)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -203,20 +269,20 @@ type MockIdentityClient_Refresh_Call struct {
 
 // Refresh is a helper method to define mock.On call
 //   - ctx context.Context
-//   - refreshToken string
-func (_e *MockIdentityClient_Expecter) Refresh(ctx interface{}, refreshToken interface{}) *MockIdentityClient_Refresh_Call {
-	return &MockIdentityClient_Refresh_Call{Call: _e.mock.On("Refresh", ctx, refreshToken)}
+//   - req ports.RefreshTokenRequest
+func (_e *MockIdentityClient_Expecter) Refresh(ctx interface{}, req interface{}) *MockIdentityClient_Refresh_Call {
+	return &MockIdentityClient_Refresh_Call{Call: _e.mock.On("Refresh", ctx, req)}
 }
 
-func (_c *MockIdentityClient_Refresh_Call) Run(run func(ctx context.Context, refreshToken string)) *MockIdentityClient_Refresh_Call {
+func (_c *MockIdentityClient_Refresh_Call) Run(run func(ctx context.Context, req ports.RefreshTokenRequest)) *MockIdentityClient_Refresh_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 ports.RefreshTokenRequest
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(ports.RefreshTokenRequest)
 		}
 		run(
 			arg0,
@@ -226,12 +292,12 @@ func (_c *MockIdentityClient_Refresh_Call) Run(run func(ctx context.Context, ref
 	return _c
 }
 
-func (_c *MockIdentityClient_Refresh_Call) Return(tokenSet ports.TokenSet, err error) *MockIdentityClient_Refresh_Call {
-	_c.Call.Return(tokenSet, err)
+func (_c *MockIdentityClient_Refresh_Call) Return(tokenResponse ports.TokenResponse, err error) *MockIdentityClient_Refresh_Call {
+	_c.Call.Return(tokenResponse, err)
 	return _c
 }
 
-func (_c *MockIdentityClient_Refresh_Call) RunAndReturn(run func(ctx context.Context, refreshToken string) (ports.TokenSet, error)) *MockIdentityClient_Refresh_Call {
+func (_c *MockIdentityClient_Refresh_Call) RunAndReturn(run func(ctx context.Context, req ports.RefreshTokenRequest) (ports.TokenResponse, error)) *MockIdentityClient_Refresh_Call {
 	_c.Call.Return(run)
 	return _c
 }

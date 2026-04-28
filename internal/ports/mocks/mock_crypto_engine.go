@@ -6,6 +6,7 @@ package mocks
 
 import (
 	"context"
+	"io"
 
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 	mock "github.com/stretchr/testify/mock"
@@ -36,6 +37,75 @@ type MockCryptoEngine_Expecter struct {
 
 func (_m *MockCryptoEngine) EXPECT() *MockCryptoEngine_Expecter {
 	return &MockCryptoEngine_Expecter{mock: &_m.Mock}
+}
+
+// DecryptAttachment provides a mock function for the type MockCryptoEngine
+func (_mock *MockCryptoEngine) DecryptAttachment(ctx context.Context, key ports.AttachmentKey, src io.Reader, dst io.Writer) error {
+	ret := _mock.Called(ctx, key, src, dst)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DecryptAttachment")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.AttachmentKey, io.Reader, io.Writer) error); ok {
+		r0 = returnFunc(ctx, key, src, dst)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockCryptoEngine_DecryptAttachment_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DecryptAttachment'
+type MockCryptoEngine_DecryptAttachment_Call struct {
+	*mock.Call
+}
+
+// DecryptAttachment is a helper method to define mock.On call
+//   - ctx context.Context
+//   - key ports.AttachmentKey
+//   - src io.Reader
+//   - dst io.Writer
+func (_e *MockCryptoEngine_Expecter) DecryptAttachment(ctx interface{}, key interface{}, src interface{}, dst interface{}) *MockCryptoEngine_DecryptAttachment_Call {
+	return &MockCryptoEngine_DecryptAttachment_Call{Call: _e.mock.On("DecryptAttachment", ctx, key, src, dst)}
+}
+
+func (_c *MockCryptoEngine_DecryptAttachment_Call) Run(run func(ctx context.Context, key ports.AttachmentKey, src io.Reader, dst io.Writer)) *MockCryptoEngine_DecryptAttachment_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 ports.AttachmentKey
+		if args[1] != nil {
+			arg1 = args[1].(ports.AttachmentKey)
+		}
+		var arg2 io.Reader
+		if args[2] != nil {
+			arg2 = args[2].(io.Reader)
+		}
+		var arg3 io.Writer
+		if args[3] != nil {
+			arg3 = args[3].(io.Writer)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCryptoEngine_DecryptAttachment_Call) Return(err error) *MockCryptoEngine_DecryptAttachment_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockCryptoEngine_DecryptAttachment_Call) RunAndReturn(run func(ctx context.Context, key ports.AttachmentKey, src io.Reader, dst io.Writer) error) *MockCryptoEngine_DecryptAttachment_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // DecryptAttachmentKey provides a mock function for the type MockCryptoEngine
@@ -244,6 +314,75 @@ func (_c *MockCryptoEngine_DeriveMasterKey_Call) Return(masterKey ports.MasterKe
 }
 
 func (_c *MockCryptoEngine_DeriveMasterKey_Call) RunAndReturn(run func(ctx context.Context, input ports.MasterKeyInput) (ports.MasterKey, error)) *MockCryptoEngine_DeriveMasterKey_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// EncryptAttachment provides a mock function for the type MockCryptoEngine
+func (_mock *MockCryptoEngine) EncryptAttachment(ctx context.Context, key ports.AttachmentKey, src io.Reader, dst io.Writer) error {
+	ret := _mock.Called(ctx, key, src, dst)
+
+	if len(ret) == 0 {
+		panic("no return value specified for EncryptAttachment")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.AttachmentKey, io.Reader, io.Writer) error); ok {
+		r0 = returnFunc(ctx, key, src, dst)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockCryptoEngine_EncryptAttachment_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'EncryptAttachment'
+type MockCryptoEngine_EncryptAttachment_Call struct {
+	*mock.Call
+}
+
+// EncryptAttachment is a helper method to define mock.On call
+//   - ctx context.Context
+//   - key ports.AttachmentKey
+//   - src io.Reader
+//   - dst io.Writer
+func (_e *MockCryptoEngine_Expecter) EncryptAttachment(ctx interface{}, key interface{}, src interface{}, dst interface{}) *MockCryptoEngine_EncryptAttachment_Call {
+	return &MockCryptoEngine_EncryptAttachment_Call{Call: _e.mock.On("EncryptAttachment", ctx, key, src, dst)}
+}
+
+func (_c *MockCryptoEngine_EncryptAttachment_Call) Run(run func(ctx context.Context, key ports.AttachmentKey, src io.Reader, dst io.Writer)) *MockCryptoEngine_EncryptAttachment_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 ports.AttachmentKey
+		if args[1] != nil {
+			arg1 = args[1].(ports.AttachmentKey)
+		}
+		var arg2 io.Reader
+		if args[2] != nil {
+			arg2 = args[2].(io.Reader)
+		}
+		var arg3 io.Writer
+		if args[3] != nil {
+			arg3 = args[3].(io.Writer)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCryptoEngine_EncryptAttachment_Call) Return(err error) *MockCryptoEngine_EncryptAttachment_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockCryptoEngine_EncryptAttachment_Call) RunAndReturn(run func(ctx context.Context, key ports.AttachmentKey, src io.Reader, dst io.Writer) error) *MockCryptoEngine_EncryptAttachment_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -266,8 +266,8 @@ func TestMapCoreErrorTwoFactorWithNumericStrings(t *testing.T) {
 	expected := []TwoFactorProvider{
 		TwoFactorProviderAuthenticator, // 0
 		TwoFactorProviderEmail,         // 1
-		TwoFactorProviderYubiKey,       // 2
-		TwoFactorProviderDuo,           // 3
+		TwoFactorProviderDuo,           // 2
+		TwoFactorProviderYubiKey,       // 3
 	}
 	if len(pub.TwoFactorProviders) != len(expected) {
 		t.Fatalf("providers count: got %d, want %d", len(pub.TwoFactorProviders), len(expected))

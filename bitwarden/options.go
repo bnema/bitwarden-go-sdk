@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+
+	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 )
 
 // clientConfig collects option values before the Client is built.
@@ -14,6 +16,9 @@ type clientConfig struct {
 	serverURL  string
 	httpClient *http.Client
 	logger     *slog.Logger
+	identity   ports.IdentityClient
+	crypto     ports.CryptoEngine
+	tokens     ports.TokenStore
 }
 
 // Option configures a Client.
@@ -66,6 +71,31 @@ func WithLogger(logger *slog.Logger) Option {
 		if logger != nil {
 			cfg.logger = logger
 		}
+		return nil
+	}
+}
+
+// WithIdentityClient injects an identity client. It is intended for tests and
+// local-first adapters; production callers normally rely on SDK defaults.
+func WithIdentityClient(identity ports.IdentityClient) Option {
+	return func(cfg *clientConfig) error {
+		cfg.identity = identity
+		return nil
+	}
+}
+
+// WithCryptoEngine injects a crypto engine. It is intended for tests.
+func WithCryptoEngine(crypto ports.CryptoEngine) Option {
+	return func(cfg *clientConfig) error {
+		cfg.crypto = crypto
+		return nil
+	}
+}
+
+// WithTokenStore injects a token store. TokenStore is a sensitive boundary.
+func WithTokenStore(tokens ports.TokenStore) Option {
+	return func(cfg *clientConfig) error {
+		cfg.tokens = tokens
 		return nil
 	}
 }

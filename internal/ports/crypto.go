@@ -31,6 +31,14 @@ type MasterKey struct {
 	Bytes []byte
 }
 
+// Close zeros master-key bytes. It is idempotent.
+func (k *MasterKey) Close() {
+	for i := range k.Bytes {
+		k.Bytes[i] = 0
+	}
+	k.Bytes = nil
+}
+
 // AuthHashInput contains scaffold auth-hash inputs.
 type AuthHashInput struct {
 	Password  string
@@ -51,6 +59,14 @@ type UserKeyInput struct {
 // material is processed.
 type UserKey struct {
 	Bytes []byte
+}
+
+// Close zeros user-key bytes. It is idempotent.
+func (k *UserKey) Close() {
+	for i := range k.Bytes {
+		k.Bytes[i] = 0
+	}
+	k.Bytes = nil
 }
 
 // Cipher contains decrypted cipher fields covered by the v0.1.0 crypto

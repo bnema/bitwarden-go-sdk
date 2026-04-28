@@ -257,10 +257,10 @@ func mapTwoFactorProvider(s string) TwoFactorProvider {
 		return TwoFactorProviderAuthenticator
 	case "email", "1":
 		return TwoFactorProviderEmail
-	case "yubikey", "2":
-		return TwoFactorProviderYubiKey
-	case "duo", "3":
+	case "duo", "2":
 		return TwoFactorProviderDuo
+	case "yubikey", "3":
+		return TwoFactorProviderYubiKey
 	default:
 		return TwoFactorProvider(s)
 	}

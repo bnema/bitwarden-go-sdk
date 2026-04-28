@@ -15,6 +15,7 @@ func TestNewClient_DefaultsToLockedUSClient(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, client.IsLocked())
 	require.NotNil(t, client.httpClient)
+	require.NotNil(t, client.identity)
 
 	require.Equal(t, "https://vault.bitwarden.com", client.environment.WebVault)
 	require.Equal(t, "https://api.bitwarden.com", client.environment.API)
@@ -47,11 +48,6 @@ func TestNewClient_AppliesLoggerOption(t *testing.T) {
 func TestUnsupportedMethodsReturnSentinel(t *testing.T) {
 	client, err := NewClient()
 	require.NoError(t, err)
-
-	// Login
-	err = client.Login(context.Background(), LoginOptions{})
-	require.ErrorIs(t, err, ErrUnsupported)
-	verifyUnsupportedError(t, err, "Client.Login")
 
 	// Sync
 	err = client.Sync(context.Background())
