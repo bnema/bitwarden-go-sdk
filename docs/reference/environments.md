@@ -43,7 +43,7 @@ The public SDK exposes only region selection or one self-hosted base URL. It doe
 | Icons | `https://icons.bitwarden.net` |
 | Notifications | `https://notifications.bitwarden.com` |
 | Events | `https://events.bitwarden.com` |
-| SCIM base | `https://scim.bitwarden.com` |
+| SCIM base | `https://scim.bitwarden.com/v2` |
 | Send | `https://send.bitwarden.com/#` |
 
 ## EU cloud
