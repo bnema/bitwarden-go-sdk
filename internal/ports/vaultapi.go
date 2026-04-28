@@ -13,6 +13,13 @@ type APIClient interface {
 	CreateCipher(ctx context.Context, cipher EncryptedCipher) (EncryptedCipher, error)
 	UpdateCipher(ctx context.Context, id string, cipher EncryptedCipher) (EncryptedCipher, error)
 	DeleteCipher(ctx context.Context, id string) error
+	TrashCipher(ctx context.Context, id string) error
+	RestoreCipher(ctx context.Context, id string) (EncryptedCipher, error)
+
+	ListFolders(ctx context.Context) ([]EncryptedFolder, error)
+	CreateFolder(ctx context.Context, folder EncryptedFolder) (EncryptedFolder, error)
+	UpdateFolder(ctx context.Context, id string, folder EncryptedFolder) (EncryptedFolder, error)
+	DeleteFolder(ctx context.Context, id string) error
 }
 
 // ServerConfig contains scaffold server configuration fields.

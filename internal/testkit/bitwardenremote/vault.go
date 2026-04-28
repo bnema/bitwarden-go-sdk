@@ -269,6 +269,22 @@ func (s *Server) restoreCipherHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ---------------------------------------------------------------------------
+// PUT /ciphers/{id}/delete — soft-delete (trash)
+// ---------------------------------------------------------------------------
+
+func (s *Server) trashCipherHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if !s.requireAuth(w, r) {
+		return
+	}
+	s.recordRequestMetadata(r)
+	s.writeEmpty(w, http.StatusOK)
+}
+
+// ---------------------------------------------------------------------------
 // POST /ciphers/delete — bulk delete
 // ---------------------------------------------------------------------------
 

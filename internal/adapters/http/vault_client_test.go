@@ -2,10 +2,13 @@ package http_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -365,65 +368,668 @@ func TestSubscription_Success(t *testing.T) {
 	}
 }
 
-// -------- CreateCipher/UpdateCipher/DeleteCipher return unsupported --------
+// -------- Cipher write operations using contract testkit --------
 
-func TestCreateCipher_Unsupported(t *testing.T) {
+func TestCipherCreateUpdateTrashRestoreDeleteUsingContractTestkit(t *testing.T) {
 	t.Parallel()
-	client, err := adaptershttp.NewVaultClient("http://localhost:9999", http.DefaultClient, nopTokenProvider("tok"))
+
+	server := bitwardenremote.NewServer(t, bitwardenremote.NewScenario())
+	tokenProvider := nopTokenProvider("test-access-token")
+
+	client, err := adaptershttp.NewVaultClient(server.IdentityURL(), server.HTTPClient(), tokenProvider)
 	if err != nil {
 		t.Fatalf("NewVaultClient: %v", err)
 	}
 
-	_, err = client.CreateCipher(context.Background(), ports.EncryptedCipher{})
-	if err == nil {
-		t.Fatal("expected unsupported error")
+	// Use the same test CipherID from the fixture.
+	cipherID := "cipher-id-1"
+
+	t.Run("CreateCipher", func(t *testing.T) {
+		input := ports.EncryptedCipher{
+			Type: 1,
+			Name: "2.sanitized-iv|sanitized-name|sanitized-mac",
+			Login: &ports.EncryptedLoginCipher{
+				Username: "enc-username",
+				Password: "enc-password",
+			},
+		}
+		created, err := client.CreateCipher(context.Background(), input)
+		if err != nil {
+			t.Fatalf("CreateCipher: %v", err)
+		}
+		if created.ID == "" {
+			t.Error("expected non-empty ID in created cipher")
+		}
+		if created.Type != 1 {
+			t.Errorf("expected Type=1, got %d", created.Type)
+		}
+		if created.Name == "" {
+			t.Error("expected non-empty Name in created cipher")
+		}
+
+		// Verify recorder saw the request with auth and JSON fields.
+		recorder := server.Recorder()
+		if err := recorder.AssertRequest("POST", "/ciphers"); err != nil {
+			t.Errorf("recorder: %v", err)
+		}
+		reqs := recorder.Requests()
+		found := false
+		for _, r := range reqs {
+			if r.Path == "/ciphers" && r.Method == "POST" && r.AuthPresent {
+				found = true
+				if len(r.KnownFields) == 0 {
+					t.Error("expected KnownFields in request body")
+				}
+				break
+			}
+		}
+		if !found {
+			t.Error("expected recorded POST /ciphers request with auth")
+		}
+	})
+
+	t.Run("UpdateCipher", func(t *testing.T) {
+		input := ports.EncryptedCipher{
+			Type: 1,
+			Name: "2.sanitized-iv|sanitized-updated-name|sanitized-mac",
+		}
+		updated, err := client.UpdateCipher(context.Background(), cipherID, input)
+		if err != nil {
+			t.Fatalf("UpdateCipher: %v", err)
+		}
+		if updated.ID == "" {
+			t.Error("expected non-empty ID in updated cipher")
+		}
+
+		recorder := server.Recorder()
+		if err := recorder.AssertRequest("PUT", "/ciphers/"+cipherID); err != nil {
+			t.Errorf("recorder: %v", err)
+		}
+		reqs := recorder.Requests()
+		found := false
+		for _, r := range reqs {
+			if r.Path == "/ciphers/"+cipherID && r.Method == "PUT" && r.AuthPresent {
+				found = true
+				if len(r.KnownFields) == 0 {
+					t.Error("expected KnownFields in request body")
+				}
+				break
+			}
+		}
+		if !found {
+			t.Error("expected recorded PUT /ciphers/{id} request with auth")
+		}
+	})
+
+	t.Run("TrashCipher", func(t *testing.T) {
+		err := client.TrashCipher(context.Background(), cipherID)
+		if err != nil {
+			t.Fatalf("TrashCipher: %v", err)
+		}
+
+		recorder := server.Recorder()
+		if err := recorder.AssertRequest("PUT", "/ciphers/"+cipherID+"/delete"); err != nil {
+			t.Errorf("recorder: %v", err)
+		}
+		reqs := recorder.Requests()
+		found := false
+		for _, r := range reqs {
+			if r.Path == "/ciphers/"+cipherID+"/delete" && r.Method == "PUT" && r.AuthPresent {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Error("expected recorded PUT /ciphers/{id}/delete request with auth")
+		}
+	})
+
+	t.Run("RestoreCipher", func(t *testing.T) {
+		restored, err := client.RestoreCipher(context.Background(), cipherID)
+		if err != nil {
+			t.Fatalf("RestoreCipher: %v", err)
+		}
+		if restored.ID == "" {
+			t.Error("expected non-empty ID in restored cipher")
+		}
+
+		recorder := server.Recorder()
+		if err := recorder.AssertRequest("PUT", "/ciphers/"+cipherID+"/restore"); err != nil {
+			t.Errorf("recorder: %v", err)
+		}
+		reqs := recorder.Requests()
+		found := false
+		for _, r := range reqs {
+			if r.Path == "/ciphers/"+cipherID+"/restore" && r.Method == "PUT" && r.AuthPresent {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Error("expected recorded PUT /ciphers/{id}/restore request with auth")
+		}
+	})
+
+	t.Run("DeleteCipher", func(t *testing.T) {
+		err := client.DeleteCipher(context.Background(), cipherID)
+		if err != nil {
+			t.Fatalf("DeleteCipher: %v", err)
+		}
+
+		recorder := server.Recorder()
+		if err := recorder.AssertRequest("DELETE", "/ciphers/"+cipherID); err != nil {
+			t.Errorf("recorder: %v", err)
+		}
+		reqs := recorder.Requests()
+		found := false
+		for _, r := range reqs {
+			if r.Path == "/ciphers/"+cipherID && r.Method == "DELETE" && r.AuthPresent {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Error("expected recorded DELETE /ciphers/{id} request with auth")
+		}
+	})
+}
+
+// -------- Folder tests using contract testkit --------
+
+func TestFolderListCreateUpdateDeleteUsingContractTestkit(t *testing.T) {
+	t.Parallel()
+
+	server := bitwardenremote.NewServer(t, bitwardenremote.NewScenario())
+	tokenProvider := nopTokenProvider("test-access-token")
+
+	client, err := adaptershttp.NewVaultClient(server.IdentityURL(), server.HTTPClient(), tokenProvider)
+	if err != nil {
+		t.Fatalf("NewVaultClient: %v", err)
 	}
-	var cerr *coreerrors.Error
-	if !errors.As(err, &cerr) {
-		t.Fatalf("expected *coreerrors.Error, got %T", err)
+
+	folderID := "folder-id-1"
+
+	t.Run("ListFolders", func(t *testing.T) {
+		folders, err := client.ListFolders(context.Background())
+		if err != nil {
+			t.Fatalf("ListFolders: %v", err)
+		}
+		if len(folders) == 0 {
+			t.Fatal("expected at least one folder")
+		}
+		found := false
+		for _, f := range folders {
+			if f.ID == folderID {
+				found = true
+				if f.Name == "" {
+					t.Error("expected non-empty folder name")
+				}
+				break
+			}
+		}
+		if !found {
+			t.Errorf("expected folder %q in list", folderID)
+		}
+
+		recorder := server.Recorder()
+		if err := recorder.AssertRequest("GET", "/folders"); err != nil {
+			t.Errorf("recorder: %v", err)
+		}
+		reqs := recorder.Requests()
+		foundReq := false
+		for _, r := range reqs {
+			if r.Path == "/folders" && r.Method == "GET" && r.AuthPresent {
+				foundReq = true
+				break
+			}
+		}
+		if !foundReq {
+			t.Error("expected recorded GET /folders request with auth")
+		}
+	})
+
+	t.Run("CreateFolder", func(t *testing.T) {
+		input := ports.EncryptedFolder{
+			Name: "2.sanitized-iv|sanitized-folder-name|sanitized-mac",
+		}
+		created, err := client.CreateFolder(context.Background(), input)
+		if err != nil {
+			t.Fatalf("CreateFolder: %v", err)
+		}
+		if created.ID == "" {
+			t.Error("expected non-empty ID in created folder")
+		}
+		if created.Name == "" {
+			t.Error("expected non-empty Name in created folder")
+		}
+
+		recorder := server.Recorder()
+		if err := recorder.AssertRequest("POST", "/folders"); err != nil {
+			t.Errorf("recorder: %v", err)
+		}
+		reqs := recorder.Requests()
+		found := false
+		for _, r := range reqs {
+			if r.Path == "/folders" && r.Method == "POST" && r.AuthPresent {
+				found = true
+				if len(r.KnownFields) == 0 {
+					t.Error("expected KnownFields in request body")
+				}
+				break
+			}
+		}
+		if !found {
+			t.Error("expected recorded POST /folders request with auth")
+		}
+	})
+
+	t.Run("UpdateFolder", func(t *testing.T) {
+		input := ports.EncryptedFolder{
+			Name: "2.sanitized-iv|sanitized-updated-folder-name|sanitized-mac",
+		}
+		updated, err := client.UpdateFolder(context.Background(), folderID, input)
+		if err != nil {
+			t.Fatalf("UpdateFolder: %v", err)
+		}
+		if updated.ID == "" {
+			t.Error("expected non-empty ID in updated folder")
+		}
+
+		recorder := server.Recorder()
+		if err := recorder.AssertRequest("PUT", "/folders/"+folderID); err != nil {
+			t.Errorf("recorder: %v", err)
+		}
+		reqs := recorder.Requests()
+		found := false
+		for _, r := range reqs {
+			if r.Path == "/folders/"+folderID && r.Method == "PUT" && r.AuthPresent {
+				found = true
+				if len(r.KnownFields) == 0 {
+					t.Error("expected KnownFields in request body")
+				}
+				break
+			}
+		}
+		if !found {
+			t.Error("expected recorded PUT /folders/{id} request with auth")
+		}
+	})
+
+	t.Run("DeleteFolder", func(t *testing.T) {
+		err := client.DeleteFolder(context.Background(), folderID)
+		if err != nil {
+			t.Fatalf("DeleteFolder: %v", err)
+		}
+
+		recorder := server.Recorder()
+		if err := recorder.AssertRequest("DELETE", "/folders/"+folderID); err != nil {
+			t.Errorf("recorder: %v", err)
+		}
+		reqs := recorder.Requests()
+		found := false
+		for _, r := range reqs {
+			if r.Path == "/folders/"+folderID && r.Method == "DELETE" && r.AuthPresent {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Error("expected recorded DELETE /folders/{id} request with auth")
+		}
+	})
+}
+
+// -------- Request DTO serialisation checks --------
+
+func TestCreateCipherRequestUsesMappedRequestDTO(t *testing.T) {
+	t.Parallel()
+
+	var capturedBody []byte
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/ciphers" && r.Method == http.MethodPost {
+			var err error
+			capturedBody, err = io.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, "bad body", http.StatusBadRequest)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = fmt.Fprint(w, `{"Id":"new-id","Type":1,"Name":"n","Favorite":false}`)
+			return
+		}
+		http.Error(w, "not found", http.StatusNotFound)
+	}))
+	defer srv.Close()
+
+	client, err := adaptershttp.NewVaultClient(srv.URL, srv.Client(), nopTokenProvider("tok"))
+	if err != nil {
+		t.Fatalf("NewVaultClient: %v", err)
 	}
-	if cerr.Kind != coreerrors.KindUnsupported {
-		t.Errorf("expected KindUnsupported, got %s", cerr.Kind)
+
+	input := ports.EncryptedCipher{
+		Type: 1,
+		Name: "2.iv|enc-name|mac",
+		Login: &ports.EncryptedLoginCipher{
+			Username: "enc-user",
+			Password: "enc-pass",
+		},
+	}
+
+	_, err = client.CreateCipher(context.Background(), input)
+	if err != nil {
+		t.Fatalf("CreateCipher: %v", err)
+	}
+
+	if len(capturedBody) == 0 {
+		t.Fatal("no request body captured")
+	}
+
+	var raw map[string]any
+	if err := json.Unmarshal(capturedBody, &raw); err != nil {
+		t.Fatalf("unmarshal captured body: %v", err)
+	}
+
+	// Must contain lower-camel keys.
+	camelKeys := []string{"type", "name", "favorite", "login"}
+	for _, k := range camelKeys {
+		if _, ok := raw[k]; !ok {
+			t.Errorf("expected lower-camel key %q in request body", k)
+		}
+	}
+
+	// Must NOT contain PascalCase keys.
+	pascalKeys := []string{"Type", "Name", "Favorite", "Login"}
+	for _, k := range pascalKeys {
+		if _, ok := raw[k]; ok {
+			t.Errorf("unexpected PascalCase key %q in request body — should be lower-camel", k)
+		}
+	}
+
+	// Verify login sub-object uses lower-camel keys.
+	loginRaw, ok := raw["login"].(map[string]any)
+	if !ok {
+		t.Fatal("expected login sub-object")
+	}
+	camelLoginKeys := []string{"username", "password"}
+	for _, k := range camelLoginKeys {
+		if _, ok := loginRaw[k]; !ok {
+			t.Errorf("expected lower-camel key %q in login sub-object", k)
+		}
+	}
+	pascalLoginKeys := []string{"Username", "Password"}
+	for _, k := range pascalLoginKeys {
+		if _, ok := loginRaw[k]; ok {
+			t.Errorf("unexpected PascalCase key %q in login sub-object", k)
+		}
 	}
 }
 
-func TestUpdateCipher_Unsupported(t *testing.T) {
+func TestUpdateCipherRequestUsesMappedRequestDTO(t *testing.T) {
 	t.Parallel()
-	client, err := adaptershttp.NewVaultClient("http://localhost:9999", http.DefaultClient, nopTokenProvider("tok"))
+
+	var capturedBody []byte
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/ciphers/test-id" && r.Method == http.MethodPut {
+			var err error
+			capturedBody, err = io.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, "bad body", http.StatusBadRequest)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = fmt.Fprint(w, `{"Id":"test-id","Type":1,"Name":"n","Favorite":false}`)
+			return
+		}
+		http.Error(w, "not found", http.StatusNotFound)
+	}))
+	defer srv.Close()
+
+	client, err := adaptershttp.NewVaultClient(srv.URL, srv.Client(), nopTokenProvider("tok"))
 	if err != nil {
 		t.Fatalf("NewVaultClient: %v", err)
 	}
 
-	_, err = client.UpdateCipher(context.Background(), "id", ports.EncryptedCipher{})
-	if err == nil {
-		t.Fatal("expected unsupported error")
+	input := ports.EncryptedCipher{
+		Type: 1,
+		Name: "2.iv|enc-name|mac",
 	}
-	var cerr *coreerrors.Error
-	if !errors.As(err, &cerr) {
-		t.Fatalf("expected *coreerrors.Error, got %T", err)
+
+	_, err = client.UpdateCipher(context.Background(), "test-id", input)
+	if err != nil {
+		t.Fatalf("UpdateCipher: %v", err)
 	}
-	if cerr.Kind != coreerrors.KindUnsupported {
-		t.Errorf("expected KindUnsupported, got %s", cerr.Kind)
+
+	if len(capturedBody) == 0 {
+		t.Fatal("no request body captured")
+	}
+
+	var raw map[string]any
+	if err := json.Unmarshal(capturedBody, &raw); err != nil {
+		t.Fatalf("unmarshal captured body: %v", err)
+	}
+
+	camelKeys := []string{"type", "name", "favorite"}
+	for _, k := range camelKeys {
+		if _, ok := raw[k]; !ok {
+			t.Errorf("expected lower-camel key %q in request body", k)
+		}
+	}
+
+	pascalKeys := []string{"Type", "Name", "Favorite"}
+	for _, k := range pascalKeys {
+		if _, ok := raw[k]; ok {
+			t.Errorf("unexpected PascalCase key %q in request body — should be lower-camel", k)
+		}
 	}
 }
 
-func TestDeleteCipher_Unsupported(t *testing.T) {
+// -------- Escaped ID tests --------
+
+func TestUpdateCipherEscapesIDPathSegment(t *testing.T) {
 	t.Parallel()
-	client, err := adaptershttp.NewVaultClient("http://localhost:9999", http.DefaultClient, nopTokenProvider("tok"))
+
+	var capturedRawQuery string
+	var capturedRawPath string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPut {
+			capturedRawQuery = r.URL.RawQuery
+			capturedRawPath = r.URL.RawPath
+			if capturedRawPath == "" {
+				capturedRawPath = r.URL.Path
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = fmt.Fprint(w, `{"Id":"escaped-id","Type":1,"Name":"n","Favorite":false}`)
+			return
+		}
+		http.Error(w, "not found", http.StatusNotFound)
+	}))
+	defer srv.Close()
+
+	client, err := adaptershttp.NewVaultClient(srv.URL, srv.Client(), nopTokenProvider("tok"))
 	if err != nil {
 		t.Fatalf("NewVaultClient: %v", err)
 	}
 
-	err = client.DeleteCipher(context.Background(), "id")
-	if err == nil {
-		t.Fatal("expected unsupported error")
+	input := ports.EncryptedCipher{
+		Type: 1,
+		Name: "enc-name",
 	}
-	var cerr *coreerrors.Error
-	if !errors.As(err, &cerr) {
-		t.Fatalf("expected *coreerrors.Error, got %T", err)
+
+	// Use an ID with special characters that must be percent-encoded.
+	dangerID := "abc/../x?bad=1"
+	_, err = client.UpdateCipher(context.Background(), dangerID, input)
+	if err != nil {
+		t.Fatalf("UpdateCipher: %v", err)
 	}
-	if cerr.Kind != coreerrors.KindUnsupported {
-		t.Errorf("expected KindUnsupported, got %s", cerr.Kind)
+
+	// The query string must be empty — the ? in the ID must be escaped.
+	if capturedRawQuery != "" {
+		t.Errorf("expected empty RawQuery, got %q — the ? in the ID was not escaped", capturedRawQuery)
+	}
+
+	// The raw path must contain percent-encoded characters so the ID is
+	// transmitted as a single segment.
+	expectedFragment := url.PathEscape(dangerID)
+	if !strings.Contains(capturedRawPath, expectedFragment) {
+		t.Errorf("expected raw path to contain %q, got %q", expectedFragment, capturedRawPath)
+	}
+}
+
+func TestUpdateFolderEscapesIDPathSegment(t *testing.T) {
+	t.Parallel()
+
+	var capturedRawQuery string
+	var capturedRawPath string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPut {
+			capturedRawQuery = r.URL.RawQuery
+			capturedRawPath = r.URL.RawPath
+			if capturedRawPath == "" {
+				capturedRawPath = r.URL.Path
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = fmt.Fprint(w, `{"Id":"escaped-fid","Name":"n"}`)
+			return
+		}
+		http.Error(w, "not found", http.StatusNotFound)
+	}))
+	defer srv.Close()
+
+	client, err := adaptershttp.NewVaultClient(srv.URL, srv.Client(), nopTokenProvider("tok"))
+	if err != nil {
+		t.Fatalf("NewVaultClient: %v", err)
+	}
+
+	input := ports.EncryptedFolder{
+		Name: "enc-folder",
+	}
+
+	dangerID := "abc/../x?bad=1"
+	_, err = client.UpdateFolder(context.Background(), dangerID, input)
+	if err != nil {
+		t.Fatalf("UpdateFolder: %v", err)
+	}
+
+	// The query string must be empty — the ? in the ID must be escaped.
+	if capturedRawQuery != "" {
+		t.Errorf("expected empty RawQuery, got %q — the ? in the ID was not escaped", capturedRawQuery)
+	}
+
+	// The raw path must contain percent-encoded characters so the ID is
+	// transmitted as a single segment.
+	expectedFragment := url.PathEscape(dangerID)
+	if !strings.Contains(capturedRawPath, expectedFragment) {
+		t.Errorf("expected raw path to contain %q, got %q", expectedFragment, capturedRawPath)
+	}
+}
+
+// -------- Folder request JSON tests --------
+
+func TestCreateFolderRequestUsesLowerCamelName(t *testing.T) {
+	t.Parallel()
+
+	var capturedBody []byte
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/folders" && r.Method == http.MethodPost {
+			var err error
+			capturedBody, err = io.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, "bad body", http.StatusBadRequest)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = fmt.Fprint(w, `{"Id":"new-folder-id","Name":"n"}`)
+			return
+		}
+		http.Error(w, "not found", http.StatusNotFound)
+	}))
+	defer srv.Close()
+
+	client, err := adaptershttp.NewVaultClient(srv.URL, srv.Client(), nopTokenProvider("tok"))
+	if err != nil {
+		t.Fatalf("NewVaultClient: %v", err)
+	}
+
+	input := ports.EncryptedFolder{Name: "enc-folder-name"}
+	_, err = client.CreateFolder(context.Background(), input)
+	if err != nil {
+		t.Fatalf("CreateFolder: %v", err)
+	}
+
+	if len(capturedBody) == 0 {
+		t.Fatal("no request body captured")
+	}
+
+	var raw map[string]any
+	if err := json.Unmarshal(capturedBody, &raw); err != nil {
+		t.Fatalf("unmarshal captured body: %v", err)
+	}
+
+	// Must contain lower-camel "name" key.
+	if _, ok := raw["name"]; !ok {
+		t.Errorf("expected lower-camel key %q in folder create request body", "name")
+	}
+
+	// Must NOT contain PascalCase "Name".
+	if _, ok := raw["Name"]; ok {
+		t.Errorf("unexpected PascalCase key %q in folder create request body — should be lower-camel", "Name")
+	}
+}
+
+func TestUpdateFolderRequestUsesLowerCamelName(t *testing.T) {
+	t.Parallel()
+
+	var capturedBody []byte
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPut && strings.HasPrefix(r.URL.Path, "/folders/") {
+			var err error
+			capturedBody, err = io.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, "bad body", http.StatusBadRequest)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = fmt.Fprint(w, `{"Id":"updated-folder-id","Name":"n"}`)
+			return
+		}
+		http.Error(w, "not found", http.StatusNotFound)
+	}))
+	defer srv.Close()
+
+	client, err := adaptershttp.NewVaultClient(srv.URL, srv.Client(), nopTokenProvider("tok"))
+	if err != nil {
+		t.Fatalf("NewVaultClient: %v", err)
+	}
+
+	input := ports.EncryptedFolder{Name: "enc-folder-updated"}
+	_, err = client.UpdateFolder(context.Background(), "test-fid", input)
+	if err != nil {
+		t.Fatalf("UpdateFolder: %v", err)
+	}
+
+	if len(capturedBody) == 0 {
+		t.Fatal("no request body captured")
+	}
+
+	var raw map[string]any
+	if err := json.Unmarshal(capturedBody, &raw); err != nil {
+		t.Fatalf("unmarshal captured body: %v", err)
+	}
+
+	// Must contain lower-camel "name" key.
+	if _, ok := raw["name"]; !ok {
+		t.Errorf("expected lower-camel key %q in folder update request body", "name")
+	}
+
+	// Must NOT contain PascalCase "Name".
+	if _, ok := raw["Name"]; ok {
+		t.Errorf("unexpected PascalCase key %q in folder update request body — should be lower-camel", "Name")
 	}
 }
 

@@ -27,6 +27,11 @@ type FolderDTO struct {
 	Name string `json:"Name"`
 }
 
+// FolderRequestDTO is sent in POST /folders and PUT /folders/{id} request bodies.
+type FolderRequestDTO struct {
+	Name string `json:"name"`
+}
+
 // CipherDTO maps a cipher object in a sync response.
 type CipherDTO struct {
 	ID         string         `json:"Id"`

@@ -81,6 +81,12 @@ type Item struct {
 	Identity *Identity
 }
 
+// Folder is a public folder model.
+type Folder struct {
+	ID   string
+	Name string
+}
+
 // ItemType identifies the kind of vault item.
 type ItemType string
 

@@ -107,6 +107,9 @@ func (s *Server) cipherPathRouter(w http.ResponseWriter, r *http.Request) {
 	case strings.HasSuffix(path, "/restore"):
 		s.restoreCipherHandler(w, r)
 
+	case strings.HasSuffix(path, "/delete"):
+		s.trashCipherHandler(w, r)
+
 	case strings.HasSuffix(path, "/attachment/v2"), strings.HasSuffix(path, "/attachment"):
 		s.createAttachmentHandler(w, r)
 

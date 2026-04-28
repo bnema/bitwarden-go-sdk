@@ -44,6 +44,30 @@ func (f *benchFakeAPI) DeleteCipher(_ context.Context, _ string) error {
 	return nil
 }
 
+func (f *benchFakeAPI) TrashCipher(_ context.Context, _ string) error {
+	return nil
+}
+
+func (f *benchFakeAPI) RestoreCipher(_ context.Context, _ string) (ports.EncryptedCipher, error) {
+	return ports.EncryptedCipher{}, nil
+}
+
+func (f *benchFakeAPI) ListFolders(_ context.Context) ([]ports.EncryptedFolder, error) {
+	return nil, nil
+}
+
+func (f *benchFakeAPI) CreateFolder(_ context.Context, _ ports.EncryptedFolder) (ports.EncryptedFolder, error) {
+	return ports.EncryptedFolder{}, nil
+}
+
+func (f *benchFakeAPI) UpdateFolder(_ context.Context, _ string, _ ports.EncryptedFolder) (ports.EncryptedFolder, error) {
+	return ports.EncryptedFolder{}, nil
+}
+
+func (f *benchFakeAPI) DeleteFolder(_ context.Context, _ string) error {
+	return nil
+}
+
 type benchFakeCrypto struct{}
 
 func (benchFakeCrypto) DeriveMasterKey(_ context.Context, _ ports.MasterKeyInput) (ports.MasterKey, error) {

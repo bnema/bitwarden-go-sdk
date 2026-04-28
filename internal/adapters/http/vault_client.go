@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -201,33 +202,354 @@ func (c *VaultClient) Subscription(ctx context.Context) (ports.Subscription, err
 	}, nil
 }
 
-// CreateCipher creates a new cipher. Not yet supported.
-func (c *VaultClient) CreateCipher(_ context.Context, _ ports.EncryptedCipher) (ports.EncryptedCipher, error) {
-	return ports.EncryptedCipher{}, &coreerrors.Error{
-		Kind: coreerrors.KindUnsupported,
-		Op:   "CreateCipher",
+// CreateCipher creates a new cipher via POST /ciphers.
+func (c *VaultClient) CreateCipher(ctx context.Context, cipher ports.EncryptedCipher) (ports.EncryptedCipher, error) {
+	body := c.encryptedCipherToRequestDTO(cipher)
+	reqBody, err := json.Marshal(body)
+	if err != nil {
+		return ports.EncryptedCipher{}, fmt.Errorf("marshal cipher: %w", err)
 	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/ciphers", bytes.NewReader(reqBody))
+	if err != nil {
+		return ports.EncryptedCipher{}, fmt.Errorf("create cipher request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	if err := c.setAuthHeader(ctx, req); err != nil {
+		return ports.EncryptedCipher{}, err
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return ports.EncryptedCipher{}, fmt.Errorf("create cipher: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		return ports.EncryptedCipher{}, c.parseErrorResponse(resp)
+	}
+
+	var cipherResp dto.CipherDTO
+	if err := json.NewDecoder(resp.Body).Decode(&cipherResp); err != nil {
+		return ports.EncryptedCipher{}, fmt.Errorf("decode cipher response: %w", err)
+	}
+
+	return c.mapCipherDTOToPorts(cipherResp), nil
 }
 
-// UpdateCipher updates an existing cipher. Not yet supported.
-func (c *VaultClient) UpdateCipher(_ context.Context, _ string, _ ports.EncryptedCipher) (ports.EncryptedCipher, error) {
-	return ports.EncryptedCipher{}, &coreerrors.Error{
-		Kind: coreerrors.KindUnsupported,
-		Op:   "UpdateCipher",
+// UpdateCipher updates an existing cipher via PUT /ciphers/{id}.
+func (c *VaultClient) UpdateCipher(ctx context.Context, id string, cipher ports.EncryptedCipher) (ports.EncryptedCipher, error) {
+	body := c.encryptedCipherToRequestDTO(cipher)
+	reqBody, err := json.Marshal(body)
+	if err != nil {
+		return ports.EncryptedCipher{}, fmt.Errorf("marshal cipher: %w", err)
 	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.baseURL+"/ciphers/"+url.PathEscape(id), bytes.NewReader(reqBody))
+	if err != nil {
+		return ports.EncryptedCipher{}, fmt.Errorf("update cipher request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	if err := c.setAuthHeader(ctx, req); err != nil {
+		return ports.EncryptedCipher{}, err
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return ports.EncryptedCipher{}, fmt.Errorf("update cipher: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return ports.EncryptedCipher{}, c.parseErrorResponse(resp)
+	}
+
+	var cipherResp dto.CipherDTO
+	if err := json.NewDecoder(resp.Body).Decode(&cipherResp); err != nil {
+		return ports.EncryptedCipher{}, fmt.Errorf("decode cipher response: %w", err)
+	}
+
+	return c.mapCipherDTOToPorts(cipherResp), nil
 }
 
-// DeleteCipher deletes a cipher. Not yet supported.
-func (c *VaultClient) DeleteCipher(_ context.Context, _ string) error {
-	return &coreerrors.Error{
-		Kind: coreerrors.KindUnsupported,
-		Op:   "DeleteCipher",
+// DeleteCipher permanently deletes a cipher via DELETE /ciphers/{id}.
+func (c *VaultClient) DeleteCipher(ctx context.Context, id string) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseURL+"/ciphers/"+url.PathEscape(id), nil)
+	if err != nil {
+		return fmt.Errorf("delete cipher request: %w", err)
 	}
+	req.Header.Set("Accept", "application/json")
+
+	if err := c.setAuthHeader(ctx, req); err != nil {
+		return err
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("delete cipher: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		return c.parseErrorResponse(resp)
+	}
+
+	return nil
+}
+
+// TrashCipher soft-deletes (trashes) a cipher via PUT /ciphers/{id}/delete.
+func (c *VaultClient) TrashCipher(ctx context.Context, id string) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.baseURL+"/ciphers/"+url.PathEscape(id)+"/delete", nil)
+	if err != nil {
+		return fmt.Errorf("trash cipher request: %w", err)
+	}
+	req.Header.Set("Accept", "application/json")
+
+	if err := c.setAuthHeader(ctx, req); err != nil {
+		return err
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("trash cipher: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		return c.parseErrorResponse(resp)
+	}
+
+	return nil
+}
+
+// RestoreCipher restores a trashed cipher via PUT /ciphers/{id}/restore.
+func (c *VaultClient) RestoreCipher(ctx context.Context, id string) (ports.EncryptedCipher, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.baseURL+"/ciphers/"+url.PathEscape(id)+"/restore", nil)
+	if err != nil {
+		return ports.EncryptedCipher{}, fmt.Errorf("restore cipher request: %w", err)
+	}
+	req.Header.Set("Accept", "application/json")
+
+	if err := c.setAuthHeader(ctx, req); err != nil {
+		return ports.EncryptedCipher{}, err
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return ports.EncryptedCipher{}, fmt.Errorf("restore cipher: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return ports.EncryptedCipher{}, c.parseErrorResponse(resp)
+	}
+
+	var cipherResp dto.CipherDTO
+	if err := json.NewDecoder(resp.Body).Decode(&cipherResp); err != nil {
+		return ports.EncryptedCipher{}, fmt.Errorf("decode cipher response: %w", err)
+	}
+
+	return c.mapCipherDTOToPorts(cipherResp), nil
 }
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Cipher DTO mapping helpers
+// ---------------------------------------------------------------------------
+
+// encryptedCipherToRequestDTO converts an EncryptedCipher port type into a
+// CipherRequestDTO suitable for marshalling as a request body.
+// The lower-camel JSON tags on CipherRequestDTO match the Bitwarden
+// API expectations for create/update endpoints.
+func (c *VaultClient) encryptedCipherToRequestDTO(cipher ports.EncryptedCipher) dto.CipherRequestDTO {
+	out := dto.CipherRequestDTO{
+		Type:     cipher.Type,
+		Name:     cipher.Name,
+		Favorite: cipher.Favorite,
+	}
+
+	if cipher.Notes != "" {
+		n := cipher.Notes
+		out.Notes = &n
+	}
+	if cipher.FolderID != "" {
+		f := cipher.FolderID
+		out.FolderID = &f
+	}
+
+	if cipher.Login != nil {
+		uris := make([]dto.LoginURIRequestDTO, len(cipher.Login.URIs))
+		for i, u := range cipher.Login.URIs {
+			uriDTO := dto.LoginURIRequestDTO{
+				URI:         u.URI,
+				URIChecksum: u.URIChecksum,
+			}
+			if u.Match != 0 {
+				m := u.Match
+				uriDTO.Match = &m
+			}
+			uris[i] = uriDTO
+		}
+		out.Login = &dto.LoginRequestDTO{
+			Username: cipher.Login.Username,
+			Password: cipher.Login.Password,
+			TOTP:     cipher.Login.TOTP,
+			URIs:     uris,
+		}
+	}
+
+	if cipher.SecureNote != nil {
+		out.SecureNote = &dto.SecureNoteRequestDTO{
+			Type: cipher.SecureNote.Type,
+		}
+	}
+
+	if cipher.Card != nil {
+		out.Card = &dto.CardRequestDTO{
+			CardholderName: cipher.Card.CardholderName,
+			Brand:          cipher.Card.Brand,
+			Number:         cipher.Card.Number,
+			ExpMonth:       cipher.Card.ExpMonth,
+			ExpYear:        cipher.Card.ExpYear,
+			Code:           cipher.Card.Code,
+		}
+	}
+
+	if cipher.Identity != nil {
+		out.Identity = &dto.IdentityRequestDTO{
+			Title:          cipher.Identity.Title,
+			FirstName:      cipher.Identity.FirstName,
+			MiddleName:     cipher.Identity.MiddleName,
+			LastName:       cipher.Identity.LastName,
+			Address1:       cipher.Identity.Address1,
+			Address2:       cipher.Identity.Address2,
+			Address3:       cipher.Identity.Address3,
+			City:           cipher.Identity.City,
+			State:          cipher.Identity.State,
+			PostalCode:     cipher.Identity.PostalCode,
+			Country:        cipher.Identity.Country,
+			Company:        cipher.Identity.Company,
+			Email:          cipher.Identity.Email,
+			Phone:          cipher.Identity.Phone,
+			SSN:            cipher.Identity.SSN,
+			Username:       cipher.Identity.Username,
+			PassportNumber: cipher.Identity.PassportNumber,
+			LicenseNumber:  cipher.Identity.LicenseNumber,
+		}
+	}
+
+	if len(cipher.Fields) > 0 {
+		out.Fields = make([]dto.FieldRequestDTO, len(cipher.Fields))
+		for i, f := range cipher.Fields {
+			out.Fields[i] = dto.FieldRequestDTO{
+				Name:     f.Name,
+				Value:    f.Value,
+				Type:     f.Type,
+				LinkedID: f.LinkedID,
+			}
+		}
+	}
+
+	return out
+}
+
+// mapCipherDTOToPorts converts a CipherDTO (from an API response) into an
+// EncryptedCipher port type.
+func (c *VaultClient) mapCipherDTOToPorts(ct dto.CipherDTO) ports.EncryptedCipher {
+	cipher := ports.EncryptedCipher{
+		ID:       ct.ID,
+		Type:     ct.Type,
+		Name:     ct.Name,
+		Favorite: ct.Favorite,
+	}
+	if ct.Notes != nil {
+		cipher.Notes = *ct.Notes
+	}
+	if ct.FolderID != nil {
+		cipher.FolderID = *ct.FolderID
+	}
+
+	if ct.Login != nil {
+		login := &ports.EncryptedLoginCipher{
+			Username: ct.Login.Username,
+			Password: ct.Login.Password,
+			TOTP:     ct.Login.TOTP,
+			URIs:     make([]ports.EncryptedLoginURI, 0, len(ct.Login.URIs)),
+		}
+		for _, u := range ct.Login.URIs {
+			uri := ports.EncryptedLoginURI{
+				URI:         u.URI,
+				URIChecksum: u.URIChecksum,
+			}
+			if u.Match != nil {
+				uri.Match = *u.Match
+			}
+			login.URIs = append(login.URIs, uri)
+		}
+		cipher.Login = login
+	}
+
+	if ct.SecureNote != nil {
+		cipher.SecureNote = &ports.EncryptedSecureNoteCipher{
+			Type: ct.SecureNote.Type,
+		}
+	}
+
+	if ct.Card != nil {
+		cipher.Card = &ports.EncryptedCardCipher{
+			CardholderName: ct.Card.CardholderName,
+			Brand:          ct.Card.Brand,
+			Number:         ct.Card.Number,
+			ExpMonth:       ct.Card.ExpMonth,
+			ExpYear:        ct.Card.ExpYear,
+			Code:           ct.Card.Code,
+		}
+	}
+
+	if ct.Identity != nil {
+		cipher.Identity = &ports.EncryptedIdentityCipher{
+			Title:          ct.Identity.Title,
+			FirstName:      ct.Identity.FirstName,
+			MiddleName:     ct.Identity.MiddleName,
+			LastName:       ct.Identity.LastName,
+			Address1:       ct.Identity.Address1,
+			Address2:       ct.Identity.Address2,
+			Address3:       ct.Identity.Address3,
+			City:           ct.Identity.City,
+			State:          ct.Identity.State,
+			PostalCode:     ct.Identity.PostalCode,
+			Country:        ct.Identity.Country,
+			Company:        ct.Identity.Company,
+			Email:          ct.Identity.Email,
+			Phone:          ct.Identity.Phone,
+			SSN:            ct.Identity.SSN,
+			Username:       ct.Identity.Username,
+			PassportNumber: ct.Identity.PassportNumber,
+			LicenseNumber:  ct.Identity.LicenseNumber,
+		}
+	}
+
+	if len(ct.Fields) > 0 {
+		cipher.Fields = make([]ports.EncryptedCipherField, 0, len(ct.Fields))
+		for _, field := range ct.Fields {
+			cipher.Fields = append(cipher.Fields, ports.EncryptedCipherField{
+				Name:     field.Name,
+				Value:    field.Value,
+				Type:     field.Type,
+				LinkedID: field.LinkedID,
+			})
+		}
+	}
+
+	return cipher
+}
 
 // setAuthHeader calls the token provider and sets the Authorization header.
 func (c *VaultClient) setAuthHeader(ctx context.Context, req *http.Request) error {
@@ -380,6 +702,153 @@ func (c *VaultClient) mapSyncResult(s dto.SyncResponseDTO) ports.SyncResult {
 	}
 
 	return result
+}
+
+// ---------------------------------------------------------------------------
+// Folder operations
+// ---------------------------------------------------------------------------
+
+// ListFolders fetches all folders via GET /folders.
+func (c *VaultClient) ListFolders(ctx context.Context) ([]ports.EncryptedFolder, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/folders", nil)
+	if err != nil {
+		return nil, fmt.Errorf("create list folders request: %w", err)
+	}
+	req.Header.Set("Accept", "application/json")
+
+	if err := c.setAuthHeader(ctx, req); err != nil {
+		return nil, err
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("list folders: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, c.parseErrorResponse(resp)
+	}
+
+	var folderDTOs []dto.FolderDTO
+	if err := json.NewDecoder(resp.Body).Decode(&folderDTOs); err != nil {
+		return nil, fmt.Errorf("decode list folders response: %w", err)
+	}
+
+	folders := make([]ports.EncryptedFolder, 0, len(folderDTOs))
+	for _, f := range folderDTOs {
+		folders = append(folders, ports.EncryptedFolder{
+			ID:   f.ID,
+			Name: f.Name,
+		})
+	}
+
+	return folders, nil
+}
+
+// CreateFolder creates a new folder via POST /folders.
+func (c *VaultClient) CreateFolder(ctx context.Context, folder ports.EncryptedFolder) (ports.EncryptedFolder, error) {
+	body := dto.FolderRequestDTO{Name: folder.Name}
+	reqBody, err := json.Marshal(body)
+	if err != nil {
+		return ports.EncryptedFolder{}, fmt.Errorf("marshal folder: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/folders", bytes.NewReader(reqBody))
+	if err != nil {
+		return ports.EncryptedFolder{}, fmt.Errorf("create folder request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	if err := c.setAuthHeader(ctx, req); err != nil {
+		return ports.EncryptedFolder{}, err
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return ports.EncryptedFolder{}, fmt.Errorf("create folder: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		return ports.EncryptedFolder{}, c.parseErrorResponse(resp)
+	}
+
+	var folderResp dto.FolderDTO
+	if err := json.NewDecoder(resp.Body).Decode(&folderResp); err != nil {
+		return ports.EncryptedFolder{}, fmt.Errorf("decode folder response: %w", err)
+	}
+
+	return ports.EncryptedFolder{
+		ID:   folderResp.ID,
+		Name: folderResp.Name,
+	}, nil
+}
+
+// UpdateFolder updates an existing folder via PUT /folders/{id}.
+func (c *VaultClient) UpdateFolder(ctx context.Context, id string, folder ports.EncryptedFolder) (ports.EncryptedFolder, error) {
+	body := dto.FolderRequestDTO{Name: folder.Name}
+	reqBody, err := json.Marshal(body)
+	if err != nil {
+		return ports.EncryptedFolder{}, fmt.Errorf("marshal folder: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, c.baseURL+"/folders/"+url.PathEscape(id), bytes.NewReader(reqBody))
+	if err != nil {
+		return ports.EncryptedFolder{}, fmt.Errorf("update folder request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	if err := c.setAuthHeader(ctx, req); err != nil {
+		return ports.EncryptedFolder{}, err
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return ports.EncryptedFolder{}, fmt.Errorf("update folder: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return ports.EncryptedFolder{}, c.parseErrorResponse(resp)
+	}
+
+	var folderResp dto.FolderDTO
+	if err := json.NewDecoder(resp.Body).Decode(&folderResp); err != nil {
+		return ports.EncryptedFolder{}, fmt.Errorf("decode folder response: %w", err)
+	}
+
+	return ports.EncryptedFolder{
+		ID:   folderResp.ID,
+		Name: folderResp.Name,
+	}, nil
+}
+
+// DeleteFolder deletes a folder via DELETE /folders/{id}.
+func (c *VaultClient) DeleteFolder(ctx context.Context, id string) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.baseURL+"/folders/"+url.PathEscape(id), nil)
+	if err != nil {
+		return fmt.Errorf("delete folder request: %w", err)
+	}
+	req.Header.Set("Accept", "application/json")
+
+	if err := c.setAuthHeader(ctx, req); err != nil {
+		return err
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("delete folder: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		return c.parseErrorResponse(resp)
+	}
+
+	return nil
 }
 
 // Ensure compile-time check that VaultClient implements ports.APIClient.

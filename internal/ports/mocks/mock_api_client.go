@@ -224,6 +224,72 @@ func (_c *MockAPIClient_CreateCipher_Call) RunAndReturn(run func(ctx context.Con
 	return _c
 }
 
+// CreateFolder provides a mock function for the type MockAPIClient
+func (_mock *MockAPIClient) CreateFolder(ctx context.Context, folder ports.EncryptedFolder) (ports.EncryptedFolder, error) {
+	ret := _mock.Called(ctx, folder)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateFolder")
+	}
+
+	var r0 ports.EncryptedFolder
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.EncryptedFolder) (ports.EncryptedFolder, error)); ok {
+		return returnFunc(ctx, folder)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ports.EncryptedFolder) ports.EncryptedFolder); ok {
+		r0 = returnFunc(ctx, folder)
+	} else {
+		r0 = ret.Get(0).(ports.EncryptedFolder)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ports.EncryptedFolder) error); ok {
+		r1 = returnFunc(ctx, folder)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAPIClient_CreateFolder_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateFolder'
+type MockAPIClient_CreateFolder_Call struct {
+	*mock.Call
+}
+
+// CreateFolder is a helper method to define mock.On call
+//   - ctx context.Context
+//   - folder ports.EncryptedFolder
+func (_e *MockAPIClient_Expecter) CreateFolder(ctx interface{}, folder interface{}) *MockAPIClient_CreateFolder_Call {
+	return &MockAPIClient_CreateFolder_Call{Call: _e.mock.On("CreateFolder", ctx, folder)}
+}
+
+func (_c *MockAPIClient_CreateFolder_Call) Run(run func(ctx context.Context, folder ports.EncryptedFolder)) *MockAPIClient_CreateFolder_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 ports.EncryptedFolder
+		if args[1] != nil {
+			arg1 = args[1].(ports.EncryptedFolder)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAPIClient_CreateFolder_Call) Return(encryptedFolder ports.EncryptedFolder, err error) *MockAPIClient_CreateFolder_Call {
+	_c.Call.Return(encryptedFolder, err)
+	return _c
+}
+
+func (_c *MockAPIClient_CreateFolder_Call) RunAndReturn(run func(ctx context.Context, folder ports.EncryptedFolder) (ports.EncryptedFolder, error)) *MockAPIClient_CreateFolder_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteCipher provides a mock function for the type MockAPIClient
 func (_mock *MockAPIClient) DeleteCipher(ctx context.Context, id string) error {
 	ret := _mock.Called(ctx, id)
@@ -277,6 +343,191 @@ func (_c *MockAPIClient_DeleteCipher_Call) Return(err error) *MockAPIClient_Dele
 }
 
 func (_c *MockAPIClient_DeleteCipher_Call) RunAndReturn(run func(ctx context.Context, id string) error) *MockAPIClient_DeleteCipher_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteFolder provides a mock function for the type MockAPIClient
+func (_mock *MockAPIClient) DeleteFolder(ctx context.Context, id string) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteFolder")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockAPIClient_DeleteFolder_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteFolder'
+type MockAPIClient_DeleteFolder_Call struct {
+	*mock.Call
+}
+
+// DeleteFolder is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockAPIClient_Expecter) DeleteFolder(ctx interface{}, id interface{}) *MockAPIClient_DeleteFolder_Call {
+	return &MockAPIClient_DeleteFolder_Call{Call: _e.mock.On("DeleteFolder", ctx, id)}
+}
+
+func (_c *MockAPIClient_DeleteFolder_Call) Run(run func(ctx context.Context, id string)) *MockAPIClient_DeleteFolder_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAPIClient_DeleteFolder_Call) Return(err error) *MockAPIClient_DeleteFolder_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockAPIClient_DeleteFolder_Call) RunAndReturn(run func(ctx context.Context, id string) error) *MockAPIClient_DeleteFolder_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListFolders provides a mock function for the type MockAPIClient
+func (_mock *MockAPIClient) ListFolders(ctx context.Context) ([]ports.EncryptedFolder, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListFolders")
+	}
+
+	var r0 []ports.EncryptedFolder
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]ports.EncryptedFolder, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []ports.EncryptedFolder); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]ports.EncryptedFolder)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAPIClient_ListFolders_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListFolders'
+type MockAPIClient_ListFolders_Call struct {
+	*mock.Call
+}
+
+// ListFolders is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockAPIClient_Expecter) ListFolders(ctx interface{}) *MockAPIClient_ListFolders_Call {
+	return &MockAPIClient_ListFolders_Call{Call: _e.mock.On("ListFolders", ctx)}
+}
+
+func (_c *MockAPIClient_ListFolders_Call) Run(run func(ctx context.Context)) *MockAPIClient_ListFolders_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAPIClient_ListFolders_Call) Return(encryptedFolders []ports.EncryptedFolder, err error) *MockAPIClient_ListFolders_Call {
+	_c.Call.Return(encryptedFolders, err)
+	return _c
+}
+
+func (_c *MockAPIClient_ListFolders_Call) RunAndReturn(run func(ctx context.Context) ([]ports.EncryptedFolder, error)) *MockAPIClient_ListFolders_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RestoreCipher provides a mock function for the type MockAPIClient
+func (_mock *MockAPIClient) RestoreCipher(ctx context.Context, id string) (ports.EncryptedCipher, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RestoreCipher")
+	}
+
+	var r0 ports.EncryptedCipher
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (ports.EncryptedCipher, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ports.EncryptedCipher); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Get(0).(ports.EncryptedCipher)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAPIClient_RestoreCipher_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RestoreCipher'
+type MockAPIClient_RestoreCipher_Call struct {
+	*mock.Call
+}
+
+// RestoreCipher is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockAPIClient_Expecter) RestoreCipher(ctx interface{}, id interface{}) *MockAPIClient_RestoreCipher_Call {
+	return &MockAPIClient_RestoreCipher_Call{Call: _e.mock.On("RestoreCipher", ctx, id)}
+}
+
+func (_c *MockAPIClient_RestoreCipher_Call) Run(run func(ctx context.Context, id string)) *MockAPIClient_RestoreCipher_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAPIClient_RestoreCipher_Call) Return(encryptedCipher ports.EncryptedCipher, err error) *MockAPIClient_RestoreCipher_Call {
+	_c.Call.Return(encryptedCipher, err)
+	return _c
+}
+
+func (_c *MockAPIClient_RestoreCipher_Call) RunAndReturn(run func(ctx context.Context, id string) (ports.EncryptedCipher, error)) *MockAPIClient_RestoreCipher_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -407,6 +658,63 @@ func (_c *MockAPIClient_Sync_Call) RunAndReturn(run func(ctx context.Context, op
 	return _c
 }
 
+// TrashCipher provides a mock function for the type MockAPIClient
+func (_mock *MockAPIClient) TrashCipher(ctx context.Context, id string) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for TrashCipher")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockAPIClient_TrashCipher_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'TrashCipher'
+type MockAPIClient_TrashCipher_Call struct {
+	*mock.Call
+}
+
+// TrashCipher is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockAPIClient_Expecter) TrashCipher(ctx interface{}, id interface{}) *MockAPIClient_TrashCipher_Call {
+	return &MockAPIClient_TrashCipher_Call{Call: _e.mock.On("TrashCipher", ctx, id)}
+}
+
+func (_c *MockAPIClient_TrashCipher_Call) Run(run func(ctx context.Context, id string)) *MockAPIClient_TrashCipher_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAPIClient_TrashCipher_Call) Return(err error) *MockAPIClient_TrashCipher_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockAPIClient_TrashCipher_Call) RunAndReturn(run func(ctx context.Context, id string) error) *MockAPIClient_TrashCipher_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateCipher provides a mock function for the type MockAPIClient
 func (_mock *MockAPIClient) UpdateCipher(ctx context.Context, id string, cipher ports.EncryptedCipher) (ports.EncryptedCipher, error) {
 	ret := _mock.Called(ctx, id, cipher)
@@ -475,6 +783,78 @@ func (_c *MockAPIClient_UpdateCipher_Call) Return(encryptedCipher ports.Encrypte
 }
 
 func (_c *MockAPIClient_UpdateCipher_Call) RunAndReturn(run func(ctx context.Context, id string, cipher ports.EncryptedCipher) (ports.EncryptedCipher, error)) *MockAPIClient_UpdateCipher_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateFolder provides a mock function for the type MockAPIClient
+func (_mock *MockAPIClient) UpdateFolder(ctx context.Context, id string, folder ports.EncryptedFolder) (ports.EncryptedFolder, error) {
+	ret := _mock.Called(ctx, id, folder)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateFolder")
+	}
+
+	var r0 ports.EncryptedFolder
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, ports.EncryptedFolder) (ports.EncryptedFolder, error)); ok {
+		return returnFunc(ctx, id, folder)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, ports.EncryptedFolder) ports.EncryptedFolder); ok {
+		r0 = returnFunc(ctx, id, folder)
+	} else {
+		r0 = ret.Get(0).(ports.EncryptedFolder)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, ports.EncryptedFolder) error); ok {
+		r1 = returnFunc(ctx, id, folder)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAPIClient_UpdateFolder_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateFolder'
+type MockAPIClient_UpdateFolder_Call struct {
+	*mock.Call
+}
+
+// UpdateFolder is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+//   - folder ports.EncryptedFolder
+func (_e *MockAPIClient_Expecter) UpdateFolder(ctx interface{}, id interface{}, folder interface{}) *MockAPIClient_UpdateFolder_Call {
+	return &MockAPIClient_UpdateFolder_Call{Call: _e.mock.On("UpdateFolder", ctx, id, folder)}
+}
+
+func (_c *MockAPIClient_UpdateFolder_Call) Run(run func(ctx context.Context, id string, folder ports.EncryptedFolder)) *MockAPIClient_UpdateFolder_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 ports.EncryptedFolder
+		if args[2] != nil {
+			arg2 = args[2].(ports.EncryptedFolder)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAPIClient_UpdateFolder_Call) Return(encryptedFolder ports.EncryptedFolder, err error) *MockAPIClient_UpdateFolder_Call {
+	_c.Call.Return(encryptedFolder, err)
+	return _c
+}
+
+func (_c *MockAPIClient_UpdateFolder_Call) RunAndReturn(run func(ctx context.Context, id string, folder ports.EncryptedFolder) (ports.EncryptedFolder, error)) *MockAPIClient_UpdateFolder_Call {
 	_c.Call.Return(run)
 	return _c
 }
