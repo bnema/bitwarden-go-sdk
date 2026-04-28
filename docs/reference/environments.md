@@ -56,7 +56,7 @@ The public SDK exposes only region selection or one self-hosted base URL. It doe
 | Icons | `https://icons.bitwarden.eu` |
 | Notifications | `https://notifications.bitwarden.eu` |
 | Events | `https://events.bitwarden.eu` |
-| SCIM base | `https://vault.bitwarden.eu/scim/v2` |
+| SCIM base | `https://scim.bitwarden.eu/v2` |
 | Send | `https://vault.bitwarden.eu/#/send/` |
 
 ## Self-hosted derivation

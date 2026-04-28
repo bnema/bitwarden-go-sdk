@@ -24,7 +24,7 @@
       "icons": "https://icons.bitwarden.eu",
       "notifications": "https://notifications.bitwarden.eu",
       "events": "https://events.bitwarden.eu",
-      "scim": "https://vault.bitwarden.eu/scim/v2",
+      "scim": "https://scim.bitwarden.eu/v2",
       "send": "https://vault.bitwarden.eu/#/send/"
     }
   },
