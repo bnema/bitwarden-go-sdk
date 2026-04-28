@@ -2,6 +2,7 @@
 
 | Area | Feature | Status | V1 | Evidence | Notes |
 | --- | --- | --- | --- | --- | --- |
+| Scope | Personal-account SDK baseline | In V1 | Yes | Approved design spec | V1 focuses on free/paid personal account usage only. |
 | Environment | US cloud URLs | Unknown | Yes | `default-environment.service.ts` | Preliminary design value exists; verify with source line citations before implementation. |
 | Environment | EU cloud URLs | Unknown | Yes | `default-environment.service.ts` | Preliminary design value exists; verify with source line citations before implementation. |
 | Environment | Official self-hosted URL derivation | Unknown | Yes | `default-environment.service.ts` | Preliminary design value exists; verify with source line citations before implementation. |
