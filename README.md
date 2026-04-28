@@ -22,6 +22,13 @@ Local-first Go SDK for Bitwarden and official self-hosted Bitwarden instances.
 - No default live tests against Bitwarden.
 - No imposed persistent disk cache.
 
+## Scaffold constraints
+
+- This repository currently contains scaffolding and reference-documentation structure only.
+- Do not add real Bitwarden SDK behavior until the source-backed reference docs and a feature-specific implementation plan are approved.
+- Do not add HTTP request or response body dumps, even behind debug flags.
+- Do not use real secrets, tokens, or plaintext vault data in docs, examples, logs, tests, or fixtures.
+
 ## Layout
 
 - `bitwarden/` — public idiomatic client API.
