@@ -2,6 +2,7 @@ package bitwarden
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"testing"
 
@@ -9,31 +10,102 @@ import (
 )
 
 func TestNewClient_DefaultsToLockedUSClient(t *testing.T) {
-	client := NewClient()
+	client, err := NewClient()
 
+	require.NoError(t, err)
 	require.True(t, client.IsLocked())
-	require.Equal(t, RegionUS, client.region)
 	require.NotNil(t, client.httpClient)
+
+	require.Equal(t, "https://vault.bitwarden.com", client.environment.WebVault)
+	require.Equal(t, "https://api.bitwarden.com", client.environment.API)
+	require.Equal(t, "https://identity.bitwarden.com", client.environment.Identity)
+	require.Equal(t, "https://icons.bitwarden.net", client.environment.Icons)
 }
 
-func TestNewClient_AppliesOptions(t *testing.T) {
+func TestNewClient_AppliesHTTPClientOption(t *testing.T) {
 	httpClient := &http.Client{}
-	client := NewClient(
-		WithRegion(RegionEU),
-		WithBaseURL("https://example.test"),
+	client, err := NewClient(
 		WithHTTPClient(httpClient),
 	)
 
-	require.Equal(t, RegionEU, client.region)
-	require.Equal(t, "https://example.test", client.baseURL)
+	require.NoError(t, err)
+	require.NotNil(t, client)
 	require.Same(t, httpClient, client.httpClient)
 }
 
+func TestNewClient_AppliesLoggerOption(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(nil, nil))
+	client, err := NewClient(
+		WithLogger(logger),
+	)
+
+	require.NoError(t, err)
+	require.NotNil(t, client)
+	require.Same(t, logger, client.logger)
+}
+
 func TestUnsupportedMethodsReturnSentinel(t *testing.T) {
-	client := NewClient()
+	client, err := NewClient()
+	require.NoError(t, err)
 
 	require.ErrorIs(t, client.Login(context.Background(), LoginOptions{}), ErrUnsupported)
 	require.ErrorIs(t, client.Sync(context.Background()), ErrUnsupported)
-	_, err := client.Vault().Search(context.Background(), "github")
+	_, err = client.Vault().Search(context.Background(), "github")
 	require.ErrorIs(t, err, ErrUnsupported)
+}
+
+func TestNewClient_WithRegionEU_ReturnsEUServerURLs(t *testing.T) {
+	client, err := NewClient(WithRegion(RegionEU))
+	require.NoError(t, err)
+	require.NotNil(t, client)
+	require.True(t, client.IsLocked())
+
+	require.Equal(t, "https://vault.bitwarden.eu", client.environment.WebVault)
+	require.Equal(t, "https://api.bitwarden.eu", client.environment.API)
+	require.Equal(t, "https://identity.bitwarden.eu", client.environment.Identity)
+	require.Equal(t, "https://icons.bitwarden.eu", client.environment.Icons)
+	require.Equal(t, "https://scim.bitwarden.eu/v2", client.environment.SCIM)
+}
+
+func TestNewClient_WithServerURL_ReturnsSelfHostedURLs(t *testing.T) {
+	client, err := NewClient(WithServerURL("https://bitwarden.example.com/"))
+	require.NoError(t, err)
+	require.NotNil(t, client)
+	require.True(t, client.IsLocked())
+
+	require.Equal(t, "https://bitwarden.example.com", client.environment.WebVault)
+	require.Equal(t, "https://bitwarden.example.com/api", client.environment.API)
+	require.Equal(t, "https://bitwarden.example.com/identity", client.environment.Identity)
+	require.Equal(t, "https://bitwarden.example.com/icons", client.environment.Icons)
+	require.Equal(t, "https://bitwarden.example.com/notifications", client.environment.Notifications)
+	require.Equal(t, "https://bitwarden.example.com/events", client.environment.Events)
+	require.Equal(t, "https://bitwarden.example.com/scim/v2", client.environment.SCIM)
+	require.Equal(t, "https://bitwarden.example.com/#/send/", client.environment.Send)
+}
+
+func TestNewClient_UnknownRegion_ReturnsError(t *testing.T) {
+	_, err := NewClient(WithRegion(Region("unknown")))
+	require.Error(t, err)
+}
+
+func TestNewClient_WithServerURLInvalidHTTP_ReturnsError(t *testing.T) {
+	_, err := NewClient(WithServerURL("http://bitwarden.example.com"))
+	require.Error(t, err)
+}
+
+func TestNewClient_BothRegionAndServerURL_ReturnsError(t *testing.T) {
+	_, err := NewClient(WithRegion(RegionEU), WithServerURL("https://bitwarden.example.com/"))
+	require.Error(t, err)
+}
+
+func TestNewClient_WithHTTPClientNil_KeepsDefault(t *testing.T) {
+	client, err := NewClient(WithHTTPClient(nil))
+	require.NoError(t, err)
+	require.NotNil(t, client.httpClient)
+}
+
+func TestNewClient_WithLoggerNil_KeepsDefault(t *testing.T) {
+	client, err := NewClient(WithLogger(nil))
+	require.NoError(t, err)
+	require.NotNil(t, client.logger)
 }

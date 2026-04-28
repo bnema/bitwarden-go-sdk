@@ -2,34 +2,74 @@ package bitwarden
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"sync/atomic"
+
+	"github.com/bnema/bitwarden-go-sdk/internal/adapters/config"
 )
 
 // Client is the public Bitwarden SDK facade.
 type Client struct {
-	region     Region
-	baseURL    string
-	httpClient *http.Client
-	logger     *slog.Logger
-	locked     atomic.Bool
+	environment config.Environment
+	httpClient  *http.Client
+	logger      *slog.Logger
+	locked      atomic.Bool
 }
 
 // NewClient constructs a scaffold client with the supplied options.
-func NewClient(options ...Option) *Client {
-	client := &Client{
+func NewClient(options ...Option) (*Client, error) {
+	cfg := &clientConfig{
 		region:     RegionUS,
 		httpClient: http.DefaultClient,
 		logger:     slog.New(slog.DiscardHandler),
 	}
-	client.locked.Store(true)
+
 	for _, option := range options {
 		if option != nil {
-			option(client)
+			if err := option(cfg); err != nil {
+				return nil, err
+			}
 		}
 	}
-	return client
+
+	if cfg.regionSet && cfg.serverURL != "" {
+		return nil, errors.New("bitwarden: cannot specify both region and server URL")
+	}
+
+	var env config.Environment
+	var err error
+
+	if cfg.serverURL != "" {
+		env, err = config.NewSelfHosted(cfg.serverURL)
+		if err != nil {
+			return nil, fmt.Errorf("bitwarden: %w", err)
+		}
+	} else {
+		var internalRegion config.Region
+		switch cfg.region {
+		case RegionUS:
+			internalRegion = config.RegionUS
+		case RegionEU:
+			internalRegion = config.RegionEU
+		default:
+			return nil, fmt.Errorf("bitwarden: unknown region: %q", cfg.region)
+		}
+		env, err = config.NewCloud(internalRegion)
+		if err != nil {
+			return nil, fmt.Errorf("bitwarden: %w", err)
+		}
+	}
+
+	client := &Client{
+		environment: env,
+		httpClient:  cfg.httpClient,
+		logger:      cfg.logger,
+	}
+	client.locked.Store(true)
+	return client, nil
 }
 
 // Login authenticates the client when real behavior is implemented.
