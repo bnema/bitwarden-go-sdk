@@ -113,6 +113,7 @@ func (c *VaultClient) Config(ctx context.Context) (ports.ServerConfig, error) {
 		return ports.ServerConfig{}, fmt.Errorf("create config request: %w", err)
 	}
 	req.Header.Set("Accept", "application/json")
+	setBitwardenClientHeaders(req)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -570,6 +571,7 @@ func (c *VaultClient) setAuthHeader(ctx context.Context, req *http.Request) erro
 	if err != nil {
 		return fmt.Errorf("token provider: %w", err)
 	}
+	setBitwardenClientHeaders(req)
 	req.Header.Set("Authorization", "Bearer "+string(token.Bytes()))
 	return nil
 }

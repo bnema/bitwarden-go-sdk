@@ -66,6 +66,9 @@ func TestPrelogin_Success_PBKDF2(t *testing.T) {
 		if ct := r.Header.Get("Content-Type"); ct != "application/json; charset=utf-8" {
 			t.Errorf("expected Content-Type application/json; charset=utf-8, got %s", ct)
 		}
+		if version := r.Header.Get("Bitwarden-Client-Version"); version != "0.1.0" {
+			t.Errorf("expected Bitwarden-Client-Version=0.1.0, got %s", version)
+		}
 		var body map[string]string
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			t.Fatalf("decode request: %v", err)
@@ -169,6 +172,9 @@ func TestLoginPassword_Success(t *testing.T) {
 		}
 		if ct := r.Header.Get("Content-Type"); ct != "application/x-www-form-urlencoded; charset=utf-8" {
 			t.Errorf("expected application/x-www-form-urlencoded; charset=utf-8, got %s", ct)
+		}
+		if version := r.Header.Get("Bitwarden-Client-Version"); version != "0.1.0" {
+			t.Errorf("expected Bitwarden-Client-Version=0.1.0, got %s", version)
 		}
 		if err := r.ParseForm(); err != nil {
 			t.Fatalf("parse form: %v", err)
@@ -429,6 +435,9 @@ func TestCompleteTwoFactor_Success(t *testing.T) {
 		}
 		if r.URL.Path != "/connect/token" {
 			t.Errorf("unexpected path: %s", r.URL.Path)
+		}
+		if version := r.Header.Get("Bitwarden-Client-Version"); version != "0.1.0" {
+			t.Errorf("expected Bitwarden-Client-Version=0.1.0, got %s", version)
 		}
 		if err := r.ParseForm(); err != nil {
 			t.Fatalf("parse form: %v", err)

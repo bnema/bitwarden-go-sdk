@@ -79,6 +79,7 @@ func (c *IdentityClient) Prelogin(ctx context.Context, email string) (ports.Prel
 	}
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("Accept", "application/json")
+	setBitwardenClientHeaders(req)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -169,6 +170,7 @@ func (c *IdentityClient) doTokenRequest(ctx context.Context, form url.Values) (p
 	}
 	httpReq.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
 	httpReq.Header.Set("Accept", "application/json")
+	setBitwardenClientHeaders(httpReq)
 
 	resp, err := c.client.Do(httpReq)
 	if err != nil {
