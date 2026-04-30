@@ -399,12 +399,13 @@ func TestLoginPassword_RateLimited(t *testing.T) {
 	}
 }
 
-func TestLoginPassword_AccountIDAbsent(t *testing.T) {
+func TestLoginPassword_AccountIDFromAccessTokenSubject(t *testing.T) {
 	t.Parallel()
+	accessToken := "eyJhbGciOiJub25lIn0.eyJzdWIiOiJhY2N0LWZyb20tdG9rZW4ifQ."
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		_, _ = fmt.Fprint(w, `{"access_token":"at","refresh_token":"rt","token_type":"Bearer","expires_in":3600,"Key":"k"}`)
+		_, _ = fmt.Fprintf(w, `{"access_token":%q,"refresh_token":"rt","token_type":"Bearer","expires_in":3600,"Key":"k"}`, accessToken)
 	}))
 	defer srv.Close()
 
@@ -420,12 +421,35 @@ func TestLoginPassword_AccountIDAbsent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("LoginPassword: %v", err)
 	}
-	if resp.AccountID != "" {
-		t.Errorf("expected empty AccountID, got %q", resp.AccountID)
+	if resp.AccountID != "acct-from-token" {
+		t.Errorf("expected AccountID from token subject, got %q", resp.AccountID)
 	}
 }
 
 // -------- CompleteTwoFactor tests --------
+
+func TestTokenResponseLeavesAccountIDEmptyWhenTokenHasNoSubject(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprint(w, `{"access_token":"at","refresh_token":"rt","token_type":"Bearer","expires_in":3600,"Key":"k"}`)
+	}))
+	defer srv.Close()
+
+	client, err := adaptershttp.NewIdentityClient(srv.URL, http.DefaultClient)
+	if err != nil {
+		t.Fatalf("NewIdentityClient: %v", err)
+	}
+
+	resp, err := client.LoginPassword(context.Background(), ports.PasswordTokenRequest{Email: "user@example.com", AuthHash: "hash"})
+	if err != nil {
+		t.Fatalf("LoginPassword: %v", err)
+	}
+	if resp.AccountID != "" {
+		t.Errorf("expected empty AccountID, got %q", resp.AccountID)
+	}
+}
 
 func TestCompleteTwoFactor_Success(t *testing.T) {
 	t.Parallel()

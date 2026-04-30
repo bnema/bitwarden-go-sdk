@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -188,6 +189,11 @@ func (c *IdentityClient) doTokenRequest(ctx context.Context, form url.Values) (p
 		return ports.TokenResponse{}, fmt.Errorf("decode token response: %w", err)
 	}
 
+	accountID := tokenResp.AccountID
+	if accountID == "" {
+		accountID = accountIDFromAccessToken(tokenResp.AccessToken)
+	}
+
 	return ports.TokenResponse{
 		Tokens: ports.TokenSet{
 			AccessToken:  ports.NewSecretBytes([]byte(tokenResp.AccessToken)),
@@ -195,11 +201,29 @@ func (c *IdentityClient) doTokenRequest(ctx context.Context, form url.Values) (p
 			TokenType:    tokenResp.TokenType,
 			ExpiresAt:    time.Now().Add(time.Duration(tokenResp.ExpiresIn) * time.Second),
 		},
-		AccountID:        tokenResp.AccountID,
+		AccountID:        accountID,
 		EncryptedUserKey: tokenResp.Key,
 		TokenType:        tokenResp.TokenType,
 		ExpiresInSeconds: tokenResp.ExpiresIn,
 	}, nil
+}
+
+func accountIDFromAccessToken(token string) string {
+	parts := strings.Split(token, ".")
+	if len(parts) < 2 {
+		return ""
+	}
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return ""
+	}
+	var claims struct {
+		Sub string `json:"sub"`
+	}
+	if err := json.Unmarshal(payload, &claims); err != nil {
+		return ""
+	}
+	return claims.Sub
 }
 
 // parseErrorResponse handles error responses for non-token endpoints (e.g.
