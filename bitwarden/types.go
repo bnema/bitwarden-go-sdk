@@ -14,8 +14,11 @@ const (
 // Password is consumed to derive Bitwarden auth material and is not logged or
 // persisted by the SDK.
 type LoginOptions struct {
-	Email    string
-	Password string
+	Email            string
+	Password         string
+	DeviceType       string
+	DeviceIdentifier string
+	DeviceName       string
 }
 
 // ItemID identifies a vault item.

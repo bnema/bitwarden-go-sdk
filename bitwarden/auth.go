@@ -51,7 +51,14 @@ type CompleteLoginOptions struct {
 // BeginLogin starts master-password login and may return a two-factor challenge.
 func (c *Client) BeginLogin(ctx context.Context, options LoginOptions) (LoginResult, error) {
 	svc := c.authService()
-	result, err := svc.BeginLogin(ctx, coreauth.LoginInput{Email: options.Email, Password: options.Password})
+	input := coreauth.LoginInput{
+		Email:            options.Email,
+		Password:         options.Password,
+		DeviceType:       options.DeviceType,
+		DeviceIdentifier: options.DeviceIdentifier,
+		DeviceName:       options.DeviceName,
+	}
+	result, err := svc.BeginLogin(ctx, input)
 	if err != nil {
 		return LoginResult{}, mapCoreError(err)
 	}

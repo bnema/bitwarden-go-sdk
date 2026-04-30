@@ -39,14 +39,18 @@ func TestCompleteLoginUnlocksClient(t *testing.T) {
 	identity.EXPECT().Prelogin(mock.Anything, "alice@example.com").Return(ports.PreloginResult{KDF: ports.KDFConfig{Type: "PBKDF2", Iterations: 600000}}, nil)
 	crypto.EXPECT().DeriveMasterKey(mock.Anything, mock.Anything).Return(masterKey, nil)
 	crypto.EXPECT().MakeAuthHash(mock.Anything, mock.Anything).Return(ports.AuthHash("auth-hash"), nil)
-	identity.EXPECT().LoginPassword(mock.Anything, mock.Anything).Return(ports.TokenResponse{}, twoFactorCoreError("1"))
-	identity.EXPECT().CompleteTwoFactor(mock.Anything, ports.TwoFactorTokenRequest{Email: "alice@example.com", AuthHash: "auth-hash", Provider: ports.TwoFactorProviderEmail, Code: "123456"}).Return(ports.TokenResponse{Tokens: tokens, AccountID: "account-1", EncryptedUserKey: "enc-user"}, nil)
+	identity.EXPECT().LoginPassword(mock.Anything, mock.MatchedBy(func(req ports.PasswordTokenRequest) bool {
+		return req.DeviceType != "" && req.DeviceIdentifier != "" && req.DeviceName != ""
+	})).Return(ports.TokenResponse{}, twoFactorCoreError("1"))
+	identity.EXPECT().CompleteTwoFactor(mock.Anything, mock.MatchedBy(func(req ports.TwoFactorTokenRequest) bool {
+		return req.Email == "alice@example.com" && req.AuthHash == "auth-hash" && req.Provider == ports.TwoFactorProviderEmail && req.Code == "123456" && req.DeviceType != "" && req.DeviceIdentifier != "" && req.DeviceName != ""
+	})).Return(ports.TokenResponse{Tokens: tokens, AccountID: "account-1", EncryptedUserKey: "enc-user"}, nil)
 	crypto.EXPECT().UnlockUserKey(mock.Anything, ports.UserKeyInput{MasterKey: masterKey, EncryptedUserKey: "enc-user"}).Return(userKey, nil)
 	store.EXPECT().SaveTokens(mock.Anything, mock.Anything).Return(nil)
 
 	client, err := NewClient(withIdentityClient(identity), withCryptoEngine(crypto), withTokenStore(store))
 	require.NoError(t, err)
-	begin, err := client.BeginLogin(context.Background(), LoginOptions{Email: "alice@example.com", Password: "password"})
+	begin, err := client.BeginLogin(context.Background(), LoginOptions{Email: "alice@example.com", Password: "password", DeviceType: "LinuxDesktop", DeviceIdentifier: "device-1", DeviceName: "test-device"})
 	require.NoError(t, err)
 	complete, err := client.CompleteLogin(context.Background(), CompleteLoginOptions{Challenge: begin.Challenge, Provider: TwoFactorProviderEmail, Code: "123456"})
 	require.NoError(t, err)
