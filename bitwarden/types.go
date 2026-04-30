@@ -1,5 +1,7 @@
 package bitwarden
 
+import "time"
+
 // Region identifies a Bitwarden service region.
 type Region string
 
@@ -87,6 +89,70 @@ type Item struct {
 type Folder struct {
 	ID   string
 	Name string
+}
+
+// TokenSet contains OAuth token fields for a single account.
+// AccessToken and RefreshToken are sensitive; call Close() to zero them.
+type TokenSet struct {
+	AccountID    string
+	AccessToken  []byte
+	RefreshToken []byte
+	TokenType    string
+	ExpiresAt    time.Time
+}
+
+// Clone returns a deep copy of the TokenSet so that callers can avoid
+// aliasing the original byte slices.
+func (t TokenSet) Clone() TokenSet {
+	c := t
+	c.AccessToken = append([]byte(nil), t.AccessToken...)
+	c.RefreshToken = append([]byte(nil), t.RefreshToken...)
+	return c
+}
+
+// Close zeros the backing arrays of AccessToken and RefreshToken, then nils
+// them. It is idempotent.
+func (t *TokenSet) Close() {
+	for i := range t.AccessToken {
+		t.AccessToken[i] = 0
+	}
+	t.AccessToken = nil
+	for i := range t.RefreshToken {
+		t.RefreshToken[i] = 0
+	}
+	t.RefreshToken = nil
+}
+
+// SessionMaterial holds the user key and token set after a successful login.
+// UserKey and Tokens.AccessToken / Tokens.RefreshToken are sensitive.
+type SessionMaterial struct {
+	AccountID string
+	UserKey   []byte
+	Tokens    TokenSet
+}
+
+// Clone returns a deep copy of the SessionMaterial so that callers can avoid
+// aliasing the original byte slices.
+func (m SessionMaterial) Clone() SessionMaterial {
+	c := m
+	c.UserKey = append([]byte(nil), m.UserKey...)
+	c.Tokens = m.Tokens.Clone()
+	return c
+}
+
+// Close zeros the backing array of UserKey, nils it, and closes Tokens.
+// It is idempotent.
+func (m *SessionMaterial) Close() {
+	for i := range m.UserKey {
+		m.UserKey[i] = 0
+	}
+	m.UserKey = nil
+	m.Tokens.Close()
+}
+
+// RefreshResult holds the token set returned after a token refresh.
+type RefreshResult struct {
+	Tokens TokenSet
 }
 
 // ItemType identifies the kind of vault item.

@@ -38,6 +38,70 @@ func TestLogoutClearsTokensAndLocks(t *testing.T) {
 	assert.Nil(t, client.userKey.Bytes)
 }
 
+func TestSessionMaterialCloneDoesNotShareSecretSlices(t *testing.T) {
+	original := SessionMaterial{
+		AccountID: "acct-1",
+		UserKey:   []byte("user-key"),
+		Tokens: TokenSet{
+			AccountID:    "acct-1",
+			AccessToken:  []byte("access"),
+			RefreshToken: []byte("refresh"),
+			TokenType:    "Bearer",
+			ExpiresAt:    time.Now().Add(time.Hour),
+		},
+	}
+	clone := original.Clone()
+
+	// Mutate original slices
+	original.UserKey[0] = 'X'
+	original.Tokens.AccessToken[0] = 'Y'
+	original.Tokens.RefreshToken[0] = 'Z'
+
+	assert.Equal(t, []byte("user-key"), clone.UserKey)
+	assert.Equal(t, []byte("access"), clone.Tokens.AccessToken)
+	assert.Equal(t, []byte("refresh"), clone.Tokens.RefreshToken)
+	assert.Equal(t, "acct-1", clone.AccountID)
+	assert.Equal(t, "acct-1", clone.Tokens.AccountID)
+	assert.Equal(t, "Bearer", clone.Tokens.TokenType)
+}
+
+func TestSessionMaterialCloseZeroesSecrets(t *testing.T) {
+	// Arrange: capture backing arrays
+	userKey := []byte("user-key")
+	accessToken := []byte("access")
+	refreshToken := []byte("refresh")
+
+	mat := SessionMaterial{
+		AccountID: "acct-1",
+		UserKey:   userKey,
+		Tokens: TokenSet{
+			AccountID:    "acct-1",
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+			TokenType:    "Bearer",
+			ExpiresAt:    time.Now().Add(time.Hour),
+		},
+	}
+
+	mat.Close()
+
+	assertAllZeroed(t, userKey)
+	assertAllZeroed(t, accessToken)
+	assertAllZeroed(t, refreshToken)
+	assert.Nil(t, mat.UserKey)
+	assert.Nil(t, mat.Tokens.AccessToken)
+	assert.Nil(t, mat.Tokens.RefreshToken)
+}
+
+func assertAllZeroed(t *testing.T, b []byte) {
+	t.Helper()
+	for i, v := range b {
+		if v != 0 {
+			t.Errorf("byte at index %d is %d, expected 0", i, v)
+		}
+	}
+}
+
 func TestCloseIsIdempotent(t *testing.T) {
 	client := loggedInClientForSessionTests(t, nil)
 
