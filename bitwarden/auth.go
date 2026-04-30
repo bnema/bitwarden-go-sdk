@@ -6,6 +6,8 @@ import (
 	adaptercrypto "github.com/bnema/bitwarden-go-sdk/internal/adapters/crypto"
 	"github.com/bnema/bitwarden-go-sdk/internal/adapters/memory"
 	coreauth "github.com/bnema/bitwarden-go-sdk/internal/core/auth"
+	coreerrors "github.com/bnema/bitwarden-go-sdk/internal/core/errors"
+	"github.com/bnema/bitwarden-go-sdk/internal/core/session"
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 )
 
@@ -150,4 +152,100 @@ func coreProvider(provider TwoFactorProvider) ports.TwoFactorProvider {
 	default:
 		return ports.TwoFactorProvider(provider)
 	}
+}
+
+// ExportSession returns the current unlocked session material including
+// account ID, user key, and tokens. Returns an error when the client is
+// locked or no account is logged in.
+func (c *Client) ExportSession(ctx context.Context) (SessionMaterial, error) {
+	if c.IsLocked() {
+		return SessionMaterial{}, mapCoreError(&coreerrors.Error{
+			Kind:    coreerrors.KindLocked,
+			Op:      "Client.ExportSession",
+			Message: "client is locked",
+		})
+	}
+	c.mu.Lock()
+	accountID := c.accountID
+	userKeyBytes := append([]byte(nil), c.userKey.Bytes...)
+	c.mu.Unlock()
+	if accountID == "" {
+		for i := range userKeyBytes {
+			userKeyBytes[i] = 0
+		}
+		return SessionMaterial{}, mapCoreError(&coreerrors.Error{
+			Kind:    coreerrors.KindValidation,
+			Op:      "Client.ExportSession",
+			Code:    "no_account",
+			Message: "no account logged in",
+		})
+	}
+	tokens, err := c.tokens.LoadTokens(ctx, accountID)
+	if err != nil {
+		for i := range userKeyBytes {
+			userKeyBytes[i] = 0
+		}
+		return SessionMaterial{}, mapCoreError(err)
+	}
+	return SessionMaterial{
+		AccountID: accountID,
+		UserKey:   userKeyBytes,
+		Tokens:    tokenSetFromPorts(tokens),
+	}, nil
+}
+
+// RestoreSession restores the client to an unlocked state from the given
+// session material. It validates the account ID and user key, deep-copies
+// secrets, saves tokens when present, and sets vault service state.
+func (c *Client) RestoreSession(ctx context.Context, material SessionMaterial) error {
+	if material.AccountID == "" {
+		return mapCoreError(&coreerrors.Error{
+			Kind:    coreerrors.KindValidation,
+			Op:      "Client.RestoreSession",
+			Code:    "missing_account_id",
+			Message: "account ID is required",
+		})
+	}
+	if len(material.UserKey) == 0 {
+		return mapCoreError(&coreerrors.Error{
+			Kind:    coreerrors.KindValidation,
+			Op:      "Client.RestoreSession",
+			Code:    "missing_user_key",
+			Message: "user key is required",
+		})
+	}
+	clone := material.Clone()
+	defer clone.Close()
+	if len(clone.Tokens.AccessToken) > 0 || len(clone.Tokens.RefreshToken) > 0 {
+		tokens := clone.Tokens
+		if tokens.AccountID == "" {
+			tokens.AccountID = clone.AccountID
+		}
+		if err := c.tokens.SaveTokens(ctx, tokenSetToPorts(tokens)); err != nil {
+			return mapCoreError(err)
+		}
+	}
+	c.mu.Lock()
+	c.accountID = clone.AccountID
+	c.userKey.Close()
+	c.userKey = ports.UserKey{Bytes: append([]byte(nil), clone.UserKey...)}
+	c.mu.Unlock()
+	c.locked.Store(false)
+	c.vaultService.SetUserKey(ports.UserKey{Bytes: clone.UserKey})
+	c.vaultService.SetLocked(false)
+	return nil
+}
+
+// RefreshSession refreshes the OAuth token set for the given account and
+// returns the new tokens wrapped in a RefreshResult.
+func (c *Client) RefreshSession(ctx context.Context, accountID string) (RefreshResult, error) {
+	coord := session.NewRefreshCoordinator(session.RefreshDependencies{
+		Identity: c.identity,
+		Tokens:   c.tokens,
+	})
+	tokens, err := coord.Refresh(ctx, accountID)
+	if err != nil {
+		return RefreshResult{}, mapCoreError(err)
+	}
+	return RefreshResult{Tokens: tokenSetFromPorts(tokens)}, nil
 }
