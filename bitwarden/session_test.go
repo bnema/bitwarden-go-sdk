@@ -2,6 +2,7 @@ package bitwarden
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -317,6 +318,101 @@ func TestRefreshSessionValidationError(t *testing.T) {
 	var pubErr *Error
 	require.ErrorAs(t, err, &pubErr)
 	assert.Equal(t, ErrorKindValidation, pubErr.Kind)
+}
+
+func TestRefreshSessionConcurrentDedup(t *testing.T) {
+	identity := mocks.NewMockIdentityClient(t)
+	store := mocks.NewMockTokenStore(t)
+
+	currentTokens := ports.TokenSet{
+		AccountID:    "account-dedup",
+		AccessToken:  ports.NewSecretBytes([]byte("old-access")),
+		RefreshToken: ports.NewSecretBytes([]byte("old-refresh")),
+		TokenType:    "Bearer",
+		ExpiresAt:    time.Now(),
+	}
+	refreshedTokens := ports.TokenSet{
+		AccountID:    "account-dedup",
+		AccessToken:  ports.NewSecretBytes([]byte("new-access")),
+		RefreshToken: ports.NewSecretBytes([]byte("new-refresh")),
+		TokenType:    "Bearer",
+		ExpiresAt:    time.Now().Add(time.Hour),
+	}
+
+	// Block Refresh so concurrent callers pile up on the shared coordinator.
+	blockRefresh := make(chan struct{})
+	refreshCalled := make(chan struct{})
+
+	identity.EXPECT().Refresh(mock.Anything, mock.MatchedBy(func(req ports.RefreshTokenRequest) bool {
+		return req.AccountID == "account-dedup"
+	})).RunAndReturn(func(_ context.Context, _ ports.RefreshTokenRequest) (ports.TokenResponse, error) {
+		close(refreshCalled)
+		<-blockRefresh
+		return ports.TokenResponse{Tokens: refreshedTokens, AccountID: "account-dedup"}, nil
+	}).Maybe()
+
+	store.EXPECT().LoadTokens(mock.Anything, "account-dedup").Return(currentTokens, nil).Maybe()
+	store.EXPECT().SaveTokens(mock.Anything, mock.MatchedBy(func(tk ports.TokenSet) bool {
+		return tk.AccountID == "account-dedup"
+	})).Return(nil).Maybe()
+
+	client, err := NewClient(withIdentityClient(identity), withTokenStore(store))
+	require.NoError(t, err)
+
+	const callers = 8
+	var wg sync.WaitGroup
+	results := make([]RefreshResult, callers)
+	errs := make([]error, callers)
+	wg.Add(callers)
+	for i := range callers {
+		go func(idx int) {
+			defer wg.Done()
+			results[idx], errs[idx] = client.RefreshSession(context.Background(), "account-dedup")
+		}(i)
+	}
+
+	// Wait for the refresh to be triggered, then give goroutines a moment to pile up.
+	<-refreshCalled
+	time.Sleep(50 * time.Millisecond)
+	close(blockRefresh)
+	wg.Wait()
+
+	for i := range callers {
+		require.NoError(t, errs[i])
+		assert.NotEmpty(t, results[i].Tokens.AccessToken)
+		assert.NotEmpty(t, results[i].Tokens.RefreshToken)
+		assert.Equal(t, "account-dedup", results[i].Tokens.AccountID)
+	}
+	identity.AssertNumberOfCalls(t, "Refresh", 1)
+}
+
+func TestRestoreSessionTokenAccountIDMismatch(t *testing.T) {
+	identity := mocks.NewMockIdentityClient(t)
+	crypto := mocks.NewMockCryptoEngine(t)
+	store := mocks.NewMockTokenStore(t)
+
+	client, err := NewClient(withIdentityClient(identity), withCryptoEngine(crypto), withTokenStore(store))
+	require.NoError(t, err)
+	require.True(t, client.IsLocked())
+
+	material := SessionMaterial{
+		AccountID: "account-a",
+		UserKey:   []byte("user-key"),
+		Tokens: TokenSet{
+			AccountID:    "account-b", // mismatched
+			AccessToken:  []byte("access"),
+			RefreshToken: []byte("refresh"),
+			TokenType:    "Bearer",
+			ExpiresAt:    time.Now().Add(time.Hour),
+		},
+	}
+
+	err = client.RestoreSession(context.Background(), material)
+	require.Error(t, err)
+	var pubErr *Error
+	require.ErrorAs(t, err, &pubErr)
+	assert.Equal(t, ErrorKindValidation, pubErr.Kind)
+	assert.True(t, client.IsLocked(), "client should remain locked after validation error")
 }
 
 func loggedInClientForSessionTests(t *testing.T, store ports.TokenStore) *Client {

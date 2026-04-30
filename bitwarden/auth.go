@@ -7,7 +7,6 @@ import (
 	"github.com/bnema/bitwarden-go-sdk/internal/adapters/memory"
 	coreauth "github.com/bnema/bitwarden-go-sdk/internal/core/auth"
 	coreerrors "github.com/bnema/bitwarden-go-sdk/internal/core/errors"
-	"github.com/bnema/bitwarden-go-sdk/internal/core/session"
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 )
 
@@ -220,6 +219,13 @@ func (c *Client) RestoreSession(ctx context.Context, material SessionMaterial) e
 		tokens := clone.Tokens
 		if tokens.AccountID == "" {
 			tokens.AccountID = clone.AccountID
+		} else if tokens.AccountID != clone.AccountID {
+			return mapCoreError(&coreerrors.Error{
+				Kind:    coreerrors.KindValidation,
+				Op:      "Client.RestoreSession",
+				Code:    "token_account_id_mismatch",
+				Message: "token account ID does not match session account ID",
+			})
 		}
 		if err := c.tokens.SaveTokens(ctx, tokenSetToPorts(tokens)); err != nil {
 			return mapCoreError(err)
@@ -237,13 +243,10 @@ func (c *Client) RestoreSession(ctx context.Context, material SessionMaterial) e
 }
 
 // RefreshSession refreshes the OAuth token set for the given account and
-// returns the new tokens wrapped in a RefreshResult.
+// returns the new tokens wrapped in a RefreshResult. Concurrent calls for
+// the same account are deduplicated to a single identity round-trip.
 func (c *Client) RefreshSession(ctx context.Context, accountID string) (RefreshResult, error) {
-	coord := session.NewRefreshCoordinator(session.RefreshDependencies{
-		Identity: c.identity,
-		Tokens:   c.tokens,
-	})
-	tokens, err := coord.Refresh(ctx, accountID)
+	tokens, err := c.refreshCoordinator.Refresh(ctx, accountID)
 	if err != nil {
 		return RefreshResult{}, mapCoreError(err)
 	}

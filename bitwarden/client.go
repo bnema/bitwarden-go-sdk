@@ -15,25 +15,27 @@ import (
 	"github.com/bnema/bitwarden-go-sdk/internal/adapters/memory"
 	coreerrors "github.com/bnema/bitwarden-go-sdk/internal/core/errors"
 	corefolders "github.com/bnema/bitwarden-go-sdk/internal/core/folders"
+	"github.com/bnema/bitwarden-go-sdk/internal/core/session"
 	corevault "github.com/bnema/bitwarden-go-sdk/internal/core/vault"
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 )
 
 // Client is the public Bitwarden SDK facade.
 type Client struct {
-	environment  config.Environment
-	httpClient   *http.Client
-	logger       *slog.Logger
-	identity     ports.IdentityClient
-	crypto       ports.CryptoEngine
-	tokens       ports.TokenStore
-	api          ports.APIClient
-	mu           sync.Mutex
-	accountID    string
-	userKey      ports.UserKey
-	closed       bool
-	locked       atomic.Bool
-	vaultService *corevault.Service
+	environment        config.Environment
+	httpClient         *http.Client
+	logger             *slog.Logger
+	identity           ports.IdentityClient
+	crypto             ports.CryptoEngine
+	tokens             ports.TokenStore
+	api                ports.APIClient
+	mu                 sync.Mutex
+	accountID          string
+	userKey            ports.UserKey
+	closed             bool
+	locked             atomic.Bool
+	vaultService       *corevault.Service
+	refreshCoordinator *session.RefreshCoordinator
 }
 
 // NewClient constructs a Bitwarden client with the supplied options.
@@ -140,6 +142,11 @@ func NewClient(options ...Option) (*Client, error) {
 		Crypto:  crypto,
 		UserKey: client.userKey,
 		Locked:  true,
+	})
+
+	client.refreshCoordinator = session.NewRefreshCoordinator(session.RefreshDependencies{
+		Identity: identity,
+		Tokens:   tokens,
 	})
 
 	return client, nil
