@@ -2,10 +2,17 @@ package bitwarden
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
+	"sync"
 	"testing"
+	"time"
 
+	"github.com/bnema/bitwarden-go-sdk/internal/ports"
+	"github.com/bnema/bitwarden-go-sdk/internal/ports/mocks"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -135,4 +142,75 @@ func TestNewClient_WithLoggerNil_KeepsDefault(t *testing.T) {
 	client, err := NewClient(WithLogger(nil))
 	require.NoError(t, err)
 	require.NotNil(t, client.logger)
+}
+
+func TestWithTokenStoreSavesLoginTokens(t *testing.T) {
+	store := &publicTokenStoreStub{}
+	identity := mocks.NewMockIdentityClient(t)
+	crypto := mocks.NewMockCryptoEngine(t)
+
+	masterKey := ports.MasterKey{Bytes: []byte("master")}
+	userKey := ports.UserKey{Bytes: []byte("user")}
+	tokens := ports.TokenSet{
+		AccountID:    "account-1",
+		AccessToken:  ports.NewSecretBytes([]byte("access")),
+		RefreshToken: ports.NewSecretBytes([]byte("refresh")),
+		TokenType:    "Bearer",
+		ExpiresAt:    time.Now().Add(time.Hour),
+	}
+
+	identity.EXPECT().Prelogin(mock.Anything, "alice@example.com").Return(ports.PreloginResult{KDF: ports.KDFConfig{Type: "PBKDF2", Iterations: 600000}}, nil)
+	crypto.EXPECT().DeriveMasterKey(mock.Anything, mock.Anything).Return(masterKey, nil)
+	crypto.EXPECT().MakeAuthHash(mock.Anything, mock.Anything).Return(ports.AuthHash("auth-hash"), nil)
+	identity.EXPECT().LoginPassword(mock.Anything, mock.MatchedBy(func(req ports.PasswordTokenRequest) bool {
+		return req.DeviceType != "" && req.DeviceIdentifier != "" && req.DeviceName != ""
+	})).Return(ports.TokenResponse{Tokens: tokens, AccountID: "account-1", EncryptedUserKey: "enc-user"}, nil)
+	crypto.EXPECT().UnlockUserKey(mock.Anything, ports.UserKeyInput{MasterKey: masterKey, EncryptedUserKey: "enc-user"}).Return(userKey, nil)
+
+	client, err := NewClient(
+		withIdentityClient(identity),
+		withCryptoEngine(crypto),
+		WithTokenStore(store),
+	)
+	require.NoError(t, err)
+
+	result, err := client.BeginLogin(context.Background(), LoginOptions{
+		Email:            "alice@example.com",
+		Password:         "password",
+		DeviceType:       "LinuxDesktop",
+		DeviceIdentifier: "device-1",
+		DeviceName:       "test-device",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "account-1", result.AccountID)
+	assert.False(t, client.IsLocked())
+
+	require.True(t, store.savedCalled, "SaveTokens should have been called on the store")
+	assert.Equal(t, "account-1", store.saved.AccountID)
+	assert.Equal(t, []byte("access"), store.saved.AccessToken)
+	assert.Equal(t, []byte("refresh"), store.saved.RefreshToken)
+}
+
+// publicTokenStoreStub is a test-only implementation of the public TokenStore
+// that captures the last saved token set in memory.
+type publicTokenStoreStub struct {
+	mu          sync.Mutex
+	saved       TokenSet
+	savedCalled bool
+}
+
+func (s *publicTokenStoreStub) SaveTokens(_ context.Context, tokens TokenSet) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.saved = tokens.Clone()
+	s.savedCalled = true
+	return nil
+}
+
+func (s *publicTokenStoreStub) LoadTokens(_ context.Context, _ string) (TokenSet, error) {
+	return TokenSet{}, errors.New("unexpected LoadTokens call")
+}
+
+func (s *publicTokenStoreStub) DeleteTokens(_ context.Context, _ string) error {
+	return nil
 }

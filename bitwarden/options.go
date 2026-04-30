@@ -93,6 +93,18 @@ func withCryptoEngine(crypto ports.CryptoEngine) Option {
 	}
 }
 
+// WithTokenStore injects a token store for persisting OAuth tokens.
+// Use this to provide your own persistent storage (e.g. keyring, file, DB)
+// instead of the default in-memory store.
+func WithTokenStore(store TokenStore) Option {
+	return func(cfg *clientConfig) error {
+		if store != nil {
+			cfg.tokens = &tokenStoreAdapter{pub: store}
+		}
+		return nil
+	}
+}
+
 // withTokenStore injects a token store. TokenStore is a sensitive boundary.
 func withTokenStore(tokens ports.TokenStore) Option {
 	return func(cfg *clientConfig) error {
