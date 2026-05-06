@@ -761,8 +761,8 @@ func (c *VaultClient) ListFolders(ctx context.Context) ([]ports.EncryptedFolder,
 		return nil, c.parseErrorResponse(resp)
 	}
 
-	var folderDTOs []dto.FolderDTO
-	if err := json.NewDecoder(resp.Body).Decode(&folderDTOs); err != nil {
+	folderDTOs, err := decodeFolderListResponse(resp.Body)
+	if err != nil {
 		return nil, fmt.Errorf("decode list folders response: %w", err)
 	}
 
@@ -774,6 +774,32 @@ func (c *VaultClient) ListFolders(ctx context.Context) ([]ports.EncryptedFolder,
 		})
 	}
 
+	return folders, nil
+}
+
+func decodeFolderListResponse(body io.Reader) ([]dto.FolderDTO, error) {
+	var raw json.RawMessage
+	if err := json.NewDecoder(body).Decode(&raw); err != nil {
+		return nil, err
+	}
+
+	var folders []dto.FolderDTO
+	if err := json.Unmarshal(raw, &folders); err == nil {
+		return folders, nil
+	}
+
+	var wrapped struct {
+		Data json.RawMessage `json:"Data"`
+	}
+	if err := json.Unmarshal(raw, &wrapped); err != nil {
+		return nil, err
+	}
+	if len(wrapped.Data) == 0 {
+		return nil, fmt.Errorf("folder list response missing Data")
+	}
+	if err := json.Unmarshal(wrapped.Data, &folders); err != nil {
+		return nil, err
+	}
 	return folders, nil
 }
 

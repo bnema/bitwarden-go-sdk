@@ -18,6 +18,7 @@ import (
 	coreerrors "github.com/bnema/bitwarden-go-sdk/internal/core/errors"
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 	"github.com/bnema/bitwarden-go-sdk/internal/testkit/bitwardenremote"
+	"github.com/stretchr/testify/require"
 )
 
 // -------- NewVaultClient tests --------
@@ -606,6 +607,57 @@ func TestCipherCreateUpdateTrashRestoreDeleteUsingContractTestkit(t *testing.T) 
 }
 
 // -------- Folder tests using contract testkit --------
+
+func TestListFoldersAcceptsWrappedDataResponse(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/folders" || r.Method != http.MethodGet {
+			t.Fatalf("unexpected request %s %s", r.Method, r.URL.Path)
+		}
+		if got := r.Header.Get("Authorization"); got != "Bearer test-access-token" {
+			t.Fatalf("Authorization = %q, want bearer token", got)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = fmt.Fprint(w, `{"Data":[{"Id":"folder-id-1","Name":"2.enc-folder"}],"ContinuationToken":null}`)
+	}))
+	defer server.Close()
+
+	client, err := adaptershttp.NewVaultClient(server.URL, server.Client(), nopTokenProvider("test-access-token"))
+	if err != nil {
+		t.Fatalf("NewVaultClient: %v", err)
+	}
+
+	folders, err := client.ListFolders(context.Background())
+	if err != nil {
+		t.Fatalf("ListFolders: %v", err)
+	}
+	require.Len(t, folders, 1)
+	require.Equal(t, "folder-id-1", folders[0].ID)
+	require.Equal(t, "2.enc-folder", folders[0].Name)
+}
+
+func TestListFoldersRejectsUnknownObjectShape(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/folders" || r.Method != http.MethodGet {
+			t.Fatalf("unexpected request %s %s", r.Method, r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = fmt.Fprint(w, `{"Unexpected":"shape"}`)
+	}))
+	defer server.Close()
+
+	client, err := adaptershttp.NewVaultClient(server.URL, server.Client(), nopTokenProvider("test-access-token"))
+	if err != nil {
+		t.Fatalf("NewVaultClient: %v", err)
+	}
+
+	_, err = client.ListFolders(context.Background())
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "missing Data")
+}
 
 func TestFolderListCreateUpdateDeleteUsingContractTestkit(t *testing.T) {
 	t.Parallel()
