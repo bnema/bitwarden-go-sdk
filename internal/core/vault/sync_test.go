@@ -148,6 +148,45 @@ func TestSyncReplacesSnapshotAtomically(t *testing.T) {
 	assert.Equal(t, "Existing Item", items[0].Name)
 }
 
+func TestSyncSkipsOrganizationCiphers(t *testing.T) {
+	t.Parallel()
+
+	api := mocks.NewMockAPIClient(t)
+	crypto := mocks.NewMockCryptoEngine(t)
+	svc := NewService(Dependencies{
+		API:    api,
+		Crypto: crypto,
+		Locked: false,
+	})
+
+	key := ports.UserKey{Bytes: []byte("test-key-64-bytes-for-user-key-here-12345678")}
+	svc.SetUserKey(key)
+
+	orgID := "org-1"
+	api.EXPECT().
+		Sync(ctxb(), ports.SyncOptions{}).
+		Return(ports.SyncResult{
+			Ciphers: []ports.EncryptedCipher{
+				{ID: "personal", Type: 1, Name: "enc-personal"},
+				{ID: "org", Type: 1, Name: "enc-org", OrganizationID: orgID, Key: "enc-org-key"},
+			},
+		}, nil).
+		Once()
+
+	crypto.EXPECT().
+		DecryptCipher(ctxb(), key, ports.EncryptedCipher{ID: "personal", Type: 1, Name: "enc-personal"}).
+		Return(ports.Cipher{ID: "personal", Type: 1, Name: "Personal Item"}, nil).
+		Once()
+
+	err := svc.Sync(context.Background())
+	require.NoError(t, err)
+
+	items, err := svc.List()
+	require.NoError(t, err)
+	require.Len(t, items, 1)
+	assert.Equal(t, "personal", items[0].ID)
+}
+
 func TestSyncContextCancellation(t *testing.T) {
 	t.Parallel()
 

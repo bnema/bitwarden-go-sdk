@@ -1,6 +1,8 @@
 package crypto
 
 import (
+	"fmt"
+
 	"github.com/bnema/bitwarden-go-sdk/internal/core/errors"
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
 )
@@ -17,11 +19,38 @@ func decryptCipherString(key []byte, encrypted string) (string, error) {
 	if encrypted == "" {
 		return "", nil
 	}
-	decrypted, err := decryptType2(key, encrypted)
+	decrypted, err := decryptCipherEncString(key, encrypted)
 	if err != nil {
-		return "", &errors.Error{Kind: errors.KindCrypto, Op: "crypto.DecryptCipher", Code: "decryption_failed", Message: "failed to decrypt cipher field"}
+		return "", &errors.Error{Kind: errors.KindCrypto, Op: "crypto.DecryptCipher", Code: "decryption_failed", Message: "failed to decrypt cipher field", Cause: err}
 	}
 	return decrypted, nil
+}
+
+func decryptCipherEncString(key []byte, encrypted string) (string, error) {
+	enc, err := ParseEncString(encrypted)
+	if err != nil {
+		return "", err
+	}
+
+	switch enc.Type {
+	case 0:
+		if len(key) != 64 {
+			return "", fmt.Errorf("user key must be 64 bytes")
+		}
+		plaintext, err := aes256cbcDecrypt(key[:32], enc.IV, enc.Data)
+		if err != nil {
+			return "", err
+		}
+		unpadded, err := pkcs7Unpad(plaintext)
+		if err != nil {
+			return "", err
+		}
+		return string(unpadded), nil
+	case 2:
+		return decryptType2(key, encrypted)
+	default:
+		return "", fmt.Errorf("unsupported enc string type %d", enc.Type)
+	}
 }
 
 func encryptIdentity(key []byte, src *ports.IdentityCipher, dst *ports.EncryptedIdentityCipher) error {

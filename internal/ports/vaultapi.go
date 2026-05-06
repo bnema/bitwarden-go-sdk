@@ -87,12 +87,14 @@ type EncryptedFolder struct {
 // fields such as Type, Favorite, URI Match, and field Type/LinkedID are not
 // encrypted by Bitwarden's composite cipher format.
 type EncryptedCipher struct {
-	ID       string
-	Type     int
-	Name     string
-	Notes    string
-	Favorite bool
-	FolderID string
+	ID             string
+	Type           int
+	Name           string
+	Notes          string
+	Favorite       bool
+	FolderID       string
+	OrganizationID string
+	Key            string
 
 	// Legacy login scaffold fields kept until later public API phases finish
 	// replacing direct fields with Login.

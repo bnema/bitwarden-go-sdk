@@ -400,8 +400,10 @@ func (s *Service) Sync(ctx context.Context) error {
 		folders[f.ID] = name
 	}
 
-	// Decrypt ciphers with bounded worker pool.
-	items, err := s.decryptCiphers(ctx, userKey, result.Ciphers)
+	// Decrypt ciphers with bounded worker pool. Organization ciphers are
+	// encrypted with an organization key, which this SDK version does not yet
+	// unwrap; skip them instead of failing the whole personal-vault sync.
+	items, err := s.decryptCiphers(ctx, userKey, filterDecryptableCiphers(result.Ciphers))
 	if err != nil {
 		return err
 	}
@@ -420,6 +422,20 @@ func (s *Service) Sync(ctx context.Context) error {
 }
 
 // decryptCiphers processes encrypted ciphers using a bounded worker pool.
+func filterDecryptableCiphers(ciphers []ports.EncryptedCipher) []ports.EncryptedCipher {
+	if len(ciphers) == 0 {
+		return nil
+	}
+	out := make([]ports.EncryptedCipher, 0, len(ciphers))
+	for _, cipher := range ciphers {
+		if cipher.OrganizationID != "" || cipher.Key != "" {
+			continue
+		}
+		out = append(out, cipher)
+	}
+	return out
+}
+
 func (s *Service) decryptCiphers(ctx context.Context, userKey ports.UserKey, encrypted []ports.EncryptedCipher) ([]Item, error) {
 	n := len(encrypted)
 	if n == 0 {

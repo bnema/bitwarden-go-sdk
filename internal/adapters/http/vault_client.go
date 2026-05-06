@@ -489,6 +489,12 @@ func (c *VaultClient) mapCipherDTOToPorts(ct dto.CipherDTO) ports.EncryptedCiphe
 	if ct.FolderID != nil {
 		cipher.FolderID = *ct.FolderID
 	}
+	if ct.OrganizationID != nil {
+		cipher.OrganizationID = *ct.OrganizationID
+	}
+	if ct.Key != nil {
+		cipher.Key = *ct.Key
+	}
 
 	if ct.Login != nil {
 		login := &ports.EncryptedLoginCipher{
@@ -643,6 +649,12 @@ func (c *VaultClient) mapSyncResult(s dto.SyncResponseDTO) ports.SyncResult {
 		}
 		if ct.FolderID != nil {
 			cipher.FolderID = *ct.FolderID
+		}
+		if ct.OrganizationID != nil {
+			cipher.OrganizationID = *ct.OrganizationID
+		}
+		if ct.Key != nil {
+			cipher.Key = *ct.Key
 		}
 
 		if ct.Login != nil {

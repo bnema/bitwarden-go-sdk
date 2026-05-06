@@ -38,17 +38,19 @@ type FolderRequestDTO struct {
 
 // CipherDTO maps a cipher object in a sync response.
 type CipherDTO struct {
-	ID         string         `json:"Id"`
-	Type       int            `json:"Type"`
-	Name       string         `json:"Name"`
-	Notes      *string        `json:"Notes,omitempty"`
-	Favorite   bool           `json:"Favorite"`
-	FolderID   *string        `json:"FolderId,omitempty"`
-	Login      *LoginDTO      `json:"Login,omitempty"`
-	SecureNote *SecureNoteDTO `json:"SecureNote,omitempty"`
-	Card       *CardDTO       `json:"Card,omitempty"`
-	Identity   *IdentityDTO   `json:"Identity,omitempty"`
-	Fields     []FieldDTO     `json:"Fields,omitempty"`
+	ID             string         `json:"Id"`
+	Type           int            `json:"Type"`
+	Name           string         `json:"Name"`
+	Notes          *string        `json:"Notes,omitempty"`
+	Favorite       bool           `json:"Favorite"`
+	FolderID       *string        `json:"FolderId,omitempty"`
+	OrganizationID *string        `json:"OrganizationId,omitempty"`
+	Key            *string        `json:"Key,omitempty"`
+	Login          *LoginDTO      `json:"Login,omitempty"`
+	SecureNote     *SecureNoteDTO `json:"SecureNote,omitempty"`
+	Card           *CardDTO       `json:"Card,omitempty"`
+	Identity       *IdentityDTO   `json:"Identity,omitempty"`
+	Fields         []FieldDTO     `json:"Fields,omitempty"`
 }
 
 // LoginDTO maps the Login sub-object of a cipher.

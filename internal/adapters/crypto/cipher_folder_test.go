@@ -105,6 +105,29 @@ func TestDecryptCipherDeterministicType2(t *testing.T) {
 	assert.Equal(t, "det://uri", dec.URI)
 }
 
+func TestDecryptCipherDeterministicType0(t *testing.T) {
+	eng := NewEngine()
+	key := testUserKey64()
+	encKey := key.Bytes[:32]
+
+	iv := make([]byte, 16)
+	for i := range iv {
+		iv[i] = byte(i + 1)
+	}
+
+	ct, err := aes256cbcEncrypt(encKey, iv, []byte("legacy plaintext"))
+	require.NoError(t, err)
+	encStr, err := EncString{Type: 0, IV: iv, Data: ct}.String()
+	require.NoError(t, err)
+
+	dec, err := eng.DecryptCipher(context.Background(), key, ports.EncryptedCipher{
+		ID:   "legacy-1",
+		Name: encStr,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "legacy plaintext", dec.Name)
+}
+
 func TestDecryptCipherRoundtripWithEmptyFields(t *testing.T) {
 	eng := NewEngine()
 	key := testUserKey64()
