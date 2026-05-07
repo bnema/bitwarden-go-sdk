@@ -638,98 +638,7 @@ func (c *VaultClient) mapSyncResult(s dto.SyncResponseDTO) ports.SyncResult {
 	}
 
 	for _, ct := range s.Ciphers {
-		cipher := ports.EncryptedCipher{
-			ID:       ct.ID,
-			Type:     ct.Type,
-			Name:     ct.Name,
-			Favorite: ct.Favorite,
-		}
-		if ct.Notes != nil {
-			cipher.Notes = *ct.Notes
-		}
-		if ct.FolderID != nil {
-			cipher.FolderID = *ct.FolderID
-		}
-		if ct.OrganizationID != nil {
-			cipher.OrganizationID = *ct.OrganizationID
-		}
-		if ct.Key != nil {
-			cipher.Key = *ct.Key
-		}
-
-		if ct.Login != nil {
-			login := &ports.EncryptedLoginCipher{
-				Username: ct.Login.Username,
-				Password: ct.Login.Password,
-				TOTP:     ct.Login.TOTP,
-				URIs:     make([]ports.EncryptedLoginURI, 0, len(ct.Login.URIs)),
-			}
-			for _, u := range ct.Login.URIs {
-				uri := ports.EncryptedLoginURI{
-					URI:         u.URI,
-					URIChecksum: u.URIChecksum,
-				}
-				if u.Match != nil {
-					uri.Match = *u.Match
-				}
-				login.URIs = append(login.URIs, uri)
-			}
-			cipher.Login = login
-		}
-
-		if ct.SecureNote != nil {
-			cipher.SecureNote = &ports.EncryptedSecureNoteCipher{
-				Type: ct.SecureNote.Type,
-			}
-		}
-
-		if ct.Card != nil {
-			cipher.Card = &ports.EncryptedCardCipher{
-				CardholderName: ct.Card.CardholderName,
-				Brand:          ct.Card.Brand,
-				Number:         ct.Card.Number,
-				ExpMonth:       ct.Card.ExpMonth,
-				ExpYear:        ct.Card.ExpYear,
-				Code:           ct.Card.Code,
-			}
-		}
-
-		if ct.Identity != nil {
-			cipher.Identity = &ports.EncryptedIdentityCipher{
-				Title:          ct.Identity.Title,
-				FirstName:      ct.Identity.FirstName,
-				MiddleName:     ct.Identity.MiddleName,
-				LastName:       ct.Identity.LastName,
-				Address1:       ct.Identity.Address1,
-				Address2:       ct.Identity.Address2,
-				Address3:       ct.Identity.Address3,
-				City:           ct.Identity.City,
-				State:          ct.Identity.State,
-				PostalCode:     ct.Identity.PostalCode,
-				Country:        ct.Identity.Country,
-				Company:        ct.Identity.Company,
-				Email:          ct.Identity.Email,
-				Phone:          ct.Identity.Phone,
-				SSN:            ct.Identity.SSN,
-				Username:       ct.Identity.Username,
-				PassportNumber: ct.Identity.PassportNumber,
-				LicenseNumber:  ct.Identity.LicenseNumber,
-			}
-		}
-
-		if len(ct.Fields) > 0 {
-			cipher.Fields = make([]ports.EncryptedCipherField, 0, len(ct.Fields))
-			for _, field := range ct.Fields {
-				cipher.Fields = append(cipher.Fields, ports.EncryptedCipherField{
-					Name:     field.Name,
-					Value:    field.Value,
-					Type:     field.Type,
-					LinkedID: field.LinkedID,
-				})
-			}
-		}
-
-		result.Ciphers = append(result.Ciphers, cipher)
+		result.Ciphers = append(result.Ciphers, c.mapCipherDTOToPorts(ct))
 	}
 
 	return result
@@ -1054,6 +963,7 @@ func (c *VaultClient) UploadAttachmentDirect(ctx context.Context, cipherID, atta
 
 	resp, err := c.client.Do(httpReq)
 	if err != nil {
+		_ = pr.CloseWithError(err)
 		return fmt.Errorf("upload attachment direct: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()

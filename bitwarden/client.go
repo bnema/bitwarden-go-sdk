@@ -147,6 +147,7 @@ func NewClient(options ...Option) (*Client, error) {
 	client.refreshCoordinator = session.NewRefreshCoordinator(session.RefreshDependencies{
 		Identity: identity,
 		Tokens:   tokens,
+		ClientID: "desktop",
 	})
 
 	return client, nil

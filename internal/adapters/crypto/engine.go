@@ -260,6 +260,13 @@ func (e *Engine) UnlockUserKey(ctx context.Context, input ports.UserKeyInput) (p
 			}
 		}
 		plaintext = unpadded
+	default:
+		return ports.UserKey{}, &errors.Error{
+			Kind:    errors.KindCrypto,
+			Op:      "crypto.UnlockUserKey",
+			Code:    "unsupported_enc_type",
+			Message: fmt.Sprintf("unsupported encryption type %d", encType),
+		}
 	}
 
 	return ports.UserKey{Bytes: plaintext}, nil
@@ -283,11 +290,15 @@ func (e *Engine) EncryptCipher(ctx context.Context, key ports.UserKey, cipher po
 		}
 	}
 
-	typeID := cipher.Type
-	if typeID == 0 {
-		typeID = 1
+	if cipher.Type == 0 {
+		return ports.EncryptedCipher{}, &errors.Error{
+			Kind:    errors.KindValidation,
+			Op:      "crypto.EncryptCipher",
+			Code:    "missing_cipher_type",
+			Message: "cipher type must be non-zero",
+		}
 	}
-	enc := ports.EncryptedCipher{ID: cipher.ID, Type: typeID, Favorite: cipher.Favorite, FolderID: cipher.FolderID}
+	enc := ports.EncryptedCipher{ID: cipher.ID, Type: cipher.Type, Favorite: cipher.Favorite, FolderID: cipher.FolderID}
 	var err error
 	if enc.Name, err = encryptCipherString(key.Bytes, cipher.Name); err != nil {
 		return ports.EncryptedCipher{}, err
@@ -533,10 +544,4 @@ func (e *Engine) DecryptFolderName(ctx context.Context, key ports.UserKey, encry
 	return decrypted, nil
 }
 
-var _ interface {
-	DeriveMasterKey(ctx context.Context, input ports.MasterKeyInput) (ports.MasterKey, error)
-	MakeAuthHash(ctx context.Context, input ports.AuthHashInput) (ports.AuthHash, error)
-	UnlockUserKey(ctx context.Context, input ports.UserKeyInput) (ports.UserKey, error)
-	EncryptCipher(ctx context.Context, key ports.UserKey, cipher ports.Cipher) (ports.EncryptedCipher, error)
-	DecryptCipher(ctx context.Context, key ports.UserKey, cipher ports.EncryptedCipher) (ports.Cipher, error)
-} = (*Engine)(nil)
+var _ ports.CryptoEngine = (*Engine)(nil)

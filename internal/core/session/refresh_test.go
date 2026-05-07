@@ -65,18 +65,42 @@ func TestRefreshFailureFansOut(t *testing.T) {
 	for i := range callers {
 		require.ErrorIs(t, errs[i], wantErr)
 	}
-	assert.Equal(t, 1, identity.calls)
+	assert.Equal(t, 1, identity.callCount())
 }
 
 func TestRefreshInvalidGrantClearsTokens(t *testing.T) {
-	identity := &refreshIdentityStub{err: &coreerrors.Error{Kind: coreerrors.KindUnauthenticated, Code: "invalid_grant"}}
+	identityErr := &coreerrors.Error{Kind: coreerrors.KindUnauthenticated, Code: "invalid_grant"}
+	identity := &refreshIdentityStub{err: identityErr}
 	store := newRefreshStore(tokenSet("account-1", "old-refresh"))
 	coord := NewRefreshCoordinator(RefreshDependencies{Identity: identity, Tokens: store})
 
 	_, err := coord.Refresh(context.Background(), "account-1")
-	require.Error(t, err)
+	require.ErrorIs(t, err, identityErr)
 	assert.True(t, coreerrors.Is(err, coreerrors.KindUnauthenticated))
 	assert.Equal(t, 1, store.deletes)
+}
+
+func TestRefreshInvalidGrantPreservesRefreshErrorWhenDeleteFails(t *testing.T) {
+	identityErr := &coreerrors.Error{Kind: coreerrors.KindUnauthenticated, Code: "invalid_grant"}
+	identity := &refreshIdentityStub{err: identityErr}
+	store := newRefreshStore(tokenSet("account-1", "old-refresh"))
+	store.deleteErr = &coreerrors.Error{Kind: coreerrors.KindUnavailable, Op: "tokens.DeleteTokens"}
+	coord := NewRefreshCoordinator(RefreshDependencies{Identity: identity, Tokens: store})
+
+	_, err := coord.Refresh(context.Background(), "account-1")
+	require.ErrorIs(t, err, identityErr)
+	assert.True(t, coreerrors.Is(err, coreerrors.KindUnauthenticated))
+	assert.Equal(t, 1, store.deletes)
+}
+
+func TestRefreshUsesConfiguredClientID(t *testing.T) {
+	identity := &refreshIdentityStub{tokens: tokenSet("account-1", "new-refresh")}
+	store := newRefreshStore(tokenSet("account-1", "old-refresh"))
+	coord := NewRefreshCoordinator(RefreshDependencies{Identity: identity, Tokens: store, ClientID: "sdk-go"})
+
+	_, err := coord.Refresh(context.Background(), "account-1")
+	require.NoError(t, err)
+	assert.Equal(t, "sdk-go", identity.clientID())
 }
 
 func TestRefreshContextCancellationDoesNotLeakCall(t *testing.T) {
@@ -110,11 +134,12 @@ func TestRefreshRemoteTimeoutCleansInflight(t *testing.T) {
 }
 
 type refreshIdentityStub struct {
-	mu     sync.Mutex
-	calls  int
-	tokens ports.TokenSet
-	err    error
-	block  chan struct{}
+	mu           sync.Mutex
+	calls        int
+	lastClientID string
+	tokens       ports.TokenSet
+	err          error
+	block        chan struct{}
 }
 
 func (s *refreshIdentityStub) Prelogin(context.Context, string) (ports.PreloginResult, error) {
@@ -129,9 +154,10 @@ func (s *refreshIdentityStub) CompleteTwoFactor(context.Context, ports.TwoFactor
 	panic("not used")
 }
 
-func (s *refreshIdentityStub) Refresh(ctx context.Context, _ ports.RefreshTokenRequest) (ports.TokenResponse, error) {
+func (s *refreshIdentityStub) Refresh(ctx context.Context, req ports.RefreshTokenRequest) (ports.TokenResponse, error) {
 	s.mu.Lock()
 	s.calls++
+	s.lastClientID = req.ClientID
 	s.mu.Unlock()
 	if s.block != nil {
 		select {
@@ -149,11 +175,18 @@ func (s *refreshIdentityStub) callCount() int {
 	return s.calls
 }
 
+func (s *refreshIdentityStub) clientID() string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.lastClientID
+}
+
 type refreshStoreStub struct {
-	mu      sync.Mutex
-	tokens  ports.TokenSet
-	saves   int
-	deletes int
+	mu        sync.Mutex
+	tokens    ports.TokenSet
+	saves     int
+	deletes   int
+	deleteErr error
 }
 
 func newRefreshStore(tokens ports.TokenSet) *refreshStoreStub {
@@ -178,6 +211,9 @@ func (s *refreshStoreStub) DeleteTokens(context.Context, string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.deletes++
+	if s.deleteErr != nil {
+		return s.deleteErr
+	}
 	s.tokens.Close()
 	return nil
 }

@@ -32,7 +32,7 @@ type AttachmentUploadDataResponseDTO struct {
 	FileUploadType     int                 `json:"FileUploadType"`
 	CipherResponse     *CipherMiniResponse `json:"CipherResponse,omitempty"`
 	CipherMiniResponse *CipherMiniResponse `json:"CipherMiniResponse,omitempty"`
-	URL                *string             `json:"Url"`
+	URL                *string             `json:"Url,omitempty"`
 }
 
 // CipherMiniResponse is a shorthand cipher object used inside attachment
@@ -54,5 +54,5 @@ type CipherMiniResponseExtended struct {
 	ID           string `json:"Id"`
 	RevisionDate string `json:"RevisionDate"`
 	// Attachments may be present in delete response after removal.
-	Attachments []any `json:"Attachments,omitempty"`
+	Attachments []AttachmentResponseDTO `json:"Attachments,omitempty"`
 }

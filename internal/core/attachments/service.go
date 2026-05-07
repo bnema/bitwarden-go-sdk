@@ -6,6 +6,7 @@ package attachments
 import (
 	"context"
 	"crypto/rand"
+	stderrors "errors"
 	"io"
 
 	"github.com/bnema/bitwarden-go-sdk/internal/core/errors"
@@ -126,10 +127,14 @@ func (s *Service) Upload(ctx context.Context, input UploadInput) (Attachment, er
 	// to capture any encrypt error that was closed into the pipe.
 	_, pipeErr := io.Copy(io.Discard, pr)
 
-	// Combine errors: prefer pipe (encrypt) error over upload error.
-	var uploadErrFinal = pipeErr
+	// Combine errors: prefer the upload error because it is the caller-visible
+	// operation failure. Include the pipe/encryption error when both occurred.
+	uploadErrFinal := uploadErr
+	if uploadErrFinal != nil && pipeErr != nil {
+		uploadErrFinal = stderrors.Join(uploadErrFinal, pipeErr)
+	}
 	if uploadErrFinal == nil {
-		uploadErrFinal = uploadErr
+		uploadErrFinal = pipeErr
 	}
 
 	if uploadErrFinal != nil {
@@ -203,6 +208,11 @@ func (s *Service) UploadGenerated(ctx context.Context, cipherID, fileName string
 	if _, err := rand.Read(keyBytes); err != nil {
 		return Attachment{}, err
 	}
+	defer func() {
+		for i := range keyBytes {
+			keyBytes[i] = 0
+		}
+	}()
 	attachmentKey := ports.AttachmentKey{Bytes: keyBytes}
 
 	wrappedKey, err := s.crypto.WrapAttachmentKey(ctx, s.userKey, attachmentKey)

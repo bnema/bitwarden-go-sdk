@@ -168,3 +168,11 @@ type EncryptedAttachment struct {
 type AttachmentKey struct {
 	Bytes []byte
 }
+
+// Close zeros attachment-key bytes. It is idempotent.
+func (k *AttachmentKey) Close() {
+	for i := range k.Bytes {
+		k.Bytes[i] = 0
+	}
+	k.Bytes = nil
+}

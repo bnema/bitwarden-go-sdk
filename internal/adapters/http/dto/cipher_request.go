@@ -23,9 +23,9 @@ type CipherRequestDTO struct {
 
 // LoginRequestDTO maps the Login sub-object in a cipher request.
 type LoginRequestDTO struct {
-	Username string               `json:"username"`
-	Password string               `json:"password"`
-	TOTP     string               `json:"totp"`
+	Username string               `json:"username,omitempty"`
+	Password string               `json:"password,omitempty"`
+	TOTP     string               `json:"totp,omitempty"`
 	URIs     []LoginURIRequestDTO `json:"uris,omitempty"`
 }
 

@@ -22,14 +22,17 @@ func stretchKey(masterKey []byte) (encKey, macKey [32]byte) {
 func hkdfExpandSHA256(out, prk, info []byte) {
 	h := hmac.New(sha256.New, prk)
 	var previous []byte
-	var offset byte
-	for counter := byte(1); offset < byte(len(out)); counter++ {
+	offset := 0
+	for counter := 1; offset < len(out); counter++ {
+		if counter > 255 {
+			panic("hkdf expand output exceeds RFC5869 limit")
+		}
 		h.Reset()
 		h.Write(previous)
 		h.Write(info)
-		h.Write([]byte{counter})
+		h.Write([]byte{byte(counter)})
 		previous = h.Sum(nil)
-		offset += byte(copy(out[offset:], previous))
+		offset += copy(out[offset:], previous)
 	}
 }
 
@@ -79,10 +82,12 @@ func pkcs7Unpad(data []byte) ([]byte, error) {
 	if padLen == 0 || padLen > len(data) || padLen > aes.BlockSize {
 		return nil, fmt.Errorf("invalid padding")
 	}
+	var mismatch byte
 	for i := len(data) - padLen; i < len(data); i++ {
-		if data[i] != byte(padLen) {
-			return nil, fmt.Errorf("invalid padding")
-		}
+		mismatch |= data[i] ^ byte(padLen)
+	}
+	if mismatch != 0 {
+		return nil, fmt.Errorf("invalid padding")
 	}
 	return data[:len(data)-padLen], nil
 }

@@ -100,8 +100,12 @@ func (e *Error) Is(target error) bool {
 func Is(err error, kind Kind) bool {
 	for err != nil {
 		var e *Error
-		if stderrors.As(err, &e) && e.Kind == kind {
-			return true
+		if stderrors.As(err, &e) {
+			if e.Kind == kind {
+				return true
+			}
+			err = e.Cause
+			continue
 		}
 		err = stderrors.Unwrap(err)
 	}

@@ -266,12 +266,22 @@ func (c *IdentityClient) parseTokenErrorResponse(resp *http.Response) error {
 		}
 	}
 
-	// Try to parse the JSON error body.
-	body, err := io.ReadAll(resp.Body)
+	// Try to parse the JSON error body, bounded to avoid untrusted large
+	// responses consuming excessive memory.
+	const maxTokenErrorBodySize = 64 * 1024
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxTokenErrorBodySize+1))
 	if err != nil {
 		return &coreerrors.Error{
 			Kind:   coreerrors.KindUnknown,
 			Status: resp.StatusCode,
+		}
+	}
+	if len(body) > maxTokenErrorBodySize {
+		return &coreerrors.Error{
+			Kind:    coreerrors.KindUnknown,
+			Status:  resp.StatusCode,
+			Code:    "response_too_large",
+			Message: "identity error response body is too large",
 		}
 	}
 

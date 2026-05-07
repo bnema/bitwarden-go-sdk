@@ -16,6 +16,7 @@ const defaultRefreshTimeout = 30 * time.Second
 type RefreshCoordinator struct {
 	identity ports.IdentityClient
 	tokens   ports.TokenStore
+	clientID string
 	timeout  time.Duration
 
 	mu    sync.Mutex
@@ -26,11 +27,16 @@ type RefreshCoordinator struct {
 type RefreshDependencies struct {
 	Identity ports.IdentityClient
 	Tokens   ports.TokenStore
+	ClientID string
 }
 
 // NewRefreshCoordinator constructs a RefreshCoordinator.
 func NewRefreshCoordinator(deps RefreshDependencies) *RefreshCoordinator {
-	return &RefreshCoordinator{identity: deps.Identity, tokens: deps.Tokens, timeout: defaultRefreshTimeout, calls: map[string]*refreshCall{}}
+	clientID := deps.ClientID
+	if clientID == "" {
+		clientID = "desktop"
+	}
+	return &RefreshCoordinator{identity: deps.Identity, tokens: deps.Tokens, clientID: clientID, timeout: defaultRefreshTimeout, calls: map[string]*refreshCall{}}
 }
 
 // Refresh loads the account refresh token, refreshes it once for concurrent
@@ -85,13 +91,12 @@ func (c *RefreshCoordinator) runRefresh(ctx context.Context, cancel context.Canc
 		call.err = err
 		return
 	}
-	response, err := c.identity.Refresh(ctx, ports.RefreshTokenRequest{AccountID: accountID, ClientID: "desktop", RefreshToken: current.RefreshToken.Clone()})
+	response, err := c.identity.Refresh(ctx, ports.RefreshTokenRequest{AccountID: accountID, ClientID: c.clientID, RefreshToken: current.RefreshToken.Clone()})
 	if err != nil {
 		if isInvalidGrant(err) {
-			if deleteErr := c.tokens.DeleteTokens(context.WithoutCancel(ctx), accountID); deleteErr != nil {
-				call.err = deleteErr
-				return
-			}
+			// Token deletion is a best-effort side effect. Preserve the
+			// original refresh failure so callers can handle invalid_grant.
+			_ = c.tokens.DeleteTokens(context.WithoutCancel(ctx), accountID)
 		}
 		call.err = err
 		return

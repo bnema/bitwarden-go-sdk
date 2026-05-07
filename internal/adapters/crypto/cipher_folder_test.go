@@ -30,6 +30,7 @@ func TestCipherEncryptDecryptRoundtrip(t *testing.T) {
 
 	original := ports.Cipher{
 		ID:       "cipher-abc-123",
+		Type:     1,
 		FolderID: "folder-1",
 		Name:     "My Test Login",
 		Username: "alice@example.com",
@@ -134,6 +135,7 @@ func TestDecryptCipherRoundtripWithEmptyFields(t *testing.T) {
 
 	original := ports.Cipher{
 		ID:       "c-empty",
+		Type:     1,
 		Name:     "",
 		Username: "",
 		Password: "",
@@ -162,17 +164,17 @@ func TestEncryptCipherInvalidKeyLength(t *testing.T) {
 
 	_, err := eng.EncryptCipher(context.Background(),
 		ports.UserKey{Bytes: make([]byte, 31)},
-		ports.Cipher{Name: "test"})
+		ports.Cipher{Type: 1, Name: "test"})
 	require.Error(t, err)
-	assert.True(t, errors.Is(err, errors.KindValidation) || errors.Is(err, errors.KindCrypto),
-		"expected KindValidation or KindCrypto, got %v", err)
+	assert.True(t, errors.Is(err, errors.KindValidation),
+		"expected KindValidation, got %v", err)
 
 	_, err = eng.EncryptCipher(context.Background(),
 		ports.UserKey{Bytes: make([]byte, 65)},
-		ports.Cipher{Name: "test"})
+		ports.Cipher{Type: 1, Name: "test"})
 	require.Error(t, err)
-	assert.True(t, errors.Is(err, errors.KindValidation) || errors.Is(err, errors.KindCrypto),
-		"expected KindValidation or KindCrypto, got %v", err)
+	assert.True(t, errors.Is(err, errors.KindValidation),
+		"expected KindValidation, got %v", err)
 }
 
 func TestDecryptCipherInvalidKeyLength(t *testing.T) {
@@ -235,6 +237,7 @@ func TestDecryptCipherMACMismatch(t *testing.T) {
 	// Encrypt a cipher legitimately.
 	orig := ports.Cipher{
 		ID:       "mac-test",
+		Type:     1,
 		Name:     "tamper me",
 		Username: "tamper-user",
 		Password: "tamper-pass",
