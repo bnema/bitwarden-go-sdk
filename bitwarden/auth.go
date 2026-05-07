@@ -8,6 +8,7 @@ import (
 	coreauth "github.com/bnema/bitwarden-go-sdk/internal/core/auth"
 	coreerrors "github.com/bnema/bitwarden-go-sdk/internal/core/errors"
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
+	"github.com/bnema/bitwarden-go-sdk/internal/secretmem"
 )
 
 // LoginResult reports the result of BeginLogin.
@@ -166,12 +167,10 @@ func (c *Client) ExportSession(ctx context.Context) (SessionMaterial, error) {
 	}
 	c.mu.Lock()
 	accountID := c.accountID
-	userKeyBytes := append([]byte(nil), c.userKey.Bytes...)
+	userKeyBytes := secretmem.Clone(c.userKey.Bytes)
 	c.mu.Unlock()
 	if accountID == "" {
-		for i := range userKeyBytes {
-			userKeyBytes[i] = 0
-		}
+		secretmem.Zero(userKeyBytes)
 		return SessionMaterial{}, mapCoreError(&coreerrors.Error{
 			Kind:    coreerrors.KindValidation,
 			Op:      "Client.ExportSession",
@@ -181,9 +180,7 @@ func (c *Client) ExportSession(ctx context.Context) (SessionMaterial, error) {
 	}
 	tokens, err := c.tokens.LoadTokens(ctx, accountID)
 	if err != nil {
-		for i := range userKeyBytes {
-			userKeyBytes[i] = 0
-		}
+		secretmem.Zero(userKeyBytes)
 		return SessionMaterial{}, mapCoreError(err)
 	}
 	return SessionMaterial{
@@ -234,7 +231,7 @@ func (c *Client) RestoreSession(ctx context.Context, material SessionMaterial) e
 	c.mu.Lock()
 	c.accountID = clone.AccountID
 	c.userKey.Close()
-	c.userKey = ports.UserKey{Bytes: append([]byte(nil), clone.UserKey...)}
+	c.userKey = ports.UserKey{Bytes: secretmem.Clone(clone.UserKey)}
 	c.mu.Unlock()
 	c.locked.Store(false)
 	c.vaultService.SetUserKey(ports.UserKey{Bytes: clone.UserKey})

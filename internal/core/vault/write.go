@@ -5,6 +5,7 @@ import (
 
 	"github.com/bnema/bitwarden-go-sdk/internal/core/errors"
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
+	"github.com/bnema/bitwarden-go-sdk/internal/secretmem"
 )
 
 // ---------------------------------------------------------------------------
@@ -148,8 +149,9 @@ func (s *Service) CreateCipher(ctx context.Context, cipher Item) (Item, error) {
 		s.mu.RUnlock()
 		return Item{}, &errors.Error{Kind: errors.KindLocked, Op: "vault.Service.CreateCipher", Message: "vault is locked"}
 	}
-	userKey := ports.UserKey{Bytes: append([]byte(nil), s.userKey.Bytes...)}
+	userKey := ports.UserKey{Bytes: secretmem.Clone(s.userKey.Bytes)}
 	s.mu.RUnlock()
+	defer userKey.Close()
 
 	// Encrypt the plaintext cipher.
 	enc, err := s.crypto.EncryptCipher(ctx, userKey, itemToPortsCipher(cipher))
@@ -195,8 +197,9 @@ func (s *Service) UpdateCipher(ctx context.Context, id string, cipher Item) (Ite
 		s.mu.RUnlock()
 		return Item{}, &errors.Error{Kind: errors.KindLocked, Op: "vault.Service.UpdateCipher", Message: "vault is locked"}
 	}
-	userKey := ports.UserKey{Bytes: append([]byte(nil), s.userKey.Bytes...)}
+	userKey := ports.UserKey{Bytes: secretmem.Clone(s.userKey.Bytes)}
 	s.mu.RUnlock()
+	defer userKey.Close()
 
 	// Encrypt the plaintext cipher.
 	enc, err := s.crypto.EncryptCipher(ctx, userKey, itemToPortsCipher(cipher))
@@ -270,8 +273,9 @@ func (s *Service) RestoreCipher(ctx context.Context, id string) (Item, error) {
 		s.mu.RUnlock()
 		return Item{}, &errors.Error{Kind: errors.KindLocked, Op: "vault.Service.RestoreCipher", Message: "vault is locked"}
 	}
-	userKey := ports.UserKey{Bytes: append([]byte(nil), s.userKey.Bytes...)}
+	userKey := ports.UserKey{Bytes: secretmem.Clone(s.userKey.Bytes)}
 	s.mu.RUnlock()
+	defer userKey.Close()
 
 	enc, err := s.api.RestoreCipher(ctx, id)
 	if err != nil {

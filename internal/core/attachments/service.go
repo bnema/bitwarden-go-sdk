@@ -11,6 +11,7 @@ import (
 
 	"github.com/bnema/bitwarden-go-sdk/internal/core/errors"
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
+	"github.com/bnema/bitwarden-go-sdk/internal/secretmem"
 )
 
 // Attachment is a plaintext attachment model.
@@ -54,7 +55,7 @@ func NewService(deps Dependencies) *Service {
 	return &Service{
 		api:     deps.API,
 		crypto:  deps.Crypto,
-		userKey: ports.UserKey{Bytes: append([]byte(nil), deps.UserKey.Bytes...)},
+		userKey: ports.UserKey{Bytes: secretmem.Clone(deps.UserKey.Bytes)},
 		locked:  deps.Locked,
 	}
 }
@@ -208,11 +209,7 @@ func (s *Service) UploadGenerated(ctx context.Context, cipherID, fileName string
 	if _, err := rand.Read(keyBytes); err != nil {
 		return Attachment{}, err
 	}
-	defer func() {
-		for i := range keyBytes {
-			keyBytes[i] = 0
-		}
-	}()
+	defer secretmem.Zero(keyBytes)
 	attachmentKey := ports.AttachmentKey{Bytes: keyBytes}
 
 	wrappedKey, err := s.crypto.WrapAttachmentKey(ctx, s.userKey, attachmentKey)

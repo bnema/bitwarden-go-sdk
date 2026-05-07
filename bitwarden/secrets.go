@@ -2,6 +2,8 @@ package bitwarden
 
 import (
 	stderrors "errors"
+
+	"github.com/bnema/bitwarden-go-sdk/internal/secretmem"
 )
 
 const secretRedactedText = "[REDACTED]"
@@ -20,9 +22,7 @@ func NewSecretString(value string) *Secret {
 
 // NewSecretBytes creates a Secret holding a copy of value.
 func NewSecretBytes(value []byte) *Secret {
-	buf := make([]byte, len(value))
-	copy(buf, value)
-	return &Secret{buf: buf}
+	return &Secret{buf: secretmem.Clone(value)}
 }
 
 // String returns a constant redacted text. It never includes plaintext.
@@ -47,16 +47,12 @@ func (s *Secret) Reveal() (*RevealedSecret, error) {
 	if s.buf == nil {
 		return nil, stderrors.New("bitwarden: Secret has been closed")
 	}
-	buf := make([]byte, len(s.buf))
-	copy(buf, s.buf)
-	return &RevealedSecret{buf: buf}, nil
+	return &RevealedSecret{buf: secretmem.Clone(s.buf)}, nil
 }
 
 // Close clears the owned byte buffer. It is idempotent.
 func (s *Secret) Close() error {
-	for i := range s.buf {
-		s.buf[i] = 0
-	}
+	secretmem.Zero(s.buf)
 	s.buf = nil
 	return nil
 }
@@ -80,9 +76,7 @@ func (r *RevealedSecret) String() string {
 
 // Close clears the revealed copy. It is idempotent.
 func (r *RevealedSecret) Close() error {
-	for i := range r.buf {
-		r.buf[i] = 0
-	}
+	secretmem.Zero(r.buf)
 	r.buf = nil
 	return nil
 }

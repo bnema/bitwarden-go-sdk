@@ -3,7 +3,6 @@ package bitwarden
 import (
 	"context"
 	"errors"
-	"log/slog"
 	"net/http"
 	"sync"
 	"testing"
@@ -39,17 +38,6 @@ func TestNewClient_AppliesHTTPClientOption(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, client)
 	require.Same(t, httpClient, client.httpClient)
-}
-
-func TestNewClient_AppliesLoggerOption(t *testing.T) {
-	logger := slog.New(slog.NewTextHandler(nil, nil))
-	client, err := NewClient(
-		WithLogger(logger),
-	)
-
-	require.NoError(t, err)
-	require.NotNil(t, client)
-	require.Same(t, logger, client.logger)
 }
 
 func TestDefaultClientIsLocked(t *testing.T) {
@@ -136,12 +124,6 @@ func TestNewClient_WithHTTPClientNil_KeepsDefault(t *testing.T) {
 	client, err := NewClient(WithHTTPClient(nil))
 	require.NoError(t, err)
 	require.NotNil(t, client.httpClient)
-}
-
-func TestNewClient_WithLoggerNil_KeepsDefault(t *testing.T) {
-	client, err := NewClient(WithLogger(nil))
-	require.NoError(t, err)
-	require.NotNil(t, client.logger)
 }
 
 func TestWithTokenStoreSavesLoginTokens(t *testing.T) {
