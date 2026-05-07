@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/bnema/bitwarden-go-sdk/internal/secretmem"
 )
 
 // SecretBytes holds sensitive bytes with redacted String/GoString and zero-on-Close semantics.
@@ -15,9 +17,7 @@ const secretBytesRedacted = "[REDACTED_SECRET_BYTES]"
 
 // NewSecretBytes returns a SecretBytes holding a copy of value.
 func NewSecretBytes(value []byte) SecretBytes {
-	buf := make([]byte, len(value))
-	copy(buf, value)
-	return SecretBytes{buf: buf}
+	return SecretBytes{buf: secretmem.Clone(value)}
 }
 
 // Bytes returns a copy of the held bytes.
@@ -25,9 +25,7 @@ func (s SecretBytes) Bytes() []byte {
 	if s.buf == nil {
 		return nil
 	}
-	cpy := make([]byte, len(s.buf))
-	copy(cpy, s.buf)
-	return cpy
+	return secretmem.Clone(s.buf)
 }
 
 // String returns a constant redacted text. It never includes plaintext.
@@ -42,14 +40,12 @@ func (s SecretBytes) GoString() string {
 
 // Clone returns a deep copy of the SecretBytes.
 func (s SecretBytes) Clone() SecretBytes {
-	return NewSecretBytes(s.buf)
+	return SecretBytes{buf: secretmem.Clone(s.buf)}
 }
 
 // Close zeros the internal bytes and releases the buffer. It is idempotent.
 func (s *SecretBytes) Close() {
-	for i := range s.buf {
-		s.buf[i] = 0
-	}
+	secretmem.Zero(s.buf)
 	s.buf = nil
 }
 

@@ -8,6 +8,7 @@ import (
 
 	"github.com/bnema/bitwarden-go-sdk/internal/core/errors"
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
+	"github.com/bnema/bitwarden-go-sdk/internal/secretmem"
 )
 
 // Folder is a plaintext folder model.
@@ -37,7 +38,7 @@ func NewService(deps Dependencies) *Service {
 	return &Service{
 		api:     deps.API,
 		crypto:  deps.Crypto,
-		userKey: ports.UserKey{Bytes: append([]byte(nil), deps.UserKey.Bytes...)},
+		userKey: ports.UserKey{Bytes: secretmem.Clone(deps.UserKey.Bytes)},
 		locked:  deps.Locked,
 	}
 }

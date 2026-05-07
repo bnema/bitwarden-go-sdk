@@ -7,6 +7,7 @@ import (
 	coreattach "github.com/bnema/bitwarden-go-sdk/internal/core/attachments"
 	coreerrors "github.com/bnema/bitwarden-go-sdk/internal/core/errors"
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
+	"github.com/bnema/bitwarden-go-sdk/internal/secretmem"
 )
 
 // Attachment is a public attachment model.
@@ -35,9 +36,9 @@ type Attachments struct {
 // attachmentsService creates a core attachments.Service from the client's
 // current state.
 func (a *Attachments) attachmentsService() *coreattach.Service {
-	a.client.mu.Lock()
-	userKey := ports.UserKey{Bytes: append([]byte(nil), a.client.userKey.Bytes...)}
-	a.client.mu.Unlock()
+	a.client.mu.RLock()
+	userKey := ports.UserKey{Bytes: secretmem.Clone(a.client.userKey.Bytes)}
+	a.client.mu.RUnlock()
 
 	return coreattach.NewService(coreattach.Dependencies{
 		API:     a.client.api,

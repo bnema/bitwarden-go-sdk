@@ -6,10 +6,8 @@ This SDK provides an idiomatic, stateful Go client for reading and writing
 Bitwarden vaults. It supports Bitwarden cloud (US and EU regions) and official
 self-hosted Bitwarden instances.
 
-> Status: v0.1.0 handoff — implemented and tested. See each section below for
-> the current capabilities and known limitations.
+> Status: v0.1.0 alpha release, still very much in development. API subject to change without deprecation.
 
----
 
 ## Scope
 
@@ -22,13 +20,11 @@ self-hosted Bitwarden instances.
 - Attachment upload, download, metadata, and delete.
 - Automatic OAuth token refresh (background, race-safe).
 - Hexagonal architecture with Mockery-generated mocks for testability.
-- Secret-memory handling via `Secret` / `RevealedSecret` (zeroize on close).
 
----
 
 ## Non-goals
 
-The following are **out of scope** for this SDK:
+The following are **out of scope** for this SDK alpha release:
 
 - **Vaultwarden** — use the [bitwarden/server](https://github.com/bitwarden/server)
   official self-hosted deployment.
@@ -203,6 +199,11 @@ wrapped in `*Secret` to prevent accidental exposure:
 - `MarshalJSON()` returns an error — secrets cannot be serialised to JSON.
 - Call `Reveal()` to obtain a `*RevealedSecret` for transient access.
 - Call `Close()` on both `Secret` and `RevealedSecret` to zeroise the buffer.
+- Build with `GOEXPERIMENT=runtimesecret` to enable Go's experimental
+  `runtime/secret` support for enhanced stack/register erasure while copying
+  and clearing secret bytes. Without that flag, the SDK falls back to standard
+  Go memory handling plus explicit buffer zeroisation on `Close()`; this keeps
+  API behavior identical but provides weaker runtime erasure guarantees.
 
 ```go
 password := item.Password // *Secret

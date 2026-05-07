@@ -1,6 +1,10 @@
 package bitwarden
 
-import "time"
+import (
+	"time"
+
+	"github.com/bnema/bitwarden-go-sdk/internal/secretmem"
+)
 
 // Region identifies a Bitwarden service region.
 type Region string
@@ -105,21 +109,17 @@ type TokenSet struct {
 // aliasing the original byte slices.
 func (t TokenSet) Clone() TokenSet {
 	c := t
-	c.AccessToken = append([]byte(nil), t.AccessToken...)
-	c.RefreshToken = append([]byte(nil), t.RefreshToken...)
+	c.AccessToken = secretmem.Clone(t.AccessToken)
+	c.RefreshToken = secretmem.Clone(t.RefreshToken)
 	return c
 }
 
 // Close zeros the backing arrays of AccessToken and RefreshToken, then nils
 // them. It is idempotent.
 func (t *TokenSet) Close() {
-	for i := range t.AccessToken {
-		t.AccessToken[i] = 0
-	}
+	secretmem.Zero(t.AccessToken)
 	t.AccessToken = nil
-	for i := range t.RefreshToken {
-		t.RefreshToken[i] = 0
-	}
+	secretmem.Zero(t.RefreshToken)
 	t.RefreshToken = nil
 }
 
@@ -135,7 +135,7 @@ type SessionMaterial struct {
 // aliasing the original byte slices.
 func (m SessionMaterial) Clone() SessionMaterial {
 	c := m
-	c.UserKey = append([]byte(nil), m.UserKey...)
+	c.UserKey = secretmem.Clone(m.UserKey)
 	c.Tokens = m.Tokens.Clone()
 	return c
 }
@@ -143,9 +143,7 @@ func (m SessionMaterial) Clone() SessionMaterial {
 // Close zeros the backing array of UserKey, nils it, and closes Tokens.
 // It is idempotent.
 func (m *SessionMaterial) Close() {
-	for i := range m.UserKey {
-		m.UserKey[i] = 0
-	}
+	secretmem.Zero(m.UserKey)
 	m.UserKey = nil
 	m.Tokens.Close()
 }

@@ -3,7 +3,6 @@ package bitwarden
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
@@ -15,7 +14,6 @@ type clientConfig struct {
 	regionSet  bool // true when WithRegion was explicitly called
 	serverURL  string
 	httpClient *http.Client
-	logger     *slog.Logger
 	identity   ports.IdentityClient
 	crypto     ports.CryptoEngine
 	tokens     ports.TokenStore
@@ -61,16 +59,6 @@ func WithHTTPClient(httpClient *http.Client) Option {
 	return func(cfg *clientConfig) error {
 		if httpClient != nil {
 			cfg.httpClient = httpClient
-		}
-		return nil
-	}
-}
-
-// WithLogger sets the structured logger used by the SDK.
-func WithLogger(logger *slog.Logger) Option {
-	return func(cfg *clientConfig) error {
-		if logger != nil {
-			cfg.logger = logger
 		}
 		return nil
 	}

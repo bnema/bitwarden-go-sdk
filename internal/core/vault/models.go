@@ -5,11 +5,13 @@ package vault
 
 import (
 	"context"
+	"maps"
 	"strings"
 	"sync"
 
 	"github.com/bnema/bitwarden-go-sdk/internal/core/errors"
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
+	"github.com/bnema/bitwarden-go-sdk/internal/secretmem"
 )
 
 // Item type constants.
@@ -219,9 +221,7 @@ func NewSnapshot(items []Item, folders map[string]string) Snapshot {
 		itemsCopy[i] = item.clone()
 	}
 	foldersCopy := make(map[string]string, len(folders))
-	for k, v := range folders {
-		foldersCopy[k] = v
-	}
+	maps.Copy(foldersCopy, folders)
 	return Snapshot{items: itemsCopy, folders: foldersCopy}
 }
 
@@ -382,8 +382,9 @@ func (s *Service) Sync(ctx context.Context) error {
 		s.mu.RUnlock()
 		return &errors.Error{Kind: errors.KindLocked, Op: "vault.Service.Sync", Message: "vault is locked"}
 	}
-	userKey := ports.UserKey{Bytes: append([]byte(nil), s.userKey.Bytes...)}
+	userKey := ports.UserKey{Bytes: secretmem.Clone(s.userKey.Bytes)}
 	s.mu.RUnlock()
+	defer userKey.Close()
 
 	result, err := s.api.Sync(ctx, ports.SyncOptions{})
 	if err != nil {
@@ -461,10 +462,8 @@ func (s *Service) decryptCiphers(ctx context.Context, userKey ports.UserKey, enc
 
 	// Start workers.
 	var wg sync.WaitGroup
-	for w := 0; w < numWorkers; w++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range numWorkers {
+		wg.Go(func() {
 			for idx := range jobs {
 				// Check cancellation before each decrypt.
 				if err := ctx.Err(); err != nil {
@@ -478,11 +477,11 @@ func (s *Service) decryptCiphers(ctx context.Context, userKey ports.UserKey, enc
 				}
 				results <- jobResult{idx: idx, item: cipherToItem(dec)}
 			}
-		}()
+		})
 	}
 
 	// Send all jobs.
-	for i := 0; i < n; i++ {
+	for i := range n {
 		jobs <- i
 	}
 	close(jobs)
@@ -598,7 +597,7 @@ func (s *Service) SetUserKey(key ports.UserKey) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.userKey.Close()
-	s.userKey = ports.UserKey{Bytes: append([]byte(nil), key.Bytes...)}
+	s.userKey = ports.UserKey{Bytes: secretmem.Clone(key.Bytes)}
 }
 
 // Clear locks the vault, zeros the user key, and replaces the snapshot with

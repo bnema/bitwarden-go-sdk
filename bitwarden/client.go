@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"sync"
 	"sync/atomic"
@@ -18,18 +17,18 @@ import (
 	"github.com/bnema/bitwarden-go-sdk/internal/core/session"
 	corevault "github.com/bnema/bitwarden-go-sdk/internal/core/vault"
 	"github.com/bnema/bitwarden-go-sdk/internal/ports"
+	"github.com/bnema/bitwarden-go-sdk/internal/secretmem"
 )
 
 // Client is the public Bitwarden SDK facade.
 type Client struct {
 	environment        config.Environment
 	httpClient         *http.Client
-	logger             *slog.Logger
 	identity           ports.IdentityClient
 	crypto             ports.CryptoEngine
 	tokens             ports.TokenStore
 	api                ports.APIClient
-	mu                 sync.Mutex
+	mu                 sync.RWMutex
 	accountID          string
 	userKey            ports.UserKey
 	closed             bool
@@ -43,7 +42,6 @@ func NewClient(options ...Option) (*Client, error) {
 	cfg := &clientConfig{
 		region:     RegionUS,
 		httpClient: http.DefaultClient,
-		logger:     slog.New(slog.DiscardHandler),
 	}
 
 	for _, option := range options {
@@ -103,7 +101,6 @@ func NewClient(options ...Option) (*Client, error) {
 	client := &Client{
 		environment: env,
 		httpClient:  cfg.httpClient,
-		logger:      cfg.logger,
 		identity:    identity,
 		crypto:      crypto,
 		tokens:      tokens,
@@ -677,9 +674,9 @@ type Folders struct {
 
 // foldersService creates a core folders.Service from the client's current state.
 func (f *Folders) foldersService() *corefolders.Service {
-	f.client.mu.Lock()
-	userKey := ports.UserKey{Bytes: append([]byte(nil), f.client.userKey.Bytes...)}
-	f.client.mu.Unlock()
+	f.client.mu.RLock()
+	userKey := ports.UserKey{Bytes: secretmem.Clone(f.client.userKey.Bytes)}
+	f.client.mu.RUnlock()
 
 	return corefolders.NewService(corefolders.Dependencies{
 		API:     f.client.api,

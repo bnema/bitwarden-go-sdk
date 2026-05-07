@@ -3,6 +3,8 @@ package ports
 import (
 	"context"
 	"io"
+
+	"github.com/bnema/bitwarden-go-sdk/internal/secretmem"
 )
 
 // CryptoEngine defines scaffold cryptographic operations.
@@ -36,9 +38,7 @@ type MasterKey struct {
 
 // Close zeros master-key bytes. It is idempotent.
 func (k *MasterKey) Close() {
-	for i := range k.Bytes {
-		k.Bytes[i] = 0
-	}
+	secretmem.Zero(k.Bytes)
 	k.Bytes = nil
 }
 
@@ -66,9 +66,7 @@ type UserKey struct {
 
 // Close zeros user-key bytes. It is idempotent.
 func (k *UserKey) Close() {
-	for i := range k.Bytes {
-		k.Bytes[i] = 0
-	}
+	secretmem.Zero(k.Bytes)
 	k.Bytes = nil
 }
 
@@ -171,8 +169,6 @@ type AttachmentKey struct {
 
 // Close zeros attachment-key bytes. It is idempotent.
 func (k *AttachmentKey) Close() {
-	for i := range k.Bytes {
-		k.Bytes[i] = 0
-	}
+	secretmem.Zero(k.Bytes)
 	k.Bytes = nil
 }
