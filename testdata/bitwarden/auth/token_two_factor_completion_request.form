@@ -1,0 +1,1 @@
+grant_type=password&username=user%40example.com&password=sanitized-server-auth-hash&scope=api+offline_access&client_id=sdk-go&twoFactorToken=123456&twoFactorProvider=0&twoFactorRemember=0

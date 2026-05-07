@@ -2,9 +2,9 @@ all: false
 template: testify
 include-auto-generated: true
 packages:
-  github.com/bnema/bitwarden-go-sdk/internal/ports/out:
+  github.com/bnema/bitwarden-go-sdk/internal/ports:
     config:
-      dir: "internal/ports/out/mocks"
+      dir: "internal/ports/mocks"
       filename: "mock_{{.InterfaceName | snakecase}}.go"
       pkgname: "mocks"
     interfaces:

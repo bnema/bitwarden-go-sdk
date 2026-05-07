@@ -1,0 +1,7 @@
+{
+  "source": "clients folder.service.ts and folder.ts source mapping",
+  "commit": "91d233be9ba48da556b5b450782be1aa00b1a10e",
+  "fieldMapping": {
+    "encryptedFields": ["name"]
+  }
+}

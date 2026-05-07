@@ -1,0 +1,28 @@
+{
+  "Id": "cipher-id-1",
+  "OrganizationId": null,
+  "FolderId": "folder-id-1",
+  "Type": 1,
+  "Name": "2.sanitized-iv|sanitized-name|sanitized-mac",
+  "Notes": "2.sanitized-iv|sanitized-notes|sanitized-mac",
+  "Favorite": false,
+  "Edit": true,
+  "ViewPassword": true,
+  "RevisionDate": "2026-01-01T00:00:00Z",
+  "CreationDate": "2026-01-01T00:00:00Z",
+  "DeletedDate": null,
+  "ArchivedDate": null,
+  "Login": {
+    "Username": "2.sanitized-iv|sanitized-username|sanitized-mac",
+    "Password": "2.sanitized-iv|sanitized-password|sanitized-mac",
+    "Totp": "2.sanitized-iv|sanitized-totp|sanitized-mac",
+    "Uris": [
+      { "Uri": "2.sanitized-iv|sanitized-uri|sanitized-mac", "Match": null, "UriChecksum": "2.sanitized-iv|sanitized-checksum|sanitized-mac" }
+    ]
+  },
+  "Fields": [],
+  "Attachments": [],
+  "PasswordHistory": [],
+  "Reprompt": 0,
+  "Key": null
+}

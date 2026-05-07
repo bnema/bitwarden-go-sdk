@@ -1,0 +1,18 @@
+{
+  "access_token": "sanitized-access-token",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "sanitized-refresh-token",
+  "PrivateKey": null,
+  "AccountKeys": null,
+  "Key": "2.sanitized-iv|sanitized-ciphertext|sanitized-mac",
+  "TwoFactorToken": null,
+  "Kdf": 0,
+  "KdfIterations": 600000,
+  "KdfMemory": null,
+  "KdfParallelism": null,
+  "ForcePasswordReset": false,
+  "ApiUseKeyConnector": false,
+  "MasterPasswordPolicy": null,
+  "UserDecryptionOptions": null
+}

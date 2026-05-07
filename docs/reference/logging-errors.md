@@ -31,3 +31,5 @@ Forbidden data:
 ## Error model
 
 Public errors must support `errors.Is` and `errors.As` for auth, 2FA, locked state, not found, decryption failure, rate limits, and API status details.
+
+The SDK does not provide disk persistence. Runtime OAuth tokens are kept in an internal in-memory store and are zeroised when replaced or deleted. Applications that need persistence must add it outside the SDK boundary and must not log OAuth token values.

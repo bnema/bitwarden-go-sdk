@@ -28,6 +28,6 @@ fmt:
 	@if [[ -n "$(GO_FILES)" ]]; then gofmt -w $(GO_FILES); else echo "no Go files to format"; fi
 
 mocks:
-	@if [[ -d internal/ports/out ]]; then mockery; else echo "no ports to mock"; fi
+	@if [[ -d internal/ports ]]; then mockery; else echo "no ports to mock"; fi
 
 check: fmt build test lint

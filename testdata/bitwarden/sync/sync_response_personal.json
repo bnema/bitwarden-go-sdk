@@ -1,0 +1,22 @@
+{
+  "Profile": {
+    "Id": "user-id-1",
+    "Name": "Sanitized User",
+    "Email": "user@example.com",
+    "EmailVerified": true,
+    "Premium": true,
+    "PremiumFromOrganization": false,
+    "TwoFactorEnabled": true,
+    "Key": "2.sanitized-iv|sanitized-user-key|sanitized-mac"
+  },
+  "Folders": [
+    { "Id": "folder-id-1", "Name": "2.sanitized-iv|sanitized-folder-name|sanitized-mac", "RevisionDate": "2026-01-01T00:00:00Z" }
+  ],
+  "Ciphers": [
+    { "Id": "cipher-id-1", "Type": 1, "Name": "2.sanitized-iv|sanitized-name|sanitized-mac", "Favorite": false, "RevisionDate": "2026-01-01T00:00:00Z" }
+  ],
+  "Domains": null,
+  "Policies": [],
+  "Sends": [],
+  "UserDecryption": null
+}

@@ -1,0 +1,7 @@
+{
+  "Id": "cipher-id-1",
+  "Type": 1,
+  "Name": "2.sanitized-iv|sanitized-name|sanitized-mac",
+  "DeletedDate": null,
+  "RevisionDate": "2026-01-02T00:00:00Z"
+}
