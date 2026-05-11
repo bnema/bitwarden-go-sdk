@@ -97,7 +97,8 @@ type Folder struct {
 }
 
 // TokenSet contains OAuth token fields for a single account.
-// AccessToken and RefreshToken are sensitive; call Close() to zero them.
+// AccessToken, RefreshToken, and RememberedTwoFactorToken are sensitive;
+// call Close() to zero them.
 type TokenSet struct {
 	AccountID                string
 	AccessToken              []byte
@@ -117,8 +118,8 @@ func (t TokenSet) Clone() TokenSet {
 	return c
 }
 
-// Close zeros the backing arrays of AccessToken and RefreshToken, then nils
-// them. It is idempotent.
+// Close zeros the backing arrays of AccessToken, RefreshToken, and
+// RememberedTwoFactorToken, then nils them. It is idempotent.
 func (t *TokenSet) Close() {
 	secretmem.Zero(t.AccessToken)
 	t.AccessToken = nil
