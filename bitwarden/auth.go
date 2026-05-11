@@ -54,11 +54,12 @@ type CompleteLoginOptions struct {
 func (c *Client) BeginLogin(ctx context.Context, options LoginOptions) (LoginResult, error) {
 	svc := c.authService()
 	input := coreauth.LoginInput{
-		Email:            options.Email,
-		Password:         options.Password,
-		DeviceType:       options.DeviceType,
-		DeviceIdentifier: options.DeviceIdentifier,
-		DeviceName:       options.DeviceName,
+		Email:                    options.Email,
+		Password:                 options.Password,
+		DeviceType:               options.DeviceType,
+		DeviceIdentifier:         options.DeviceIdentifier,
+		DeviceName:               options.DeviceName,
+		RememberedTwoFactorToken: ports.NewSecretBytes(options.RememberedTwoFactorToken),
 	}
 	result, err := svc.BeginLogin(ctx, input)
 	if err != nil {

@@ -17,12 +17,13 @@ type PreloginResponse struct {
 
 // TokenResponse is received from POST /connect/token on success.
 type TokenResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	TokenType    string `json:"token_type"`
-	ExpiresIn    int    `json:"expires_in"`
-	Key          string `json:"Key"`
-	AccountID    string `json:"AccountId,omitempty"`
+	AccessToken    string `json:"access_token"`
+	RefreshToken   string `json:"refresh_token"`
+	TokenType      string `json:"token_type"`
+	ExpiresIn      int    `json:"expires_in"`
+	Key            string `json:"Key"`
+	AccountID      string `json:"AccountId,omitempty"`
+	TwoFactorToken string `json:"TwoFactorToken,omitempty"`
 }
 
 // TokenErrorResponse is received from POST /connect/token on error (HTTP 400).

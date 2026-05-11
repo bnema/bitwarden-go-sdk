@@ -103,6 +103,21 @@ func TestRefreshUsesConfiguredClientID(t *testing.T) {
 	assert.Equal(t, "sdk-go", identity.clientID())
 }
 
+func TestRefreshPreservesRememberedTwoFactorTokenWhenResponseOmitsIt(t *testing.T) {
+	current := tokenSet("account-1", "old-refresh")
+	current.RememberedTwoFactorToken = ports.NewSecretBytes([]byte("remembered-2fa"))
+
+	refreshed := tokenSet("account-1", "new-refresh")
+	identity := &refreshIdentityStub{tokens: refreshed}
+	store := newRefreshStore(current)
+	coord := NewRefreshCoordinator(RefreshDependencies{Identity: identity, Tokens: store})
+
+	result, err := coord.Refresh(context.Background(), "account-1")
+	require.NoError(t, err)
+	assert.Equal(t, "remembered-2fa", string(result.RememberedTwoFactorToken.Bytes()))
+	assert.Equal(t, "remembered-2fa", string(store.tokens.RememberedTwoFactorToken.Bytes()))
+}
+
 func TestRefreshContextCancellationDoesNotLeakCall(t *testing.T) {
 	block := make(chan struct{})
 	identity := &refreshIdentityStub{tokens: tokenSet("account-1", "new-refresh"), block: block}

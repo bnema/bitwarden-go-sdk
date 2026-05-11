@@ -43,6 +43,11 @@ func (s SecretBytes) Clone() SecretBytes {
 	return SecretBytes{buf: secretmem.Clone(s.buf)}
 }
 
+// Len returns the number of bytes held without cloning them.
+func (s SecretBytes) Len() int {
+	return len(s.buf)
+}
+
 // Close zeros the internal bytes and releases the buffer. It is idempotent.
 func (s *SecretBytes) Close() {
 	secretmem.Zero(s.buf)
@@ -56,11 +61,12 @@ func (s SecretBytes) Format(f fmt.State, _ rune) {
 
 // TokenSet holds OAuth token fields for a single account.
 type TokenSet struct {
-	AccountID    string
-	AccessToken  SecretBytes
-	RefreshToken SecretBytes
-	TokenType    string
-	ExpiresAt    time.Time
+	AccountID                string
+	AccessToken              SecretBytes
+	RefreshToken             SecretBytes
+	RememberedTwoFactorToken SecretBytes
+	TokenType                string
+	ExpiresAt                time.Time
 }
 
 // Clone returns a deep copy of the TokenSet so that stores can avoid
@@ -69,6 +75,7 @@ func (t TokenSet) Clone() TokenSet {
 	c := t
 	c.AccessToken = t.AccessToken.Clone()
 	c.RefreshToken = t.RefreshToken.Clone()
+	c.RememberedTwoFactorToken = t.RememberedTwoFactorToken.Clone()
 	return c
 }
 
@@ -76,6 +83,7 @@ func (t TokenSet) Clone() TokenSet {
 func (t *TokenSet) Close() {
 	t.AccessToken.Close()
 	t.RefreshToken.Close()
+	t.RememberedTwoFactorToken.Close()
 }
 
 // TokenStore persists token sets keyed by account.

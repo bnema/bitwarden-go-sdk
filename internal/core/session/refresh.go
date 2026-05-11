@@ -105,6 +105,9 @@ func (c *RefreshCoordinator) runRefresh(ctx context.Context, cancel context.Canc
 	if refreshed.AccountID == "" {
 		refreshed.AccountID = accountID
 	}
+	if refreshed.RememberedTwoFactorToken.Len() == 0 {
+		refreshed.RememberedTwoFactorToken = current.RememberedTwoFactorToken.Clone()
+	}
 	if err := c.tokens.SaveTokens(ctx, refreshed); err != nil {
 		call.err = err
 		return

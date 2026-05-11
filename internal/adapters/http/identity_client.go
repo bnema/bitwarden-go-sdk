@@ -120,6 +120,11 @@ func (c *IdentityClient) LoginPassword(ctx context.Context, req ports.PasswordTo
 	if req.DeviceName != "" {
 		form.Set("deviceName", req.DeviceName)
 	}
+	if req.RememberedTwoFactorToken != "" {
+		form.Set("twoFactorToken", req.RememberedTwoFactorToken)
+		form.Set("twoFactorProvider", "5")
+		form.Set("twoFactorRemember", "0")
+	}
 	return c.doTokenRequest(ctx, form)
 }
 
@@ -196,10 +201,11 @@ func (c *IdentityClient) doTokenRequest(ctx context.Context, form url.Values) (p
 
 	return ports.TokenResponse{
 		Tokens: ports.TokenSet{
-			AccessToken:  ports.NewSecretBytes([]byte(tokenResp.AccessToken)),
-			RefreshToken: ports.NewSecretBytes([]byte(tokenResp.RefreshToken)),
-			TokenType:    tokenResp.TokenType,
-			ExpiresAt:    time.Now().Add(time.Duration(tokenResp.ExpiresIn) * time.Second),
+			AccessToken:              ports.NewSecretBytes([]byte(tokenResp.AccessToken)),
+			RefreshToken:             ports.NewSecretBytes([]byte(tokenResp.RefreshToken)),
+			RememberedTwoFactorToken: ports.NewSecretBytes([]byte(tokenResp.TwoFactorToken)),
+			TokenType:                tokenResp.TokenType,
+			ExpiresAt:                time.Now().Add(time.Duration(tokenResp.ExpiresIn) * time.Second),
 		},
 		AccountID:        accountID,
 		EncryptedUserKey: tokenResp.Key,

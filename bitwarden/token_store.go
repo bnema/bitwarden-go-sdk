@@ -47,11 +47,12 @@ func (a *tokenStoreAdapter) DeleteTokens(ctx context.Context, accountID string) 
 // deep-copying sensitive byte slices.
 func tokenSetToPorts(pub TokenSet) ports.TokenSet {
 	return ports.TokenSet{
-		AccountID:    pub.AccountID,
-		AccessToken:  ports.NewSecretBytes(pub.AccessToken),
-		RefreshToken: ports.NewSecretBytes(pub.RefreshToken),
-		TokenType:    pub.TokenType,
-		ExpiresAt:    pub.ExpiresAt,
+		AccountID:                pub.AccountID,
+		AccessToken:              ports.NewSecretBytes(pub.AccessToken),
+		RefreshToken:             ports.NewSecretBytes(pub.RefreshToken),
+		RememberedTwoFactorToken: ports.NewSecretBytes(pub.RememberedTwoFactorToken),
+		TokenType:                pub.TokenType,
+		ExpiresAt:                pub.ExpiresAt,
 	}
 }
 
@@ -59,10 +60,11 @@ func tokenSetToPorts(pub TokenSet) ports.TokenSet {
 // deep-copying sensitive byte slices.
 func tokenSetFromPorts(in ports.TokenSet) TokenSet {
 	return TokenSet{
-		AccountID:    in.AccountID,
-		AccessToken:  in.AccessToken.Bytes(),
-		RefreshToken: in.RefreshToken.Bytes(),
-		TokenType:    in.TokenType,
-		ExpiresAt:    in.ExpiresAt,
+		AccountID:                in.AccountID,
+		AccessToken:              in.AccessToken.Bytes(),
+		RefreshToken:             in.RefreshToken.Bytes(),
+		RememberedTwoFactorToken: in.RememberedTwoFactorToken.Bytes(),
+		TokenType:                in.TokenType,
+		ExpiresAt:                in.ExpiresAt,
 	}
 }

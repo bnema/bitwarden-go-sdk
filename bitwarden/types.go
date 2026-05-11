@@ -20,11 +20,12 @@ const (
 // Password is consumed to derive Bitwarden auth material and is not logged or
 // persisted by the SDK.
 type LoginOptions struct {
-	Email            string
-	Password         string
-	DeviceType       string
-	DeviceIdentifier string
-	DeviceName       string
+	Email                    string
+	Password                 string
+	DeviceType               string
+	DeviceIdentifier         string
+	DeviceName               string
+	RememberedTwoFactorToken []byte
 }
 
 // ItemID identifies a vault item.
@@ -98,11 +99,12 @@ type Folder struct {
 // TokenSet contains OAuth token fields for a single account.
 // AccessToken and RefreshToken are sensitive; call Close() to zero them.
 type TokenSet struct {
-	AccountID    string
-	AccessToken  []byte
-	RefreshToken []byte
-	TokenType    string
-	ExpiresAt    time.Time
+	AccountID                string
+	AccessToken              []byte
+	RefreshToken             []byte
+	RememberedTwoFactorToken []byte
+	TokenType                string
+	ExpiresAt                time.Time
 }
 
 // Clone returns a deep copy of the TokenSet so that callers can avoid
@@ -111,6 +113,7 @@ func (t TokenSet) Clone() TokenSet {
 	c := t
 	c.AccessToken = secretmem.Clone(t.AccessToken)
 	c.RefreshToken = secretmem.Clone(t.RefreshToken)
+	c.RememberedTwoFactorToken = secretmem.Clone(t.RememberedTwoFactorToken)
 	return c
 }
 
@@ -121,6 +124,8 @@ func (t *TokenSet) Close() {
 	t.AccessToken = nil
 	secretmem.Zero(t.RefreshToken)
 	t.RefreshToken = nil
+	secretmem.Zero(t.RememberedTwoFactorToken)
+	t.RememberedTwoFactorToken = nil
 }
 
 // SessionMaterial holds the user key and token set after a successful login.

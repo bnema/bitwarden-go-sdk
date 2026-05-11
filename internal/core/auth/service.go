@@ -30,11 +30,12 @@ func NewService(deps Dependencies) *Service {
 
 // LoginInput contains a master-password login request.
 type LoginInput struct {
-	Email            string
-	Password         string
-	DeviceType       string
-	DeviceIdentifier string
-	DeviceName       string
+	Email                    string
+	Password                 string
+	DeviceType               string
+	DeviceIdentifier         string
+	DeviceName               string
+	RememberedTwoFactorToken ports.SecretBytes
 }
 
 // LoginResult contains unlocked auth state returned after a successful login.
@@ -72,6 +73,7 @@ func (c *TwoFactorChallenge) Close() {
 
 // BeginLogin performs prelogin, derives auth material, and attempts password login.
 func (s *Service) BeginLogin(ctx context.Context, input LoginInput) (BeginLoginResult, error) {
+	defer input.RememberedTwoFactorToken.Close()
 	if err := ctx.Err(); err != nil {
 		return BeginLoginResult{}, err
 	}
@@ -103,11 +105,12 @@ func (s *Service) BeginLogin(ctx context.Context, input LoginInput) (BeginLoginR
 	}
 
 	request := ports.PasswordTokenRequest{
-		Email:            email,
-		AuthHash:         string(authHash),
-		DeviceType:       input.DeviceType,
-		DeviceIdentifier: input.DeviceIdentifier,
-		DeviceName:       input.DeviceName,
+		Email:                    email,
+		AuthHash:                 string(authHash),
+		DeviceType:               input.DeviceType,
+		DeviceIdentifier:         input.DeviceIdentifier,
+		DeviceName:               input.DeviceName,
+		RememberedTwoFactorToken: string(input.RememberedTwoFactorToken.Bytes()),
 	}
 	response, err := s.identity.LoginPassword(ctx, request)
 	if err != nil {

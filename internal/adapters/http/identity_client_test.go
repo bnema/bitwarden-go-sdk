@@ -281,6 +281,48 @@ func TestLoginPassword_WithDeviceName(t *testing.T) {
 	}
 }
 
+func TestLoginPassword_WithRememberedTwoFactorToken(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			t.Fatalf("parse form: %v", err)
+		}
+		if got := r.Form.Get("twoFactorProvider"); got != "5" {
+			t.Errorf("expected twoFactorProvider=5, got %s", got)
+		}
+		if got := r.Form.Get("twoFactorToken"); got != "remembered-token" {
+			t.Errorf("expected twoFactorToken=remembered-token, got %s", got)
+		}
+		if got := r.Form.Get("twoFactorRemember"); got != "0" {
+			t.Errorf("expected twoFactorRemember=0, got %s", got)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprint(w, `{"access_token":"at","refresh_token":"rt","token_type":"Bearer","expires_in":3600,"Key":"k","TwoFactorToken":"remembered-server-token"}`)
+	}))
+	defer srv.Close()
+
+	client, err := adaptershttp.NewIdentityClient(srv.URL, http.DefaultClient)
+	if err != nil {
+		t.Fatalf("NewIdentityClient: %v", err)
+	}
+
+	resp, err := client.LoginPassword(context.Background(), ports.PasswordTokenRequest{
+		Email:                    "user@example.com",
+		AuthHash:                 "hash123",
+		DeviceType:               "Chrome",
+		DeviceIdentifier:         "device-abc",
+		RememberedTwoFactorToken: "remembered-token",
+	})
+	if err != nil {
+		t.Fatalf("LoginPassword: %v", err)
+	}
+	if got := string(resp.Tokens.RememberedTwoFactorToken.Bytes()); got != "remembered-server-token" {
+		t.Fatalf("expected remembered token from response, got %q", got)
+	}
+}
+
 func TestLoginPassword_InvalidGrant(t *testing.T) {
 	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

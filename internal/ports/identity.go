@@ -18,11 +18,12 @@ type PreloginResult struct {
 
 // PasswordTokenRequest contains form fields for a master-password token request.
 type PasswordTokenRequest struct {
-	Email            string
-	AuthHash         string
-	DeviceType       string
-	DeviceIdentifier string
-	DeviceName       string
+	Email                    string
+	AuthHash                 string
+	DeviceType               string
+	DeviceIdentifier         string
+	DeviceName               string
+	RememberedTwoFactorToken string
 }
 
 // TwoFactorTokenRequest continues a password login with a classic 2FA token.

@@ -58,6 +58,50 @@ func TestCompleteLoginUnlocksClient(t *testing.T) {
 	assert.False(t, client.IsLocked())
 }
 
+func TestBeginLoginUsesRememberedTwoFactorTokenWhenProvided(t *testing.T) {
+	identity, crypto, store := publicAuthDeps(t)
+	masterKey := ports.MasterKey{Bytes: []byte("master")}
+	userKey := ports.UserKey{Bytes: []byte("user")}
+	tokens := ports.TokenSet{
+		AccountID:                "account-1",
+		AccessToken:              ports.NewSecretBytes([]byte("access")),
+		RefreshToken:             ports.NewSecretBytes([]byte("refresh")),
+		RememberedTwoFactorToken: ports.NewSecretBytes([]byte("remembered-2fa")),
+		TokenType:                "Bearer",
+		ExpiresAt:                time.Now().Add(time.Hour),
+	}
+
+	identity.EXPECT().Prelogin(mock.Anything, "alice@example.com").Return(ports.PreloginResult{KDF: ports.KDFConfig{Type: "PBKDF2", Iterations: 600000}}, nil)
+	crypto.EXPECT().DeriveMasterKey(mock.Anything, mock.Anything).Return(masterKey, nil)
+	crypto.EXPECT().MakeAuthHash(mock.Anything, mock.Anything).Return(ports.AuthHash("auth-hash"), nil)
+	identity.EXPECT().LoginPassword(mock.Anything, mock.MatchedBy(func(req ports.PasswordTokenRequest) bool {
+		return req.Email == "alice@example.com" &&
+			req.AuthHash == "auth-hash" &&
+			req.DeviceType == "LinuxDesktop" &&
+			req.DeviceIdentifier == "device-1" &&
+			req.DeviceName == "test-device" &&
+			req.RememberedTwoFactorToken == "remembered-token"
+	})).Return(ports.TokenResponse{Tokens: tokens, AccountID: "account-1", EncryptedUserKey: "enc-user"}, nil)
+	crypto.EXPECT().UnlockUserKey(mock.Anything, ports.UserKeyInput{MasterKey: masterKey, EncryptedUserKey: "enc-user"}).Return(userKey, nil)
+	store.EXPECT().SaveTokens(mock.Anything, mock.MatchedBy(func(ts ports.TokenSet) bool {
+		return string(ts.RememberedTwoFactorToken.Bytes()) == "remembered-2fa"
+	})).Return(nil)
+
+	client, err := NewClient(withIdentityClient(identity), withCryptoEngine(crypto), withTokenStore(store))
+	require.NoError(t, err)
+	result, err := client.BeginLogin(context.Background(), LoginOptions{
+		Email:                    "alice@example.com",
+		Password:                 "password",
+		DeviceType:               "LinuxDesktop",
+		DeviceIdentifier:         "device-1",
+		DeviceName:               "test-device",
+		RememberedTwoFactorToken: []byte("remembered-token"),
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "account-1", result.AccountID)
+	assert.False(t, client.IsLocked())
+}
+
 func publicAuthDeps(t *testing.T) (*mocks.MockIdentityClient, *mocks.MockCryptoEngine, *mocks.MockTokenStore) {
 	t.Helper()
 	return mocks.NewMockIdentityClient(t), mocks.NewMockCryptoEngine(t), mocks.NewMockTokenStore(t)
