@@ -1,13 +1,9 @@
 # bitwarden-go-sdk
 
-**Version:** v0.1.0 — local-first Go SDK for personal Bitwarden accounts.
-
 This SDK provides an idiomatic, stateful Go client for reading and writing
-Bitwarden vaults. It supports Bitwarden cloud (US and EU regions) and official
-self-hosted Bitwarden instances.
+Bitwarden vaults so it can be reused on different projects
 
-> Status: v0.1.0 alpha release, still very much in development. API subject to change without deprecation.
-
+> Status: alpha release, still very much in development. API subject to change without deprecation.
 
 ## Scope
 
@@ -22,9 +18,7 @@ self-hosted Bitwarden instances.
 - Hexagonal architecture with Mockery-generated mocks for testability.
 
 
-## Non-goals
-
-The following are **out of scope** for this SDK alpha release:
+## Non-goals (yet)
 
 - **Vaultwarden** — use the [bitwarden/server](https://github.com/bitwarden/server)
   official self-hosted deployment.
@@ -36,21 +30,6 @@ The following are **out of scope** for this SDK alpha release:
 - **Live tests against Bitwarden by default** — tests use mocked interfaces.
 - **SDK-managed disk persistence** — session tokens are kept in memory only;
   callers that need persistence must wrap the SDK at the application boundary.
-
----
-
-## Local replace usage
-
-When consuming this SDK from another Go module in the same workspace, use a
-`replace` directive in your consumer's `go.mod`:
-
-```go
-// In your consumer's go.mod:
-require github.com/bnema/bitwarden-go-sdk v0.1.0
-
-// Local development — point to the checked-out copy:
-replace github.com/bnema/bitwarden-go-sdk => ../bitwarden-go-sdk
-```
 
 ---
 
