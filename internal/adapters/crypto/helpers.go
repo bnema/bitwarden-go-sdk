@@ -113,10 +113,10 @@ func aes256cbcDecrypt(key, iv, ciphertext []byte) ([]byte, error) {
 	return plaintext, nil
 }
 
-// encryptType2 encrypts plaintext as an EncString type 2 using the given 64-byte
-// user key (encKey = first 32 bytes, macKey = next 32 bytes). Returns the
+// encryptType2Bytes encrypts plaintext as an EncString type 2 using the given
+// 64-byte key (encKey = first 32 bytes, macKey = next 32 bytes). Returns the
 // serialized EncString.
-func encryptType2(userKey []byte, plaintext string) (string, error) {
+func encryptType2Bytes(userKey []byte, plaintext []byte) (string, error) {
 	if len(userKey) != 64 {
 		return "", fmt.Errorf("user key must be 64 bytes")
 	}
@@ -128,7 +128,7 @@ func encryptType2(userKey []byte, plaintext string) (string, error) {
 		return "", fmt.Errorf("iv generation failed: %w", err)
 	}
 
-	ct, err := aes256cbcEncrypt(encKey, iv, []byte(plaintext))
+	ct, err := aes256cbcEncrypt(encKey, iv, plaintext)
 	if err != nil {
 		return "", fmt.Errorf("aes-cbc encrypt failed: %w", err)
 	}
@@ -139,19 +139,26 @@ func encryptType2(userKey []byte, plaintext string) (string, error) {
 	return encStr.String()
 }
 
-// decryptType2 decrypts a serialized type 2 EncString using the given 64-byte
-// user key. Returns the plaintext.
-func decryptType2(userKey []byte, encrypted string) (string, error) {
+// encryptType2 encrypts plaintext as an EncString type 2 using the given 64-byte
+// user key (encKey = first 32 bytes, macKey = next 32 bytes). Returns the
+// serialized EncString.
+func encryptType2(userKey []byte, plaintext string) (string, error) {
+	return encryptType2Bytes(userKey, []byte(plaintext))
+}
+
+// decryptType2Bytes decrypts a serialized type 2 EncString using the given
+// 64-byte key and returns a copy of the plaintext bytes.
+func decryptType2Bytes(userKey []byte, encrypted string) ([]byte, error) {
 	if len(userKey) != 64 {
-		return "", fmt.Errorf("user key must be 64 bytes")
+		return nil, fmt.Errorf("user key must be 64 bytes")
 	}
 
 	enc, err := ParseEncString(encrypted)
 	if err != nil {
-		return "", fmt.Errorf("parse failed: %w", err)
+		return nil, fmt.Errorf("parse failed: %w", err)
 	}
 	if enc.Type != 2 {
-		return "", fmt.Errorf("expected enc string type 2, got %d", enc.Type)
+		return nil, fmt.Errorf("expected enc string type 2, got %d", enc.Type)
 	}
 
 	encKey := userKey[:32]
@@ -159,20 +166,34 @@ func decryptType2(userKey []byte, encrypted string) (string, error) {
 
 	expectedMAC := computeMac(macKey, enc.IV, enc.Data)
 	if !constantTimeEq(expectedMAC, enc.MAC) {
-		return "", fmt.Errorf("MAC verification failed")
+		return nil, fmt.Errorf("MAC verification failed")
 	}
 
 	plaintext, err := aes256cbcDecrypt(encKey, enc.IV, enc.Data)
 	if err != nil {
-		return "", fmt.Errorf("aes-cbc decrypt failed: %w", err)
+		return nil, fmt.Errorf("aes-cbc decrypt failed: %w", err)
 	}
 
 	unpadded, err := pkcs7Unpad(plaintext)
 	if err != nil {
-		return "", fmt.Errorf("unpad failed: %w", err)
+		clear(plaintext)
+		return nil, fmt.Errorf("unpad failed: %w", err)
 	}
 
-	return string(unpadded), nil
+	out := append([]byte(nil), unpadded...)
+	clear(plaintext)
+	return out, nil
+}
+
+// decryptType2 decrypts a serialized type 2 EncString using the given 64-byte
+// user key. Returns the plaintext.
+func decryptType2(userKey []byte, encrypted string) (string, error) {
+	plaintext, err := decryptType2Bytes(userKey, encrypted)
+	if err != nil {
+		return "", err
+	}
+	defer clear(plaintext)
+	return string(plaintext), nil
 }
 
 // aes256cbcEncrypt encrypts with AES-256-CBC. Returns padded ciphertext.

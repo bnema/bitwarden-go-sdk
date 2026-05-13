@@ -28,7 +28,7 @@ func (e *Engine) WrapAttachmentKey(ctx context.Context, key ports.UserKey, attac
 	if len(key.Bytes) != 64 {
 		return "", cryptoError(errors.KindValidation, "crypto.WrapAttachmentKey", "invalid_key_length", "user key must be 64 bytes")
 	}
-	wrapped, err := encryptType2(key.Bytes, string(attachmentKey.Bytes))
+	wrapped, err := encryptType2Bytes(key.Bytes, attachmentKey.Bytes)
 	if err != nil {
 		return "", cryptoError(errors.KindCrypto, "crypto.WrapAttachmentKey", "encryption_failed", "failed to wrap attachment key")
 	}
@@ -43,11 +43,11 @@ func (e *Engine) DecryptAttachmentKey(ctx context.Context, key ports.UserKey, at
 	if len(key.Bytes) != 64 {
 		return ports.AttachmentKey{}, cryptoError(errors.KindValidation, "crypto.DecryptAttachmentKey", "invalid_key_length", "user key must be 64 bytes")
 	}
-	plaintext, err := decryptType2(key.Bytes, attachment.Key)
+	plaintext, err := decryptType2Bytes(key.Bytes, attachment.Key)
 	if err != nil {
 		return ports.AttachmentKey{}, cryptoError(errors.KindCrypto, "crypto.DecryptAttachmentKey", "decryption_failed", "failed to decrypt attachment key")
 	}
-	return ports.AttachmentKey{Bytes: []byte(plaintext)}, nil
+	return ports.AttachmentKey{Bytes: plaintext}, nil
 }
 
 // EncryptAttachment encrypts attachment content from src into dst using the

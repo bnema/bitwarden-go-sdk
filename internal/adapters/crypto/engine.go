@@ -401,41 +401,57 @@ func (e *Engine) DecryptCipher(ctx context.Context, key ports.UserKey, cipher po
 		}
 	}
 
+	fieldKey := key.Bytes
+	var cipherKey ports.UserKey
+	if cipher.Key != "" && cipher.OrganizationID == "" {
+		unwrapped, err := decryptType2Bytes(key.Bytes, cipher.Key)
+		if err != nil {
+			return ports.Cipher{}, cryptoError(errors.KindCrypto, "crypto.DecryptCipher", "cipher_key_decryption_failed", "failed to decrypt cipher key")
+		}
+		cipherKey = ports.UserKey{Bytes: unwrapped}
+		if len(cipherKey.Bytes) != 64 {
+			cipherKey.Close()
+			return ports.Cipher{}, cryptoError(errors.KindCrypto, "crypto.DecryptCipher", "invalid_cipher_key_length", "cipher key must be 64 bytes")
+		}
+		defer cipherKey.Close()
+		fieldKey = cipherKey.Bytes
+	}
+
 	dec := ports.Cipher{ID: cipher.ID, Type: cipher.Type, Favorite: cipher.Favorite, FolderID: cipher.FolderID}
 	var err error
-	if dec.Name, err = decryptCipherString(key.Bytes, cipher.Name); err != nil {
+	if dec.Name, err = decryptCipherString(fieldKey, cipher.Name); err != nil {
 		return ports.Cipher{}, err
 	}
-	if dec.Notes, err = decryptCipherString(key.Bytes, cipher.Notes); err != nil {
+	if dec.Notes, err = decryptCipherString(fieldKey, cipher.Notes); err != nil {
 		return ports.Cipher{}, err
 	}
-	if dec.Username, err = decryptCipherString(key.Bytes, cipher.Username); err != nil {
+	if dec.Username, err = decryptCipherString(fieldKey, cipher.Username); err != nil {
 		return ports.Cipher{}, err
 	}
-	if dec.Password, err = decryptCipherString(key.Bytes, cipher.Password); err != nil {
+	if dec.Password, err = decryptCipherString(fieldKey, cipher.Password); err != nil {
 		return ports.Cipher{}, err
 	}
-	if dec.URI, err = decryptCipherString(key.Bytes, cipher.URI); err != nil {
+	if dec.URI, err = decryptCipherString(fieldKey, cipher.URI); err != nil {
 		return ports.Cipher{}, err
 	}
 	if cipher.Login != nil {
 		login := &ports.LoginCipher{}
-		if login.Username, err = decryptCipherString(key.Bytes, cipher.Login.Username); err != nil {
+		if login.Username, err = decryptCipherString(fieldKey, cipher.Login.Username); err != nil {
 			return ports.Cipher{}, err
 		}
-		if login.Password, err = decryptCipherString(key.Bytes, cipher.Login.Password); err != nil {
+		if login.Password, err = decryptCipherString(fieldKey, cipher.Login.Password); err != nil {
 			return ports.Cipher{}, err
 		}
-		if login.TOTP, err = decryptCipherString(key.Bytes, cipher.Login.TOTP); err != nil {
+		if login.TOTP, err = decryptCipherString(fieldKey, cipher.Login.TOTP); err != nil {
 			return ports.Cipher{}, err
 		}
 		login.URIs = make([]ports.LoginURI, len(cipher.Login.URIs))
 		for i, uri := range cipher.Login.URIs {
 			login.URIs[i].Match = uri.Match
-			if login.URIs[i].URI, err = decryptCipherString(key.Bytes, uri.URI); err != nil {
+			if login.URIs[i].URI, err = decryptCipherString(fieldKey, uri.URI); err != nil {
 				return ports.Cipher{}, err
 			}
-			if login.URIs[i].URIChecksum, err = decryptCipherString(key.Bytes, uri.URIChecksum); err != nil {
+			if login.URIs[i].URIChecksum, err = decryptCipherString(fieldKey, uri.URIChecksum); err != nil {
 				return ports.Cipher{}, err
 			}
 		}
@@ -446,29 +462,29 @@ func (e *Engine) DecryptCipher(ctx context.Context, key ports.UserKey, cipher po
 	}
 	if cipher.Card != nil {
 		card := &ports.CardCipher{}
-		if card.CardholderName, err = decryptCipherString(key.Bytes, cipher.Card.CardholderName); err != nil {
+		if card.CardholderName, err = decryptCipherString(fieldKey, cipher.Card.CardholderName); err != nil {
 			return ports.Cipher{}, err
 		}
-		if card.Brand, err = decryptCipherString(key.Bytes, cipher.Card.Brand); err != nil {
+		if card.Brand, err = decryptCipherString(fieldKey, cipher.Card.Brand); err != nil {
 			return ports.Cipher{}, err
 		}
-		if card.Number, err = decryptCipherString(key.Bytes, cipher.Card.Number); err != nil {
+		if card.Number, err = decryptCipherString(fieldKey, cipher.Card.Number); err != nil {
 			return ports.Cipher{}, err
 		}
-		if card.ExpMonth, err = decryptCipherString(key.Bytes, cipher.Card.ExpMonth); err != nil {
+		if card.ExpMonth, err = decryptCipherString(fieldKey, cipher.Card.ExpMonth); err != nil {
 			return ports.Cipher{}, err
 		}
-		if card.ExpYear, err = decryptCipherString(key.Bytes, cipher.Card.ExpYear); err != nil {
+		if card.ExpYear, err = decryptCipherString(fieldKey, cipher.Card.ExpYear); err != nil {
 			return ports.Cipher{}, err
 		}
-		if card.Code, err = decryptCipherString(key.Bytes, cipher.Card.Code); err != nil {
+		if card.Code, err = decryptCipherString(fieldKey, cipher.Card.Code); err != nil {
 			return ports.Cipher{}, err
 		}
 		dec.Card = card
 	}
 	if cipher.Identity != nil {
 		identity := &ports.IdentityCipher{}
-		if err = decryptIdentity(key.Bytes, cipher.Identity, identity); err != nil {
+		if err = decryptIdentity(fieldKey, cipher.Identity, identity); err != nil {
 			return ports.Cipher{}, err
 		}
 		dec.Identity = identity
@@ -478,10 +494,10 @@ func (e *Engine) DecryptCipher(ctx context.Context, key ports.UserKey, cipher po
 		for i, field := range cipher.Fields {
 			dec.Fields[i].Type = field.Type
 			dec.Fields[i].LinkedID = field.LinkedID
-			if dec.Fields[i].Name, err = decryptCipherString(key.Bytes, field.Name); err != nil {
+			if dec.Fields[i].Name, err = decryptCipherString(fieldKey, field.Name); err != nil {
 				return ports.Cipher{}, err
 			}
-			if dec.Fields[i].Value, err = decryptCipherString(key.Bytes, field.Value); err != nil {
+			if dec.Fields[i].Value, err = decryptCipherString(fieldKey, field.Value); err != nil {
 				return ports.Cipher{}, err
 			}
 		}

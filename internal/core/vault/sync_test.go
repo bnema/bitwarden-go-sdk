@@ -148,6 +148,40 @@ func TestSyncReplacesSnapshotAtomically(t *testing.T) {
 	assert.Equal(t, "Existing Item", items[0].Name)
 }
 
+func TestSyncIncludesPersonalCipherWithWrappedKey(t *testing.T) {
+	t.Parallel()
+
+	api := mocks.NewMockAPIClient(t)
+	crypto := mocks.NewMockCryptoEngine(t)
+	svc := NewService(Dependencies{
+		API:    api,
+		Crypto: crypto,
+		Locked: false,
+	})
+
+	key := ports.UserKey{Bytes: []byte("test-key-64-bytes-for-user-key-here-12345678")}
+	svc.SetUserKey(key)
+
+	personalWithWrappedKey := ports.EncryptedCipher{ID: "personal", Type: 1, Name: "enc-personal", Key: "enc-item-key"}
+	api.EXPECT().
+		Sync(ctxb(), ports.SyncOptions{}).
+		Return(ports.SyncResult{Ciphers: []ports.EncryptedCipher{personalWithWrappedKey}}, nil).
+		Once()
+
+	crypto.EXPECT().
+		DecryptCipher(ctxb(), key, personalWithWrappedKey).
+		Return(ports.Cipher{ID: "personal", Type: 1, Name: "Personal Item"}, nil).
+		Once()
+
+	err := svc.Sync(context.Background())
+	require.NoError(t, err)
+
+	items, err := svc.List()
+	require.NoError(t, err)
+	require.Len(t, items, 1)
+	assert.Equal(t, "personal", items[0].ID)
+}
+
 func TestSyncSkipsOrganizationCiphers(t *testing.T) {
 	t.Parallel()
 

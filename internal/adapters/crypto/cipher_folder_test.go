@@ -159,6 +159,31 @@ func TestDecryptCipherRoundtripWithEmptyFields(t *testing.T) {
 	assert.Empty(t, dec.URI)
 }
 
+func TestDecryptCipherWithWrappedPersonalKey(t *testing.T) {
+	eng := NewEngine()
+	userKey := testUserKey64()
+	cipherKey := ports.UserKey{Bytes: []byte("0123456789abcdef0123456789abcdefFEDCBA9876543210FEDCBA9876543210")}
+
+	wrappedKey, err := encryptType2(userKey.Bytes, string(cipherKey.Bytes))
+	require.NoError(t, err)
+	nameEnc, err := encryptType2(cipherKey.Bytes, "Wrapped Personal Item")
+	require.NoError(t, err)
+	userEnc, err := encryptType2(cipherKey.Bytes, "alice@example.com")
+	require.NoError(t, err)
+
+	dec, err := eng.DecryptCipher(context.Background(), userKey, ports.EncryptedCipher{
+		ID:       "wrapped-1",
+		Type:     1,
+		Key:      wrappedKey,
+		Name:     nameEnc,
+		Username: userEnc,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "wrapped-1", dec.ID)
+	assert.Equal(t, "Wrapped Personal Item", dec.Name)
+	assert.Equal(t, "alice@example.com", dec.Username)
+}
+
 func TestEncryptCipherInvalidKeyLength(t *testing.T) {
 	eng := NewEngine()
 
