@@ -14,10 +14,19 @@ func NewMockRandom(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockRandom {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockRandom{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -68,7 +77,7 @@ type MockRandom_Read_Call struct {
 
 // Read is a helper method to define mock.On call
 //   - p []byte
-func (_e *MockRandom_Expecter) Read(p interface{}) *MockRandom_Read_Call {
+func (_e *MockRandom_Expecter) Read(p any) *MockRandom_Read_Call {
 	return &MockRandom_Read_Call{Call: _e.mock.On("Read", p)}
 }
 

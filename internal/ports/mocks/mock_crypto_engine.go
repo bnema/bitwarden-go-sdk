@@ -18,10 +18,19 @@ func NewMockCryptoEngine(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockCryptoEngine {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockCryptoEngine{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -66,7 +75,7 @@ type MockCryptoEngine_DecryptAttachment_Call struct {
 //   - key ports.AttachmentKey
 //   - src io.Reader
 //   - dst io.Writer
-func (_e *MockCryptoEngine_Expecter) DecryptAttachment(ctx interface{}, key interface{}, src interface{}, dst interface{}) *MockCryptoEngine_DecryptAttachment_Call {
+func (_e *MockCryptoEngine_Expecter) DecryptAttachment(ctx any, key any, src any, dst any) *MockCryptoEngine_DecryptAttachment_Call {
 	return &MockCryptoEngine_DecryptAttachment_Call{Call: _e.mock.On("DecryptAttachment", ctx, key, src, dst)}
 }
 
@@ -143,7 +152,7 @@ type MockCryptoEngine_DecryptAttachmentKey_Call struct {
 //   - ctx context.Context
 //   - key ports.UserKey
 //   - attachment ports.EncryptedAttachment
-func (_e *MockCryptoEngine_Expecter) DecryptAttachmentKey(ctx interface{}, key interface{}, attachment interface{}) *MockCryptoEngine_DecryptAttachmentKey_Call {
+func (_e *MockCryptoEngine_Expecter) DecryptAttachmentKey(ctx any, key any, attachment any) *MockCryptoEngine_DecryptAttachmentKey_Call {
 	return &MockCryptoEngine_DecryptAttachmentKey_Call{Call: _e.mock.On("DecryptAttachmentKey", ctx, key, attachment)}
 }
 
@@ -215,7 +224,7 @@ type MockCryptoEngine_DecryptCipher_Call struct {
 //   - ctx context.Context
 //   - key ports.UserKey
 //   - cipher ports.EncryptedCipher
-func (_e *MockCryptoEngine_Expecter) DecryptCipher(ctx interface{}, key interface{}, cipher interface{}) *MockCryptoEngine_DecryptCipher_Call {
+func (_e *MockCryptoEngine_Expecter) DecryptCipher(ctx any, key any, cipher any) *MockCryptoEngine_DecryptCipher_Call {
 	return &MockCryptoEngine_DecryptCipher_Call{Call: _e.mock.On("DecryptCipher", ctx, key, cipher)}
 }
 
@@ -287,7 +296,7 @@ type MockCryptoEngine_DecryptFolderName_Call struct {
 //   - ctx context.Context
 //   - key ports.UserKey
 //   - encryptedName string
-func (_e *MockCryptoEngine_Expecter) DecryptFolderName(ctx interface{}, key interface{}, encryptedName interface{}) *MockCryptoEngine_DecryptFolderName_Call {
+func (_e *MockCryptoEngine_Expecter) DecryptFolderName(ctx any, key any, encryptedName any) *MockCryptoEngine_DecryptFolderName_Call {
 	return &MockCryptoEngine_DecryptFolderName_Call{Call: _e.mock.On("DecryptFolderName", ctx, key, encryptedName)}
 }
 
@@ -358,7 +367,7 @@ type MockCryptoEngine_DeriveMasterKey_Call struct {
 // DeriveMasterKey is a helper method to define mock.On call
 //   - ctx context.Context
 //   - input ports.MasterKeyInput
-func (_e *MockCryptoEngine_Expecter) DeriveMasterKey(ctx interface{}, input interface{}) *MockCryptoEngine_DeriveMasterKey_Call {
+func (_e *MockCryptoEngine_Expecter) DeriveMasterKey(ctx any, input any) *MockCryptoEngine_DeriveMasterKey_Call {
 	return &MockCryptoEngine_DeriveMasterKey_Call{Call: _e.mock.On("DeriveMasterKey", ctx, input)}
 }
 
@@ -417,7 +426,7 @@ type MockCryptoEngine_EncryptAttachment_Call struct {
 //   - key ports.AttachmentKey
 //   - src io.Reader
 //   - dst io.Writer
-func (_e *MockCryptoEngine_Expecter) EncryptAttachment(ctx interface{}, key interface{}, src interface{}, dst interface{}) *MockCryptoEngine_EncryptAttachment_Call {
+func (_e *MockCryptoEngine_Expecter) EncryptAttachment(ctx any, key any, src any, dst any) *MockCryptoEngine_EncryptAttachment_Call {
 	return &MockCryptoEngine_EncryptAttachment_Call{Call: _e.mock.On("EncryptAttachment", ctx, key, src, dst)}
 }
 
@@ -494,7 +503,7 @@ type MockCryptoEngine_EncryptCipher_Call struct {
 //   - ctx context.Context
 //   - key ports.UserKey
 //   - cipher ports.Cipher
-func (_e *MockCryptoEngine_Expecter) EncryptCipher(ctx interface{}, key interface{}, cipher interface{}) *MockCryptoEngine_EncryptCipher_Call {
+func (_e *MockCryptoEngine_Expecter) EncryptCipher(ctx any, key any, cipher any) *MockCryptoEngine_EncryptCipher_Call {
 	return &MockCryptoEngine_EncryptCipher_Call{Call: _e.mock.On("EncryptCipher", ctx, key, cipher)}
 }
 
@@ -566,7 +575,7 @@ type MockCryptoEngine_EncryptFolderName_Call struct {
 //   - ctx context.Context
 //   - key ports.UserKey
 //   - name string
-func (_e *MockCryptoEngine_Expecter) EncryptFolderName(ctx interface{}, key interface{}, name interface{}) *MockCryptoEngine_EncryptFolderName_Call {
+func (_e *MockCryptoEngine_Expecter) EncryptFolderName(ctx any, key any, name any) *MockCryptoEngine_EncryptFolderName_Call {
 	return &MockCryptoEngine_EncryptFolderName_Call{Call: _e.mock.On("EncryptFolderName", ctx, key, name)}
 }
 
@@ -637,7 +646,7 @@ type MockCryptoEngine_MakeAuthHash_Call struct {
 // MakeAuthHash is a helper method to define mock.On call
 //   - ctx context.Context
 //   - input ports.AuthHashInput
-func (_e *MockCryptoEngine_Expecter) MakeAuthHash(ctx interface{}, input interface{}) *MockCryptoEngine_MakeAuthHash_Call {
+func (_e *MockCryptoEngine_Expecter) MakeAuthHash(ctx any, input any) *MockCryptoEngine_MakeAuthHash_Call {
 	return &MockCryptoEngine_MakeAuthHash_Call{Call: _e.mock.On("MakeAuthHash", ctx, input)}
 }
 
@@ -703,7 +712,7 @@ type MockCryptoEngine_UnlockUserKey_Call struct {
 // UnlockUserKey is a helper method to define mock.On call
 //   - ctx context.Context
 //   - input ports.UserKeyInput
-func (_e *MockCryptoEngine_Expecter) UnlockUserKey(ctx interface{}, input interface{}) *MockCryptoEngine_UnlockUserKey_Call {
+func (_e *MockCryptoEngine_Expecter) UnlockUserKey(ctx any, input any) *MockCryptoEngine_UnlockUserKey_Call {
 	return &MockCryptoEngine_UnlockUserKey_Call{Call: _e.mock.On("UnlockUserKey", ctx, input)}
 }
 
@@ -770,7 +779,7 @@ type MockCryptoEngine_WrapAttachmentKey_Call struct {
 //   - ctx context.Context
 //   - key ports.UserKey
 //   - attachmentKey ports.AttachmentKey
-func (_e *MockCryptoEngine_Expecter) WrapAttachmentKey(ctx interface{}, key interface{}, attachmentKey interface{}) *MockCryptoEngine_WrapAttachmentKey_Call {
+func (_e *MockCryptoEngine_Expecter) WrapAttachmentKey(ctx any, key any, attachmentKey any) *MockCryptoEngine_WrapAttachmentKey_Call {
 	return &MockCryptoEngine_WrapAttachmentKey_Call{Call: _e.mock.On("WrapAttachmentKey", ctx, key, attachmentKey)}
 }
 

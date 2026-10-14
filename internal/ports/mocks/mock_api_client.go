@@ -18,10 +18,19 @@ func NewMockAPIClient(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockAPIClient {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockAPIClient{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -72,7 +81,7 @@ type MockAPIClient_AccountProfile_Call struct {
 
 // AccountProfile is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockAPIClient_Expecter) AccountProfile(ctx interface{}) *MockAPIClient_AccountProfile_Call {
+func (_e *MockAPIClient_Expecter) AccountProfile(ctx any) *MockAPIClient_AccountProfile_Call {
 	return &MockAPIClient_AccountProfile_Call{Call: _e.mock.On("AccountProfile", ctx)}
 }
 
@@ -132,7 +141,7 @@ type MockAPIClient_Config_Call struct {
 
 // Config is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockAPIClient_Expecter) Config(ctx interface{}) *MockAPIClient_Config_Call {
+func (_e *MockAPIClient_Expecter) Config(ctx any) *MockAPIClient_Config_Call {
 	return &MockAPIClient_Config_Call{Call: _e.mock.On("Config", ctx)}
 }
 
@@ -193,7 +202,7 @@ type MockAPIClient_CreateCipher_Call struct {
 // CreateCipher is a helper method to define mock.On call
 //   - ctx context.Context
 //   - cipher ports.EncryptedCipher
-func (_e *MockAPIClient_Expecter) CreateCipher(ctx interface{}, cipher interface{}) *MockAPIClient_CreateCipher_Call {
+func (_e *MockAPIClient_Expecter) CreateCipher(ctx any, cipher any) *MockAPIClient_CreateCipher_Call {
 	return &MockAPIClient_CreateCipher_Call{Call: _e.mock.On("CreateCipher", ctx, cipher)}
 }
 
@@ -259,7 +268,7 @@ type MockAPIClient_CreateFolder_Call struct {
 // CreateFolder is a helper method to define mock.On call
 //   - ctx context.Context
 //   - folder ports.EncryptedFolder
-func (_e *MockAPIClient_Expecter) CreateFolder(ctx interface{}, folder interface{}) *MockAPIClient_CreateFolder_Call {
+func (_e *MockAPIClient_Expecter) CreateFolder(ctx any, folder any) *MockAPIClient_CreateFolder_Call {
 	return &MockAPIClient_CreateFolder_Call{Call: _e.mock.On("CreateFolder", ctx, folder)}
 }
 
@@ -326,7 +335,7 @@ type MockAPIClient_DeleteAttachment_Call struct {
 //   - ctx context.Context
 //   - cipherID string
 //   - attachmentID string
-func (_e *MockAPIClient_Expecter) DeleteAttachment(ctx interface{}, cipherID interface{}, attachmentID interface{}) *MockAPIClient_DeleteAttachment_Call {
+func (_e *MockAPIClient_Expecter) DeleteAttachment(ctx any, cipherID any, attachmentID any) *MockAPIClient_DeleteAttachment_Call {
 	return &MockAPIClient_DeleteAttachment_Call{Call: _e.mock.On("DeleteAttachment", ctx, cipherID, attachmentID)}
 }
 
@@ -388,7 +397,7 @@ type MockAPIClient_DeleteCipher_Call struct {
 // DeleteCipher is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-func (_e *MockAPIClient_Expecter) DeleteCipher(ctx interface{}, id interface{}) *MockAPIClient_DeleteCipher_Call {
+func (_e *MockAPIClient_Expecter) DeleteCipher(ctx any, id any) *MockAPIClient_DeleteCipher_Call {
 	return &MockAPIClient_DeleteCipher_Call{Call: _e.mock.On("DeleteCipher", ctx, id)}
 }
 
@@ -445,7 +454,7 @@ type MockAPIClient_DeleteFolder_Call struct {
 // DeleteFolder is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-func (_e *MockAPIClient_Expecter) DeleteFolder(ctx interface{}, id interface{}) *MockAPIClient_DeleteFolder_Call {
+func (_e *MockAPIClient_Expecter) DeleteFolder(ctx any, id any) *MockAPIClient_DeleteFolder_Call {
 	return &MockAPIClient_DeleteFolder_Call{Call: _e.mock.On("DeleteFolder", ctx, id)}
 }
 
@@ -513,7 +522,7 @@ type MockAPIClient_DownloadAttachment_Call struct {
 // DownloadAttachment is a helper method to define mock.On call
 //   - ctx context.Context
 //   - url string
-func (_e *MockAPIClient_Expecter) DownloadAttachment(ctx interface{}, url interface{}) *MockAPIClient_DownloadAttachment_Call {
+func (_e *MockAPIClient_Expecter) DownloadAttachment(ctx any, url any) *MockAPIClient_DownloadAttachment_Call {
 	return &MockAPIClient_DownloadAttachment_Call{Call: _e.mock.On("DownloadAttachment", ctx, url)}
 }
 
@@ -580,7 +589,7 @@ type MockAPIClient_GetAttachment_Call struct {
 //   - ctx context.Context
 //   - cipherID string
 //   - attachmentID string
-func (_e *MockAPIClient_Expecter) GetAttachment(ctx interface{}, cipherID interface{}, attachmentID interface{}) *MockAPIClient_GetAttachment_Call {
+func (_e *MockAPIClient_Expecter) GetAttachment(ctx any, cipherID any, attachmentID any) *MockAPIClient_GetAttachment_Call {
 	return &MockAPIClient_GetAttachment_Call{Call: _e.mock.On("GetAttachment", ctx, cipherID, attachmentID)}
 }
 
@@ -651,7 +660,7 @@ type MockAPIClient_InitAttachmentUpload_Call struct {
 // InitAttachmentUpload is a helper method to define mock.On call
 //   - ctx context.Context
 //   - req ports.AttachmentUploadRequest
-func (_e *MockAPIClient_Expecter) InitAttachmentUpload(ctx interface{}, req interface{}) *MockAPIClient_InitAttachmentUpload_Call {
+func (_e *MockAPIClient_Expecter) InitAttachmentUpload(ctx any, req any) *MockAPIClient_InitAttachmentUpload_Call {
 	return &MockAPIClient_InitAttachmentUpload_Call{Call: _e.mock.On("InitAttachmentUpload", ctx, req)}
 }
 
@@ -718,7 +727,7 @@ type MockAPIClient_ListFolders_Call struct {
 
 // ListFolders is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockAPIClient_Expecter) ListFolders(ctx interface{}) *MockAPIClient_ListFolders_Call {
+func (_e *MockAPIClient_Expecter) ListFolders(ctx any) *MockAPIClient_ListFolders_Call {
 	return &MockAPIClient_ListFolders_Call{Call: _e.mock.On("ListFolders", ctx)}
 }
 
@@ -780,7 +789,7 @@ type MockAPIClient_RenewAttachmentUploadURL_Call struct {
 //   - ctx context.Context
 //   - cipherID string
 //   - attachmentID string
-func (_e *MockAPIClient_Expecter) RenewAttachmentUploadURL(ctx interface{}, cipherID interface{}, attachmentID interface{}) *MockAPIClient_RenewAttachmentUploadURL_Call {
+func (_e *MockAPIClient_Expecter) RenewAttachmentUploadURL(ctx any, cipherID any, attachmentID any) *MockAPIClient_RenewAttachmentUploadURL_Call {
 	return &MockAPIClient_RenewAttachmentUploadURL_Call{Call: _e.mock.On("RenewAttachmentUploadURL", ctx, cipherID, attachmentID)}
 }
 
@@ -851,7 +860,7 @@ type MockAPIClient_RestoreCipher_Call struct {
 // RestoreCipher is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-func (_e *MockAPIClient_Expecter) RestoreCipher(ctx interface{}, id interface{}) *MockAPIClient_RestoreCipher_Call {
+func (_e *MockAPIClient_Expecter) RestoreCipher(ctx any, id any) *MockAPIClient_RestoreCipher_Call {
 	return &MockAPIClient_RestoreCipher_Call{Call: _e.mock.On("RestoreCipher", ctx, id)}
 }
 
@@ -916,7 +925,7 @@ type MockAPIClient_Subscription_Call struct {
 
 // Subscription is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockAPIClient_Expecter) Subscription(ctx interface{}) *MockAPIClient_Subscription_Call {
+func (_e *MockAPIClient_Expecter) Subscription(ctx any) *MockAPIClient_Subscription_Call {
 	return &MockAPIClient_Subscription_Call{Call: _e.mock.On("Subscription", ctx)}
 }
 
@@ -977,7 +986,7 @@ type MockAPIClient_Sync_Call struct {
 // Sync is a helper method to define mock.On call
 //   - ctx context.Context
 //   - opts ports.SyncOptions
-func (_e *MockAPIClient_Expecter) Sync(ctx interface{}, opts interface{}) *MockAPIClient_Sync_Call {
+func (_e *MockAPIClient_Expecter) Sync(ctx any, opts any) *MockAPIClient_Sync_Call {
 	return &MockAPIClient_Sync_Call{Call: _e.mock.On("Sync", ctx, opts)}
 }
 
@@ -1034,7 +1043,7 @@ type MockAPIClient_TrashCipher_Call struct {
 // TrashCipher is a helper method to define mock.On call
 //   - ctx context.Context
 //   - id string
-func (_e *MockAPIClient_Expecter) TrashCipher(ctx interface{}, id interface{}) *MockAPIClient_TrashCipher_Call {
+func (_e *MockAPIClient_Expecter) TrashCipher(ctx any, id any) *MockAPIClient_TrashCipher_Call {
 	return &MockAPIClient_TrashCipher_Call{Call: _e.mock.On("TrashCipher", ctx, id)}
 }
 
@@ -1101,7 +1110,7 @@ type MockAPIClient_UpdateCipher_Call struct {
 //   - ctx context.Context
 //   - id string
 //   - cipher ports.EncryptedCipher
-func (_e *MockAPIClient_Expecter) UpdateCipher(ctx interface{}, id interface{}, cipher interface{}) *MockAPIClient_UpdateCipher_Call {
+func (_e *MockAPIClient_Expecter) UpdateCipher(ctx any, id any, cipher any) *MockAPIClient_UpdateCipher_Call {
 	return &MockAPIClient_UpdateCipher_Call{Call: _e.mock.On("UpdateCipher", ctx, id, cipher)}
 }
 
@@ -1173,7 +1182,7 @@ type MockAPIClient_UpdateFolder_Call struct {
 //   - ctx context.Context
 //   - id string
 //   - folder ports.EncryptedFolder
-func (_e *MockAPIClient_Expecter) UpdateFolder(ctx interface{}, id interface{}, folder interface{}) *MockAPIClient_UpdateFolder_Call {
+func (_e *MockAPIClient_Expecter) UpdateFolder(ctx any, id any, folder any) *MockAPIClient_UpdateFolder_Call {
 	return &MockAPIClient_UpdateFolder_Call{Call: _e.mock.On("UpdateFolder", ctx, id, folder)}
 }
 
@@ -1237,7 +1246,7 @@ type MockAPIClient_UploadAttachmentDirect_Call struct {
 //   - cipherID string
 //   - attachmentID string
 //   - content io.Reader
-func (_e *MockAPIClient_Expecter) UploadAttachmentDirect(ctx interface{}, cipherID interface{}, attachmentID interface{}, content interface{}) *MockAPIClient_UploadAttachmentDirect_Call {
+func (_e *MockAPIClient_Expecter) UploadAttachmentDirect(ctx any, cipherID any, attachmentID any, content any) *MockAPIClient_UploadAttachmentDirect_Call {
 	return &MockAPIClient_UploadAttachmentDirect_Call{Call: _e.mock.On("UploadAttachmentDirect", ctx, cipherID, attachmentID, content)}
 }
 
@@ -1305,7 +1314,7 @@ type MockAPIClient_UploadAttachmentExternal_Call struct {
 //   - ctx context.Context
 //   - uploadURL string
 //   - content io.Reader
-func (_e *MockAPIClient_Expecter) UploadAttachmentExternal(ctx interface{}, uploadURL interface{}, content interface{}) *MockAPIClient_UploadAttachmentExternal_Call {
+func (_e *MockAPIClient_Expecter) UploadAttachmentExternal(ctx any, uploadURL any, content any) *MockAPIClient_UploadAttachmentExternal_Call {
 	return &MockAPIClient_UploadAttachmentExternal_Call{Call: _e.mock.On("UploadAttachmentExternal", ctx, uploadURL, content)}
 }
 

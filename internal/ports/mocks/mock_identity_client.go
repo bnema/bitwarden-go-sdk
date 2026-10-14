@@ -17,10 +17,19 @@ func NewMockIdentityClient(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockIdentityClient {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockIdentityClient{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -72,7 +81,7 @@ type MockIdentityClient_CompleteTwoFactor_Call struct {
 // CompleteTwoFactor is a helper method to define mock.On call
 //   - ctx context.Context
 //   - req ports.TwoFactorTokenRequest
-func (_e *MockIdentityClient_Expecter) CompleteTwoFactor(ctx interface{}, req interface{}) *MockIdentityClient_CompleteTwoFactor_Call {
+func (_e *MockIdentityClient_Expecter) CompleteTwoFactor(ctx any, req any) *MockIdentityClient_CompleteTwoFactor_Call {
 	return &MockIdentityClient_CompleteTwoFactor_Call{Call: _e.mock.On("CompleteTwoFactor", ctx, req)}
 }
 
@@ -138,7 +147,7 @@ type MockIdentityClient_LoginPassword_Call struct {
 // LoginPassword is a helper method to define mock.On call
 //   - ctx context.Context
 //   - req ports.PasswordTokenRequest
-func (_e *MockIdentityClient_Expecter) LoginPassword(ctx interface{}, req interface{}) *MockIdentityClient_LoginPassword_Call {
+func (_e *MockIdentityClient_Expecter) LoginPassword(ctx any, req any) *MockIdentityClient_LoginPassword_Call {
 	return &MockIdentityClient_LoginPassword_Call{Call: _e.mock.On("LoginPassword", ctx, req)}
 }
 
@@ -204,7 +213,7 @@ type MockIdentityClient_Prelogin_Call struct {
 // Prelogin is a helper method to define mock.On call
 //   - ctx context.Context
 //   - email string
-func (_e *MockIdentityClient_Expecter) Prelogin(ctx interface{}, email interface{}) *MockIdentityClient_Prelogin_Call {
+func (_e *MockIdentityClient_Expecter) Prelogin(ctx any, email any) *MockIdentityClient_Prelogin_Call {
 	return &MockIdentityClient_Prelogin_Call{Call: _e.mock.On("Prelogin", ctx, email)}
 }
 
@@ -270,7 +279,7 @@ type MockIdentityClient_Refresh_Call struct {
 // Refresh is a helper method to define mock.On call
 //   - ctx context.Context
 //   - req ports.RefreshTokenRequest
-func (_e *MockIdentityClient_Expecter) Refresh(ctx interface{}, req interface{}) *MockIdentityClient_Refresh_Call {
+func (_e *MockIdentityClient_Expecter) Refresh(ctx any, req any) *MockIdentityClient_Refresh_Call {
 	return &MockIdentityClient_Refresh_Call{Call: _e.mock.On("Refresh", ctx, req)}
 }
 

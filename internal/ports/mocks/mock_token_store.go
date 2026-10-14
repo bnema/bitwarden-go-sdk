@@ -17,10 +17,19 @@ func NewMockTokenStore(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockTokenStore {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockTokenStore{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -63,7 +72,7 @@ type MockTokenStore_DeleteTokens_Call struct {
 // DeleteTokens is a helper method to define mock.On call
 //   - ctx context.Context
 //   - accountID string
-func (_e *MockTokenStore_Expecter) DeleteTokens(ctx interface{}, accountID interface{}) *MockTokenStore_DeleteTokens_Call {
+func (_e *MockTokenStore_Expecter) DeleteTokens(ctx any, accountID any) *MockTokenStore_DeleteTokens_Call {
 	return &MockTokenStore_DeleteTokens_Call{Call: _e.mock.On("DeleteTokens", ctx, accountID)}
 }
 
@@ -129,7 +138,7 @@ type MockTokenStore_LoadTokens_Call struct {
 // LoadTokens is a helper method to define mock.On call
 //   - ctx context.Context
 //   - accountID string
-func (_e *MockTokenStore_Expecter) LoadTokens(ctx interface{}, accountID interface{}) *MockTokenStore_LoadTokens_Call {
+func (_e *MockTokenStore_Expecter) LoadTokens(ctx any, accountID any) *MockTokenStore_LoadTokens_Call {
 	return &MockTokenStore_LoadTokens_Call{Call: _e.mock.On("LoadTokens", ctx, accountID)}
 }
 
@@ -186,7 +195,7 @@ type MockTokenStore_SaveTokens_Call struct {
 // SaveTokens is a helper method to define mock.On call
 //   - ctx context.Context
 //   - tokens ports.TokenSet
-func (_e *MockTokenStore_Expecter) SaveTokens(ctx interface{}, tokens interface{}) *MockTokenStore_SaveTokens_Call {
+func (_e *MockTokenStore_Expecter) SaveTokens(ctx any, tokens any) *MockTokenStore_SaveTokens_Call {
 	return &MockTokenStore_SaveTokens_Call{Call: _e.mock.On("SaveTokens", ctx, tokens)}
 }
 
