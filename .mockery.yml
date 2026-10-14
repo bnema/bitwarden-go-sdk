@@ -12,6 +12,5 @@ packages:
       Clock: {}
       CryptoEngine: {}
       IdentityClient: {}
-      Logger: {}
       Random: {}
       TokenStore: {}
