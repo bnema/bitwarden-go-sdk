@@ -6,7 +6,7 @@ GO_FILES := $(shell find . -name '*.go' -not -path './.git/*')
 .PHONY: install-tools build test test-race test-cover lint fmt mocks check
 
 install-tools:
-	go install github.com/vektra/mockery/v3@v3.8.1
+	go install github.com/vektra/mockery/v3@v3.9.0
 	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.4
 
 build:
